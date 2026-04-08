@@ -1,0 +1,13 @@
+<wxs src="../../utils/image.wxs" module="img" />
+<view class="float-preview-panel" wx:if="{{goods.length > 0}}" catchtap="preventTap">
+  <view class="float-preview-title">已选 {{goods.length}}/{{max}}</view>
+  <view class="float-preview-list">
+    <view class="float-preview-item" wx:for="{{goods}}" wx:key="id">
+      <image class="float-preview-img" src="{{img.url(item.picUrl)}}" mode="aspectFill" />
+      <view class="float-preview-price">¥{{item.retailPrice}}</view>
+      <view class="float-preview-remove" catchtap="onRemove" data-id="{{item.id}}">
+        <view class="remove-x-sm"></view>
+      </view>
+    </view>
+  </view>
+</view>

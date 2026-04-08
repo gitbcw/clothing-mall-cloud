@@ -1,0 +1,72 @@
+@import "../../../styles/manager-common.wxss";
+
+.container {
+  min-height: 100vh;
+  background: #F7F8FA;
+  padding-bottom: 140rpx;
+}
+
+/* 自定义导航栏 */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  z-index: 100;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  padding: 0 30rpx;
+}
+
+.nav-back {
+  width: 80rpx;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.back-icon {
+  width: 20rpx;
+  height: 20rpx;
+  border-left: 4rpx solid #333;
+  border-bottom: 4rpx solid #333;
+  transform: rotate(45deg);
+}
+
+.nav-title {
+  flex: 1;
+  text-align: center;
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.nav-placeholder {
+  /* 动态高度 */
+}
+
+/* 草稿提示 */
+.draft-tip {
+  background: rgba(186, 141, 89, 0.9);
+  color: #fff;
+  padding: 16rpx 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 26rpx;
+}
+
+.draft-icon {
+  font-size: 28rpx;
+}
+
+.loading {
+  text-align: center;
+  padding: 100rpx 0;
+  color: #999;
+}

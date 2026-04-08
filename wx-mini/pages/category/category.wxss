@@ -1,0 +1,362 @@
+/* 全局背景与容器 */
+page {
+  background-color: #F7F8FA;
+  color: #333333;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* 主题颜色 */
+.theme-color {
+  color: #FF8096;
+}
+
+/* 沉浸式导航栏 */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-sizing: border-box;
+  background-color: #F7F8FA; /* 匹配整体背景 */
+  z-index: 100;
+}
+
+.back-btn {
+  width: 40px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.back-icon {
+  width: 10px;
+  height: 10px;
+  border-left: 1.5px solid #333333;
+  border-bottom: 1.5px solid #333333;
+  transform: rotate(45deg);
+  margin-left: 4px;
+}
+
+.nav-title {
+  font-size: 17px;
+  font-weight: 500;
+  color: #333333;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+}
+
+/* 胶囊按钮模拟 */
+.nav-icons {
+  display: flex;
+  align-items: center;
+  width: 87px;
+  height: 32px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.6);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.nav-icons::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1px;
+  height: 18px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.icon-more {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-more::before {
+  content: '···';
+  font-size: 20px;
+  line-height: 1;
+  color: #000;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.icon-target {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-target::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border: 3px solid #000;
+  border-radius: 50%;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.icon-target::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background-color: #000;
+  border-radius: 50%;
+}
+
+/* 搜索栏固定区域 */
+.header-fixed {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  background-color: #F7F8FA;
+  z-index: 99;
+}
+
+.search-bar-wrap {
+  padding: 10rpx 24rpx 20rpx;
+}
+
+.search-bar {
+  background-color: #FFFFFF;
+  height: 72rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx;
+}
+
+.search-icon {
+  width: 32rpx;
+  height: 32rpx;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
+  background-size: cover;
+  margin-right: 12rpx;
+}
+
+.search-placeholder {
+  font-size: 26rpx;
+  color: #999999;
+}
+
+/* 主体内容区 */
+.main-content {
+  display: flex;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 左侧分类列表 */
+.category-sidebar {
+  width: 180rpx;
+  height: 100%;
+  background-color: #F7F8FA;
+  flex-shrink: 0;
+}
+
+.category-item {
+  height: 100rpx;
+  line-height: 100rpx;
+  text-align: center;
+  font-size: 26rpx;
+  color: #666666;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.category-item.active {
+  background-color: #FFFFFF;
+  color: #FF8096;
+  font-weight: 500;
+}
+
+/* 选中左侧的细线标识 (其实原图中没有明显的细线，但为了更好的交互体验或者可能隐约有一点，如果没有可以去掉。仔细看原图，左侧没有明显的竖线，只有背景变白和文字变色) 
+* 观察原图，保暖内衣处于选中状态，背景为白色，文字为金色。左边没有明显色条。
+*/
+
+/* 右侧商品瀑布流 */
+.goods-content {
+  flex: 1;
+  height: 100%;
+  background-color: #FFFFFF;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+.waterfall-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.waterfall-col {
+  width: calc(50% - 10rpx);
+  display: flex;
+  flex-direction: column;
+}
+
+.goods-card {
+  background-color: #FFFFFF;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.02);
+}
+
+/* 图片高度不一，实现瀑布流感 */
+.goods-img {
+  width: 100%;
+  background-color: #F5F5F5;
+}
+
+.img-tall {
+  height: 420rpx;
+}
+
+.img-short {
+  height: 320rpx;
+}
+
+.goods-info {
+  padding: 16rpx;
+}
+
+.goods-title {
+  font-size: 26rpx;
+  color: #333333;
+  margin-bottom: 16rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goods-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.price-wrap {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.price-symbol {
+  font-size: 20rpx;
+}
+
+.price-num {
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.original-price {
+  font-size: 18rpx;
+  color: #999999;
+  margin-left: 8rpx;
+}
+
+/* 购物车小图标 */
+.cart-icon-small {
+  width: 40rpx;
+  height: 40rpx;
+  background-color: #FF8096;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='21' r='1'%3E%3C/circle%3E%3Ccircle cx='20' cy='21' r='1'%3E%3C/circle%3E%3Cpath d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'%3E%3C/path%3E%3C/svg%3E");
+  background-size: 22rpx;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+  margin-left: 8rpx;
+}
+
+.sidebar-bottom-placeholder {
+  height: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+.content-bottom-placeholder {
+  height: calc(120rpx + env(safe-area-inset-bottom));
+}
+
+/* 自定义底部 TabBar */
+.custom-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100rpx + env(safe-area-inset-bottom));
+  background-color: #FFFFFF;
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-sizing: border-box;
+  border-top: 1rpx solid #EEEEEE;
+  z-index: 100;
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-icon {
+  width: 48rpx;
+  height: 48rpx;
+  margin-bottom: 4rpx;
+  background-size: cover;
+  background-position: center;
+}
+
+/* TabBar Icons (SVG Base64) */
+.tab-icon.home { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'%3E%3C/path%3E%3Cpolyline points='9 22 9 12 15 12 15 22'%3E%3C/polyline%3E%3C/svg%3E"); }
+.tab-icon.category { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7'%3E%3C/rect%3E%3Crect x='14' y='3' width='7' height='7'%3E%3C/rect%3E%3Crect x='14' y='14' width='7' height='7'%3E%3C/rect%3E%3Crect x='3' y='14' width='7' height='7'%3E%3C/rect%3E%3C/svg%3E"); }
+.tab-icon.cart { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='21' r='1'%3E%3C/circle%3E%3Ccircle cx='20' cy='21' r='1'%3E%3C/circle%3E%3Cpath d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'%3E%3C/path%3E%3C/svg%3E"); }
+.tab-icon.mine { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cpath d='M8 14s1.5 2 4 2 4-2 4-2'%3E%3C/path%3E%3Cline x1='9' y1='9' x2='9.01' y2='9'%3E%3C/line%3E%3Cline x1='15' y1='9' x2='15.01' y2='9'%3E%3C/line%3E%3C/svg%3E"); }
+
+/* 选中状态的图标 */
+.tab-icon.category.active { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23FF8096' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='7' height='7'%3E%3C/rect%3E%3Crect x='14' y='3' width='7' height='7'%3E%3C/rect%3E%3Crect x='14' y='14' width='7' height='7'%3E%3C/rect%3E%3Crect x='3' y='14' width='7' height='7'%3E%3C/rect%3E%3C/svg%3E"); }
+
+.tab-text {
+  font-size: 20rpx;
+  color: #999999;
+}
+
+.tab-text.active {
+  color: #FF8096;
+}

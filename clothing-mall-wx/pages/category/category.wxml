@@ -1,0 +1,114 @@
+<wxs src="../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 沉浸式自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight+16}}px; height: {{navBarHeight}}px;">
+    <view class="back-btn" bindtap="goBack">
+      <view class="back-icon"></view>
+    </view>
+    <view class="nav-title">商品分类</view>
+    <view class="nav-right"></view>
+  </view>
+
+  <!-- 搜索栏固定区域 -->
+  <view class="header-fixed" style="top: {{statusBarHeight + navBarHeight}}px;">
+    <view class="search-bar-wrap" bindtap="goSearch">
+      <view class="search-bar">
+        <view class="search-icon"></view>
+        <text class="search-placeholder">搜索商品</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 占位符 -->
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 52}}px;"></view>
+
+  <!-- 主体内容区：左侧分类，右侧商品 -->
+  <view class="main-content">
+    <!-- 左侧分类列表 -->
+    <scroll-view class="category-sidebar" scroll-y="true">
+      <view
+        class="category-item {{item.id === activeCategoryId ? 'active' : ''}}"
+        wx:for="{{navList}}"
+        wx:key="id"
+        bindtap="switchCate"
+        data-id="{{item.id}}"
+      >
+        {{item.name}}
+      </view>
+      <view class="sidebar-bottom-placeholder"></view>
+    </scroll-view>
+
+    <!-- 右侧商品瀑布流 -->
+    <scroll-view class="goods-content" scroll-y="true" scroll-top="{{scrollTop}}" bindscroll="onGoodsScroll" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd">
+      <view style="min-height: {{scrollViewHeight}}px;">
+      <!-- 加载状态 -->
+      <view class="loading-state" wx:if="{{loading}}">
+        <view class="loading-spinner"></view>
+        <view class="loading-text">加载中...</view>
+      </view>
+
+      <!-- 空状态 -->
+      <view class="empty-state" wx:elif="{{leftGoodsList.length === 0 && rightGoodsList.length === 0}}">
+        <view class="empty-text">暂无商品</view>
+      </view>
+
+      <view class="waterfall-layout" wx:else>
+        <!-- 左列 -->
+        <view class="waterfall-col">
+          <view class="goods-card" wx:for="{{leftGoodsList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+            <view class="goods-img-wrap">
+              <image class="goods-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onCategoryImageError" data-source="leftGoodsList" data-index="{{index}}"></image>
+            </view>
+            <view class="goods-info">
+              <view class="goods-title">{{item.name}}</view>
+              <view class="goods-bottom">
+                <view class="price-wrap">
+                  <text class="price-symbol theme-color">￥</text>
+                  <text class="price-num theme-color">{{item.retailPrice}}</text>
+                  <text class="original-price" wx:if="{{item.counterPrice > item.retailPrice}}">￥{{item.counterPrice}}</text>
+                </view>
+                <view class="cart-icon-small" catchtap="addToCart" data-id="{{item.id}}"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 右列 -->
+        <view class="waterfall-col">
+          <view class="goods-card" wx:for="{{rightGoodsList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+            <view class="goods-img-wrap">
+              <image class="goods-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onCategoryImageError" data-source="rightGoodsList" data-index="{{index}}"></image>
+            </view>
+            <view class="goods-info">
+              <view class="goods-title">{{item.name}}</view>
+              <view class="goods-bottom">
+                <view class="price-wrap">
+                  <text class="price-symbol theme-color">￥</text>
+                  <text class="price-num theme-color">{{item.retailPrice}}</text>
+                  <text class="original-price" wx:if="{{item.counterPrice > item.retailPrice}}">￥{{item.counterPrice}}</text>
+                </view>
+                <view class="cart-icon-small" catchtap="addToCart" data-id="{{item.id}}"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      </view>
+      <!-- 底部留白 -->
+      <view class="content-bottom-placeholder"></view>
+    </scroll-view>
+  </view>
+
+  <!-- 尺码选择器 -->
+  <sku-picker
+    visible="{{showSkuPicker}}"
+    goods-id="{{skuGoods.id}}"
+    goods-image="{{skuGoods.picUrl}}"
+    goods-price="{{skuGoods.retailPrice}}"
+    enable-size="{{skuGoods.enableSize}}"
+    bottom-offset="{{100}}"
+    bind:close="closeSkuPicker"
+    bind:addcart="skuAddToCart"
+    bind:buynow="skuBuyNow"
+  />
+</view>

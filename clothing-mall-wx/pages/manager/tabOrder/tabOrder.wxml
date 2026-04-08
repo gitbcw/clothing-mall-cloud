@@ -1,0 +1,118 @@
+<wxs src="../../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight+16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-title">订单管理</view>
+    </view>
+  </view>
+  <!-- 占位符 -->
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 子 Tab 切换 -->
+  <view class="sub-tabs">
+    <view class="sub-tab-item {{activeSubTab === 'order' ? 'active' : ''}}" bindtap="onSubTabChange" data-tab="order">
+      订单{{pendingCount > 0 ? '(' + pendingCount + ')' : ''}}
+    </view>
+    <view class="sub-tab-item {{activeSubTab === 'aftersale' ? 'active' : ''}}" bindtap="onSubTabChange" data-tab="aftersale">
+      售后{{aftersaleCount > 0 ? '(' + aftersaleCount + ')' : ''}}
+    </view>
+  </view>
+
+  <!-- 订单列表（订单 Tab） -->
+  <view class="order-list" wx:if="{{activeSubTab === 'order'}}">
+    <view class="order-item" wx:for="{{orderList}}" wx:key="id" bindtap="goOrderDetail" data-id="{{item.id}}">
+      <view class="order-header">
+        <text class="order-sn">{{item.orderSn}}</text>
+        <text class="order-status">{{item.orderStatusText}}</text>
+      </view>
+      <view class="order-info">
+        <view class="info-row">
+          <text class="info-label">收货人</text>
+          <text class="info-value">{{item.consignee}} {{item.mobile}}</text>
+        </view>
+      </view>
+      <view class="order-content">
+        <view class="goods-item" wx:for="{{item.goodsList}}" wx:for-item="goods" wx:key="id">
+          <image class="goods-image" src="{{img.url(goods.picUrl)}}" mode="aspectFill"></image>
+          <view class="goods-info">
+            <text class="goods-name">{{goods.goodsName}}</text>
+            <text class="goods-spec" wx:if="{{goods.specifications}}">{{goods.specifications}}</text>
+            <text class="goods-spec" wx:elif="{{goods.size}}">{{goods.size}}</text>
+            <view class="goods-price-num">
+              <text class="goods-price">¥{{goods.price}}</text>
+              <text class="goods-num">x{{goods.number}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="order-footer">
+        <text class="order-total">共{{item.goodsCount}}件 合计: ¥{{item.actualPrice}}</text>
+      </view>
+      <view class="order-actions" catchtap="">
+        <view class="action-btn btn-cancel" wx:if="{{item.orderStatus === 201}}" catchtap="onCancel" data-id="{{item.id}}">取消</view>
+        <view class="action-btn btn-primary" wx:if="{{item.orderStatus === 201}}" catchtap="onShip" data-id="{{item.id}}">发货</view>
+        <view class="action-btn btn-primary" wx:if="{{item.orderStatus === 501}}" catchtap="onVerify" data-id="{{item.id}}">核销</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 售后列表（售后 Tab） -->
+  <view class="order-list" wx:if="{{activeSubTab === 'aftersale'}}">
+    <view class="order-item" wx:for="{{orderList}}" wx:key="id" bindtap="goOrderDetail" data-id="{{item.orderId}}">
+      <view class="order-header">
+        <text class="order-sn">{{item.aftersaleSn}}</text>
+        <text class="order-status">{{item.statusText}}</text>
+      </view>
+      <view class="order-info">
+        <view class="info-row">
+          <text class="info-label">类型</text>
+          <text class="info-value">{{item.typeText}}</text>
+        </view>
+        <view class="info-row" wx:if="{{item.consignee}}">
+          <text class="info-label">客户</text>
+          <text class="info-value">{{item.consignee}} {{item.mobile}}</text>
+        </view>
+        <view class="info-row" wx:if="{{item.reason}}">
+          <text class="info-label">原因</text>
+          <text class="info-value">{{item.reason}}</text>
+        </view>
+      </view>
+      <view class="order-content">
+        <view class="goods-item" wx:for="{{item.goodsList}}" wx:for-item="goods" wx:key="id">
+          <image class="goods-image" src="{{img.url(goods.picUrl)}}" mode="aspectFill"></image>
+          <view class="goods-info">
+            <text class="goods-name">{{goods.goodsName}}</text>
+            <text class="goods-spec" wx:if="{{goods.specifications}}">{{goods.specifications}}</text>
+            <text class="goods-spec" wx:elif="{{goods.size}}">{{goods.size}}</text>
+            <view class="goods-price-num">
+              <text class="goods-price">¥{{goods.price}}</text>
+              <text class="goods-num">x{{goods.number}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="order-footer">
+        <text class="order-total">关联订单: {{item.orderSn || '-'}}</text>
+      </view>
+      <view class="order-actions" catchtap="">
+        <view class="action-btn btn-danger" wx:if="{{item.status === 1}}" catchtap="onAftersaleReject" data-id="{{item.id}}">拒绝</view>
+        <view class="action-btn btn-primary" wx:if="{{item.status === 1}}" catchtap="onAftersaleRecept" data-id="{{item.id}}">同意换货</view>
+        <view class="action-btn btn-primary" wx:if="{{item.status === 2}}" catchtap="onAftersaleShip" data-id="{{item.id}}">发货</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && orderList.length === 0}}">
+    <text>暂无{{activeSubTab === 'order' ? '待处理订单' : '售后订单'}}</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 管理端 TabBar -->
+  <manager-tab-bar id="managerTabBar" />
+</view>

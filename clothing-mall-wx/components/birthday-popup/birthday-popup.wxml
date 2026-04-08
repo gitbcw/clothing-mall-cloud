@@ -1,0 +1,41 @@
+<van-popup
+  show="{{ show }}"
+  position="bottom"
+  custom-style="border-radius: 24rpx 24rpx 0 0; overflow: hidden;"
+  close-on-click-overlay="{{ false }}"
+  bind:click-overlay="onOverlayClick"
+>
+  <view class="birthday-popup">
+    <!-- 标题区域 -->
+    <view class="popup-header">
+      <view class="popup-title">完善生日信息</view>
+      <view class="popup-subtitle">填写生日可获得专属生日优惠券</view>
+    </view>
+
+    <!-- 日期显示 -->
+    <view class="date-display">
+      <view class="date-label">您的生日</view>
+      <view class="date-value">{{ displayDate }}</view>
+    </view>
+
+    <!-- 日期选择器 -->
+    <view class="picker-wrapper">
+      <van-datetime-picker
+        type="date"
+        value="{{ maxDate }}"
+        min-date="{{ minDate }}"
+        max-date="{{ maxDate }}"
+        bind:confirm="onDateChange"
+        bind:cancel="onDateChange"
+      />
+    </view>
+
+    <!-- 按钮区域 -->
+    <view class="button-group">
+      <view class="btn-skip" bindtap="onSkip">跳过</view>
+      <view class="btn-submit {{ loading ? 'disabled' : '' }}" bindtap="onSubmit">
+        {{ loading ? '保存中...' : '确认提交' }}
+      </view>
+    </view>
+  </view>
+</van-popup>

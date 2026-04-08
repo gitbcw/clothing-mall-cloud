@@ -1,0 +1,58 @@
+<wxs src="../../../utils/image.wxs" module="img" />
+<view class="container">
+  <custom-nav title="我的足迹" />
+
+  <!-- Empty State -->
+  <view class="empty-state" wx:if="{{footprintList.length <= 0 && !loading}}">
+    <view class="empty-circle">
+      <view class="empty-eye">
+        <view class="eye-outer">
+          <view class="eye-pupil"></view>
+        </view>
+      </view>
+    </view>
+    <text class="empty-title">还没有浏览足迹</text>
+    <text class="empty-desc">去看看有什么心仪的好物吧</text>
+  </view>
+
+  <!-- Footprint List -->
+  <view class="footprint-list" wx:if="{{footprintList.length > 0}}">
+    <view class="list-hint">
+      <text class="list-hint-text">长按可删除足迹</text>
+    </view>
+
+    <view class="day-group" wx:for="{{footprintList}}" wx:key="*this" wx:for-index="index">
+      <view class="date-header" wx:if="{{item.length > 0}}">
+        <view class="date-dot"></view>
+        <text class="date-text">{{item[0].addDate}}</text>
+        <view class="date-line"></view>
+      </view>
+
+      <view class="goods-card"
+        wx:for="{{item}}"
+        wx:for-index="iindex"
+        wx:for-item="iitem"
+        wx:key="id"
+        data-index="{{index}}"
+        data-iindex="{{iindex}}"
+        bindtap="goDetail"
+        bindlongpress="deleteItem">
+        <image class="goods-img" src="{{img.url(iitem.picUrl)}}" mode="aspectFill" lazy-load />
+        <view class="goods-info">
+          <view class="goods-top">
+            <text class="goods-name">{{iitem.name}}</text>
+            <text class="goods-brief" wx:if="{{iitem.brief}}">{{iitem.brief}}</text>
+          </view>
+          <view class="goods-bottom">
+            <text class="goods-price">¥{{iitem.retailPrice}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Footer -->
+  <view class="list-footer" wx:if="{{footprintList.length > 0 && page >= totalPages}}">
+    <text class="no-more-text">— 到底了 —</text>
+  </view>
+</view>

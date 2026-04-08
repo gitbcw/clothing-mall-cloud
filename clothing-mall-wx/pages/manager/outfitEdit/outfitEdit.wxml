@@ -1,0 +1,176 @@
+<wxs src="../../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-back" bindtap="onBack">
+        <view class="nav-back-icon"></view>
+      </view>
+      <view class="nav-title">{{isEdit ? '编辑穿搭' : '新建穿搭'}}</view>
+      <view class="nav-placeholder-right"></view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 表单 -->
+  <view class="form-section">
+    <!-- 穿搭图片 -->
+    <view class="form-card outfit-card">
+      <view class="outfit-upload" wx:if="{{!form.coverPic}}" bindtap="onChooseCover">
+        <view class="upload-placeholder" wx:if="{{!uploading}}">
+          <view class="upload-icon"></view>
+          <text class="upload-text">上传穿搭图片</text>
+        </view>
+        <view class="uploading-state" wx:if="{{uploading}}">
+          <view class="loading-spinner"></view>
+          <text class="upload-text">上传中...</text>
+        </view>
+      </view>
+      <view class="outfit-preview" wx:if="{{form.coverPic}}">
+        <image class="outfit-image" src="{{img.url(form.coverPic)}}" mode="aspectFill" />
+        <!-- 品牌水印（磨砂卡片） -->
+        <view class="brand-watermark brand-watermark--{{form.brandColor || 'white'}} brand-pos--{{form.brandPosition || 'top-right'}}">
+          <text class="brand-main">川着</text>
+          <text class="brand-sub">川行此着</text>
+        </view>
+        <!-- 悬浮商品栏 -->
+        <view class="outfit-float-panel float-pos--{{form.floatPosition || 'left'}}" wx:if="{{goodsList.length > 0}}">
+          <view class="outfit-float-title">Get同款</view>
+          <scroll-view class="outfit-goods-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+            <view class="outfit-good-item" wx:for="{{goodsList}}" wx:key="id">
+              <image src="{{img.url(item.picUrl)}}" mode="aspectFill" class="outfit-good-img" />
+              <view class="outfit-good-price">¥{{item.retailPrice}}</view>
+            </view>
+          </scroll-view>
+        </view>
+        <view class="cover-overlay">
+          <view class="cover-btn" bindtap="onChooseCover">更换</view>
+          <view class="cover-btn cover-btn-delete" bindtap="onRemoveCover">删除</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 标题与描述 -->
+    <view class="form-card">
+      <view class="field-group">
+        <view class="field-label">
+          <text>穿搭标题</text>
+          <text class="field-hint-inline">（必填）</text>
+        </view>
+        <input class="field-input" value="{{form.title}}" bindinput="onInputTitle" placeholder="如：春日通勤穿搭" maxlength="30" />
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field-group">
+        <view class="field-label">穿搭描述</view>
+        <textarea class="field-textarea" value="{{form.description}}" bindinput="onInputDesc" placeholder="简短描述该穿搭的风格和亮点" maxlength="200" auto-height />
+      </view>
+    </view>
+
+    <!-- 设置 -->
+    <view class="form-card">
+      <view class="field-group field-row">
+        <view class="field-label">品牌水印</view>
+        <view class="color-picker">
+          <view class="color-option {{form.brandColor === 'white' ? 'color-active' : ''}}" bindtap="onSelectColor" data-color="white">
+            <view class="color-circle color-circle--white"></view>
+            <text class="color-label">白色</text>
+          </view>
+          <view class="color-option {{form.brandColor === 'coffee' ? 'color-active' : ''}}" bindtap="onSelectColor" data-color="coffee">
+            <view class="color-circle color-circle--coffee"></view>
+            <text class="color-label">咖啡</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field-group field-row">
+        <view class="field-label">水印位置</view>
+        <view class="color-picker">
+          <view class="color-option {{form.brandPosition === 'top-left' ? 'color-active' : ''}}" bindtap="onSelectPosition" data-position="top-left">
+            <view class="pos-icon pos-icon--left"></view>
+            <text class="color-label">左上</text>
+          </view>
+          <view class="color-option {{form.brandPosition === 'top-right' ? 'color-active' : ''}}" bindtap="onSelectPosition" data-position="top-right">
+            <view class="pos-icon pos-icon--right"></view>
+            <text class="color-label">右上</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field-group field-row">
+        <view class="field-label">商品栏位置</view>
+        <view class="color-picker">
+          <view class="color-option {{form.floatPosition === 'left' ? 'color-active' : ''}}" bindtap="onSelectFloatPosition" data-position="left">
+            <view class="pos-icon pos-icon--left"></view>
+            <text class="color-label">左侧</text>
+          </view>
+          <view class="color-option {{form.floatPosition === 'right' ? 'color-active' : ''}}" bindtap="onSelectFloatPosition" data-position="right">
+            <view class="pos-icon pos-icon--right"></view>
+            <text class="color-label">右侧</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field-group field-row">
+        <view class="field-label">穿搭排序</view>
+        <view class="stepper">
+          <view class="stepper-btn stepper-minus {{form.sortOrder <= 1 ? 'stepper-btn-disabled' : ''}}" bindtap="onSortMinus">-</view>
+          <input class="stepper-input" type="number" value="{{form.sortOrder}}" bindinput="onInputSort" />
+          <view class="stepper-btn stepper-plus" bindtap="onSortPlus">+</view>
+        </view>
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field-group field-row">
+        <view class="field-info">
+          <text class="field-label">启用状态</text>
+          <text class="field-hint">{{form.status === 1 ? '启用后将展示给用户' : '禁用后用户不可见'}}</text>
+        </view>
+        <view class="toggle-switch {{form.status === 1 ? 'toggle-active' : ''}}" bindtap="onToggleStatus">
+          <view class="toggle-knob"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+     <!-- 关联商品 -->
+     <view class="form-card">
+      <view class="field-group">
+        <view class="field-row">
+          <view class="field-label">关联商品</view>
+          <view class="add-goods-btn" bindtap="onAddGoods">
+            <text class="add-goods-text">+ 添加</text>
+          </view>
+        </view>
+        <text class="field-hint" wx:if="{{goodsList.length === 0}}">选择穿搭中包含的单品</text>
+      </view>
+
+      <view class="goods-list" wx:if="{{goodsList.length > 0}}">
+        <view class="goods-item" wx:for="{{goodsList}}" wx:key="id" bindtap="onViewGoods" data-id="{{item.id}}">
+          <image class="goods-item-img" src="{{img.url(item.picUrl)}}" mode="aspectFill" />
+          <view class="goods-item-info">
+            <text class="goods-item-name">{{item.name}}</text>
+            <text class="goods-item-price">¥{{item.retailPrice}}</text>
+          </view>
+          <view class="goods-item-remove" catchtap="onRemoveGoods" data-index="{{index}}">
+            <text class="remove-icon">x</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+  <!-- 保存按钮 -->
+  <view class="save-bar">
+    <view class="save-btn {{saving ? 'save-btn-disabled' : ''}}" bindtap="{{saving ? '' : 'onSave'}}">
+      <text>{{saving ? '保存中...' : '保存'}}</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,50 @@
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: #F7F8FA;
+  z-index: 999;
+}
+
+.nav-inner {
+  height: 48px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.nav-left,
+.nav-right {
+  width: 56px;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-left-hover {
+  opacity: 0.6;
+}
+
+.nav-arrow {
+  width: 12px;
+  height: 12px;
+  border-left: 2px solid #333;
+  border-bottom: 2px solid #333;
+  transform: rotate(45deg);
+}
+
+.nav-center {
+  flex: 1;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-title {
+  font-size: 17px;
+  color: #333;
+}

@@ -1,0 +1,51 @@
+<view class="container">
+  <view class="custom-nav" style="padding-top: {{statusBarHeight+16}}px; height: {{navContentHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-left" bindtap="handleBack" hover-class="nav-left-hover" hover-stay-time="100">
+        <view class="arrow"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 顶部背景图 -->
+  <view class="header-bg">
+    <image src="https://images.unsplash.com/photo-1434389678232-06963200b847?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" mode="aspectFill" class="bg-img"></image>
+  </view>
+
+  <!-- 登录卡片 -->
+  <view class="login-card">
+    <view class="card-title">验证码登录</view>
+    
+    <view class="form-item">
+      <van-icon name="phone-o" class="input-icon" />
+      <input class="username" value="{{mobile}}" bindinput="bindMobileInput" placeholder="输入手机号" type="number" maxlength="11" placeholder-style="color: #999; font-size: 28rpx;" />
+      <van-icon name="close" wx:if="{{ mobile.length > 0 }}" id="clear-mobile" class="clear" catchtap="clearInput"/>
+    </view>
+
+    <view class="form-item">
+      <van-icon name="lock" class="input-icon" />
+      <input class="password" value="{{code}}" bindinput="bindCodeInput" placeholder="输入验证码" type="number" maxlength="6" placeholder-style="color: #999; font-size: 28rpx;" />
+      <view class="send-code-btn" bindtap="sendCode">{{countdown > 0 ? countdown + 's' : '发送验证码'}}</view>
+    </view>
+
+    <view class="form-item-text">
+      <navigator url="/pages/auth/reset/reset" class="reset">忘记密码</navigator>
+    </view>
+
+    <button class="login-btn" bindtap="accountLogin">立即登录</button>
+
+    <view class="register-wrap">
+      <text class="no-account">没有账号？</text>
+      <navigator url="/pages/auth/register/register" class="register">去注册</navigator>
+    </view>
+
+    <view class="agreement-wrap">
+      <checkbox-group bindchange="bindAgreementChange">
+        <label class="checkbox-label">
+          <checkbox value="1" checked="{{agreement}}" color="#FF8096" class="custom-checkbox" />
+          <view class="agreement-text">我已阅读并同意 <text class="link" catchtap="goAgreement">《用户协议》</text> 和 <text class="link" catchtap="goPrivacy">《隐私政策》</text></view>
+        </label>
+      </checkbox-group>
+    </view>
+  </view>
+</view>

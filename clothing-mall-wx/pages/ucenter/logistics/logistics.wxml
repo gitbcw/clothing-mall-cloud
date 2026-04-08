@@ -1,0 +1,37 @@
+<view class="container">
+  <custom-nav title="物流详情" />
+
+  <!-- 快递信息头 -->
+  <view class="express-header-card" wx:if="{{expName || expNo}}">
+    <view class="express-header-row">
+      <view class="express-icon-wrap">
+        <text class="express-icon">📦</text>
+      </view>
+      <view class="express-header-info">
+        <text class="express-company">{{expName || '快递运输'}}</text>
+        <text class="express-no">{{expNo}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 物流时间轴 -->
+  <view class="timeline-section">
+    <view class="timeline-empty" wx:if="{{!traces || traces.length === 0}}">
+      <text class="timeline-empty-icon">📭</text>
+      <text class="timeline-empty-text">暂无物流信息</text>
+      <text class="timeline-empty-hint">快递信息可能在发货后24小时内更新</text>
+    </view>
+    <view class="timeline-list" wx:else>
+      <view class="timeline-item" wx:for="{{traces}}" wx:key="index">
+        <view class="timeline-left">
+          <view class="timeline-dot {{index === 0 ? 'timeline-dot-active' : ''}}"></view>
+          <view class="timeline-line" wx:if="{{index < traces.length - 1}}"></view>
+        </view>
+        <view class="timeline-right">
+          <text class="timeline-station {{index === 0 ? 'timeline-station-active' : ''}}">{{item.AcceptStation}}</text>
+          <text class="timeline-time">{{item.AcceptTime}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,18 @@
+page {
+  background-color: #F7F8FA;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei', sans-serif;
+  color: #333333;
+}
+/* Utility classes for resetting button styles if needed */
+.reset-btn {
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  background-color: transparent;
+  line-height: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+.reset-btn::after {
+  display: none;
+}

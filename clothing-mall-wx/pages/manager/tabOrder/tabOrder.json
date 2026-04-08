@@ -1,0 +1,6 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "manager-tab-bar": "/components/manager-tab-bar/index"
+  }
+}

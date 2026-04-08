@@ -1,0 +1,6 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "outfit-preview-panel": "/components/outfit-preview-panel/outfit-preview-panel"
+  }
+}

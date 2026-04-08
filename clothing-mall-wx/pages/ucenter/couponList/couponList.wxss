@@ -1,0 +1,280 @@
+page {
+  background: #f5f5f5;
+  min-height: 100%;
+}
+
+.container {
+  background: #f5f5f5;
+  min-height: 100vh;
+  padding-bottom: 40rpx;
+}
+
+/* ================================================================
+   Empty State
+   ================================================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 240rpx;
+}
+
+.empty-circle {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFF5F7, #FFE8EC);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 36rpx;
+}
+
+.empty-ticket {
+  width: 52rpx;
+  height: 36rpx;
+  border: 4rpx solid #FFD4DC;
+  border-radius: 6rpx;
+  position: relative;
+}
+
+.empty-ticket-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  border-left: 2rpx dashed #FFD4DC;
+}
+
+.empty-title {
+  font-size: 32rpx;
+  color: #999;
+  font-weight: 500;
+}
+
+/* ================================================================
+   Coupon Card
+   ================================================================ */
+.coupon-list {
+  padding: 24rpx 24rpx 0;
+}
+
+.coupon-card {
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  overflow: hidden;
+}
+
+/* ================================================================
+   Card Main - 左金额 右信息
+   ================================================================ */
+.card-main {
+  display: flex;
+  padding: 32rpx 28rpx 24rpx;
+}
+
+.card-left {
+  width: 160rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  border-right: 2rpx dashed #eee;
+  padding-right: 24rpx;
+  align-self: center;
+}
+
+.card-symbol {
+  font-size: 26rpx;
+  color: #FF6B81;
+  font-weight: 600;
+  margin-right: 2rpx;
+}
+
+.card-amount {
+  font-size: 56rpx;
+  color: #FF6B81;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.card-right {
+  flex: 1;
+  padding-left: 24rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-condition {
+  font-size: 22rpx;
+  color: #FF6B81;
+  background: #FFF5F7;
+  align-self: flex-start;
+  padding: 2rpx 12rpx;
+  border-radius: 6rpx;
+  margin-bottom: 10rpx;
+}
+
+.card-name {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.card-time {
+  font-size: 22rpx;
+  color: #999;
+  margin-bottom: 16rpx;
+}
+
+/* ================================================================
+   Card Action
+   ================================================================ */
+.card-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-use {
+  font-size: 24rpx;
+  color: #fff;
+  background: linear-gradient(135deg, #FF6B81, #FF4757);
+  padding: 8rpx 32rpx;
+  border-radius: 28rpx;
+  font-weight: 500;
+}
+
+.btn-use:active {
+  opacity: 0.85;
+}
+
+.btn-expired {
+  font-size: 24rpx;
+  color: #bbb;
+  background: #f5f5f5;
+  padding: 8rpx 32rpx;
+  border-radius: 28rpx;
+}
+
+/* ================================================================
+   Disabled Card
+   ================================================================ */
+.card-disabled .card-symbol,
+.card-disabled .card-amount {
+  color: #ccc;
+}
+
+.card-disabled .card-condition {
+  color: #bbb;
+  background: #f5f5f5;
+}
+
+.card-disabled .card-name {
+  color: #999;
+}
+
+.card-disabled .card-time {
+  color: #ccc;
+}
+
+/* ================================================================
+   Card Footer - 底部小字
+   ================================================================ */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 28rpx;
+  border-top: 1rpx solid #f5f5f5;
+}
+
+.footer-text {
+  font-size: 22rpx;
+  color: #bbb;
+}
+
+.footer-link {
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* ================================================================
+   Card Rules - 展开规则
+   ================================================================ */
+.card-rules {
+  padding: 20rpx 28rpx 24rpx;
+  border-top: 1rpx solid #f5f5f5;
+  background: #FAFAFA;
+}
+
+.rule-section {
+  margin-bottom: 16rpx;
+}
+
+.rule-section:last-child {
+  margin-bottom: 0;
+}
+
+.rule-title {
+  font-size: 24rpx;
+  color: #666;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 6rpx;
+}
+
+.rule-content {
+  font-size: 22rpx;
+  color: #999;
+  line-height: 1.6;
+  display: block;
+}
+
+/* ================================================================
+   Expired Entry
+   ================================================================ */
+.expired-entry {
+  text-align: center;
+  padding: 32rpx 0;
+}
+
+.expired-entry text {
+  font-size: 26rpx;
+  color: #999;
+}
+
+/* ================================================================
+   Expired List
+   ================================================================ */
+.expired-list {
+  padding: 0 24rpx;
+}
+
+.expired-header {
+  font-size: 26rpx;
+  color: #999;
+  text-align: center;
+  padding: 20rpx 0 16rpx;
+}
+
+.expired-empty {
+  text-align: center;
+  padding: 32rpx 0;
+  font-size: 26rpx;
+  color: #ccc;
+}
+
+/* ================================================================
+   Footer
+   ================================================================ */
+.list-footer {
+  padding: 32rpx 0 64rpx;
+  text-align: center;
+}
+
+.no-more-text {
+  font-size: 24rpx;
+  color: #ccc;
+}

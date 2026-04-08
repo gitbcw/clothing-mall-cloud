@@ -1,0 +1,138 @@
+@import "../../../styles/manager-common.wxss";
+
+.container {
+  min-height: 100vh;
+  background-color: #F7F8FA;
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
+}
+
+/* ---- 导航栏 ---- */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30rpx;
+}
+
+.nav-back {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-back-icon {
+  width: 18rpx;
+  height: 18rpx;
+  border-left: 4rpx solid #333;
+  border-bottom: 4rpx solid #333;
+  transform: rotate(45deg);
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.nav-placeholder-right {
+  width: 60rpx;
+}
+
+.nav-placeholder {
+  background: transparent;
+}
+
+/* ---- 表单区域 ---- */
+.form-section {
+  padding: 20rpx 24rpx;
+}
+
+.form-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+/* ---- 字段组 ---- */
+.field-group {
+  padding: 8rpx 0;
+}
+
+.field-label {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.field-required {
+  color: #E8494A;
+  margin-right: 4rpx;
+}
+
+.field-textarea {
+  font-size: 28rpx;
+  color: #333;
+  padding: 16rpx 0;
+  width: 100%;
+  min-height: 80rpx;
+  line-height: 1.6;
+}
+
+.field-textarea--answer {
+  min-height: 200rpx;
+}
+
+.field-divider {
+  height: 1rpx;
+  background: #F0F0F0;
+  margin: 8rpx 0;
+}
+
+/* ---- 保存按钮 ---- */
+.save-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 40rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1rpx solid rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+.save-btn {
+  background: #FF8096;
+  color: #FFFFFF;
+  border-radius: 44rpx;
+  padding: 24rpx 0;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 500;
+  box-shadow: 0 8rpx 24rpx rgba(255, 128, 150, 0.3);
+}
+
+.save-btn:active {
+  opacity: 0.85;
+}
+
+.save-btn-disabled {
+  opacity: 0.5;
+}

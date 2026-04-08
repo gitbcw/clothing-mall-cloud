@@ -1,0 +1,117 @@
+<wxs src="../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 顶部背景与个人信息 -->
+  <view class="header-section">
+    <image class="bg-img" src="{{headerBgImage}}" mode="aspectFill" binderror="onHeaderBgError"></image>
+    <view class="user-info" bindtap="goLogin">
+      <view class="avatar-wrap">
+        <image class="avatar" src="{{avatarLoadError ? avatarDefaultImage : (img.url(userInfo.avatarUrl) || avatarDefaultImage)}}" mode="aspectFill" binderror="onAvatarError"></image>
+      </view>
+      <view class="info-text">
+        <view class="nickname">{{userInfo.nickName || '点击登录'}}</view>
+        <view class="status">{{hasLogin ? '已登录' : '未登录'}}</view>
+      </view>
+    </view>
+  </view>
+  <!-- 内容区域 -->
+  <view class="content-section">
+    <!-- 我的订单 -->
+    <view class="card order-card">
+      <view class="card-header" bindtap="goOrder">
+        <text class="title">我的订单</text>
+        <view class="more">
+          全部
+          <view class="arrow"></view>
+        </view>
+      </view>
+      <view class="order-list">
+        <view class="order-item" bindtap="goOrderIndex" data-index="1">
+          <view class="icon icon-wallet"></view>
+          <text>待支付</text>
+          <view class="badge" wx:if="{{order.unpaid > 0}}">{{order.unpaid}}</view>
+        </view>
+        <view class="order-item" bindtap="goOrderIndex" data-index="2">
+          <view class="icon icon-truck"></view>
+          <text>待发货</text>
+          <view class="badge" wx:if="{{order.unship > 0}}">{{order.unship}}</view>
+        </view>
+        <view class="order-item" bindtap="goOrderIndex" data-index="3">
+          <view class="icon icon-package"></view>
+          <text>待收货/使用</text>
+          <view class="badge" wx:if="{{order.unrecv > 0}}">{{order.unrecv}}</view>
+        </view>
+        <view class="order-item" bindtap="goOrderIndex" data-index="4">
+          <view class="icon icon-receipt"></view>
+          <text>已完成</text>
+        </view>
+      </view>
+    </view>
+    <!-- 收藏/优惠券/足迹 -->
+    <view class="card stats-card">
+      <view class="stats-item" bindtap="goCollect">
+        <view class="stats-title">
+          收藏
+          <view class="arrow-circle">></view>
+        </view>
+        <view class="icon-colored icon-star-colored"></view>
+      </view>
+      <view class="stats-item" bindtap="goCoupon">
+        <view class="stats-title">
+          优惠券
+          <view class="arrow-circle">></view>
+        </view>
+        <view class="icon-colored icon-wallet-colored"></view>
+      </view>
+      <view class="stats-item" bindtap="goFootprint">
+        <view class="stats-title">
+          足迹
+          <view class="arrow-circle">></view>
+        </view>
+        <view class="icon-colored icon-footprint-colored"></view>
+      </view>
+    </view>
+    <!-- 功能列表 -->
+    <view class="card menu-card">
+      <view class="menu-item" bindtap="goFeedback">
+        <view class="item-left">
+          <view class="icon icon-headset"></view>
+          <text>联系客服</text>
+        </view>
+        <view class="item-right">
+          <view class="arrow"></view>
+        </view>
+      </view>
+      <view class="menu-item" bindtap="goAddress">
+        <view class="item-left">
+          <view class="icon icon-location"></view>
+          <text>收货地址管理</text>
+        </view>
+        <view class="item-right">
+          <view class="arrow"></view>
+        </view>
+      </view>
+      <view class="menu-item" bindtap="goUserInfo">
+        <view class="item-left">
+          <view class="icon icon-person"></view>
+          <text>个人信息</text>
+        </view>
+        <view class="item-right">
+          <view class="arrow"></view>
+        </view>
+      </view>
+      <!-- 管理入口（仅管理员可见） -->
+      <view class="menu-item manager-entry" wx:if="{{isManager}}" bindtap="goManager">
+        <view class="item-left">
+          <view class="icon icon-manager"></view>
+          <text>管理后台</text>
+        </view>
+        <view class="item-right">
+          <text class="role-tag">{{userRole === 'owner' ? '店主' : '导购'}}</text>
+          <view class="arrow"></view>
+        </view>
+      </view>
+    </view>
+    <!-- 底部安全区占位，防止内容被底部导航栏遮挡 -->
+    <view class="safe-area-placeholder"></view>
+  </view>
+</view>

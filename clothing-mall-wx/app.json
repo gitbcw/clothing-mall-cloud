@@ -1,0 +1,98 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/manager/tabOrder/tabOrder",
+    "pages/manager/tabShelf/tabShelf",
+    "pages/category/category",
+    "pages/scene/scene",
+    "pages/cart/cart",
+    "pages/mine/mine",
+    "pages/goods_detail/goods_detail",
+    "pages/confirm_order/confirm_order",
+    "pages/order/order",
+    "pages/auth/login/login",
+    "pages/auth/accountLogin/accountLogin",
+    "pages/auth/register/register",
+    "pages/auth/reset/reset",
+    "pages/ucenter/address/address",
+    "pages/ucenter/addressAdd/addressAdd",
+    "pages/ucenter/couponList/couponList",
+    "pages/ucenter/userInfo/userInfo",
+    "pages/ucenter/couponSelect/couponSelect",
+    "pages/ucenter/collect/collect",
+    "pages/ucenter/footprint/footprint",
+    "pages/ucenter/feedback/feedback",
+    "pages/ucenter/orderDetail/orderDetail",
+    "pages/ucenter/aftersale/aftersale",
+    "pages/ucenter/aftersaleDetail/aftersaleDetail",
+    "pages/ucenter/aftersaleList/aftersaleList",
+    "pages/ucenter/logistics/logistics",
+    "pages/search/search",
+    "pages/payResult/payResult",
+    "pages/manager/orderDetail/orderDetail",
+    "pages/manager/goodsEdit/goodsEdit",
+    "pages/manager/tabSettings/tabSettings",
+    "pages/manager/sceneManage/sceneManage",
+    "pages/manager/sceneEdit/sceneEdit",
+    "pages/manager/outfitManage/outfitManage",
+    "pages/manager/outfitEdit/outfitEdit",
+    "pages/manager/goodsPicker/goodsPicker",
+    "pages/manager/issueManage/issueManage",
+    "pages/manager/issueEdit/issueEdit",
+    "pages/manager/pushSend/pushSend",
+    "pages/manager/verify/verify"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "川着Transmute",
+    "navigationBarTextStyle": "black",
+    "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#FF8096",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/category/category",
+        "text": "分类"
+      },
+      {
+        "pagePath": "pages/cart/cart",
+        "text": "购物车"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的"
+      }
+    ]
+  },
+  "networkTimeout": {
+    "request": 10000,
+    "connectSocket": 10000,
+    "uploadFile": 10000,
+    "downloadFile": 10000
+  },
+  "debug": false,
+  "lazyCodeLoading": "requiredComponents",
+  "usingComponents": {
+    "van-cell": "./lib/vant-weapp/cell/index",
+    "van-cell-group": "./lib/vant-weapp/cell-group/index",
+    "van-picker": "./lib/vant-weapp/picker/index",
+    "van-popup": "./lib/vant-weapp/popup/index",
+    "van-field": "./lib/vant-weapp/field/index",
+    "van-uploader": "./lib/vant-weapp/uploader/index",
+    "van-button": "./lib/vant-weapp/button/index",
+    "van-tag": "./lib/vant-weapp/tag/index",
+    "van-icon": "./lib/vant-weapp/icon/index",
+    "van-checkbox": "./lib/vant-weapp/checkbox/index",
+    "van-steps": "./lib/vant-weapp/steps/index"
+  },
+  "sitemapLocation": "sitemap.json"
+}

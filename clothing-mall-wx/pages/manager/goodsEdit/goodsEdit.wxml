@@ -1,0 +1,41 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight}}px;">
+    <view class="nav-inner" style="height: {{navBarHeight}}px;">
+      <view class="nav-back" bindtap="onGoBack">
+        <view class="back-icon"></view>
+      </view>
+      <view class="nav-title">{{navTitle}}</view>
+      <view class="nav-placeholder"></view>
+    </view>
+  </view>
+  <!-- 占位符 -->
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight}}px;"></view>
+
+  <!-- 草稿提示（仅新建模式） -->
+  <view class="draft-tip" wx:if="{{hasDraft && !isEdit}}">
+    <text class="draft-icon">📋</text>
+    <text>有未提交的草稿</text>
+  </view>
+
+  <goods-form
+    wx:if="{{!loading}}"
+    value="{{formData}}"
+    mode="{{isEdit ? 'edit' : 'create'}}"
+    features="{{formFeatures}}"
+    loading="{{loading}}"
+    preset-scenes="{{presetScenes}}"
+    category-list="{{categoryList}}"
+    goods-status="{{goodsStatus}}"
+    is-on-sale="{{isOnSale}}"
+    bind:change="onGoodsFormChange"
+    bind:save="onGoodsFormSave"
+    bind:publish="onGoodsFormPublish"
+    bind:unpublish="onGoodsFormUnpublish"
+    bind:preview="onGoodsFormPreview"
+  />
+
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+</view>

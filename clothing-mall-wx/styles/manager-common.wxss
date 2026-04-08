@@ -1,0 +1,157 @@
+/* ========================================
+ * 管理端共享样式 - 咖棕金配色体系
+ * 使用方式：@import "../../../styles/manager-common.wxss"; (从 pages/manager/xxx/ 目录引用)
+ * ======================================== */
+
+/* ---- 品牌色 ---- */
+/* primary: #FF8096 */
+/* primary-dark: #96745A */
+/* primary-light: #D4A86C */
+/* primary-bg: #F7F3EF */
+/* primary-soft: #F0EBE6 */
+/* primary-faint: #FDF9F4 */
+/* primary-border: #E8D3B9 */
+/* primary-10: rgba(186,141,89,0.1) */
+/* primary-08: rgba(186,141,89,0.08) */
+
+/* ---- 功能色 ---- */
+/* danger: #E8494A */
+/* warning: #E6A23C */
+/* success: #07c160 */
+
+/* ---- 中性色 ---- */
+/* page-bg: #F7F8FA */
+/* card-bg: #FFFFFF */
+/* text-primary: #333 */
+/* text-secondary: #666 */
+/* text-hint: #999 */
+/* divider: #EEEEEE */
+/* border: #DEDEDE */
+
+/* ========================================
+ * 通用页面容器
+ * ======================================== */
+.manager-page {
+  min-height: 100vh;
+  background-color: #F7F8FA;
+}
+
+/* ========================================
+ * 卡片样式
+ * ======================================== */
+.manager-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+/* ========================================
+ * 按钮样式
+ * ======================================== */
+.manager-btn-primary {
+  background: #FF8096;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 34rpx;
+  text-align: center;
+  font-size: 28rpx;
+}
+
+.manager-btn-danger {
+  background: #E8494A;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 34rpx;
+  text-align: center;
+  font-size: 28rpx;
+}
+
+.manager-btn-warning {
+  background: #E6A23C;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 34rpx;
+  text-align: center;
+  font-size: 28rpx;
+}
+
+.manager-btn-ghost {
+  background: rgba(186, 141, 89, 0.08);
+  color: #FF8096;
+  border: none;
+  border-radius: 34rpx;
+  text-align: center;
+  font-size: 28rpx;
+}
+
+/* ========================================
+ * 状态标签
+ * ======================================== */
+.status-draft {
+  background: #F5F5F5;
+  color: #999;
+  font-size: 22rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  display: inline-block;
+}
+
+.status-online {
+  background: rgba(7, 193, 96, 0.1);
+  color: #07c160;
+  font-size: 22rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  display: inline-block;
+}
+
+.status-offline {
+  background: rgba(232, 73, 74, 0.08);
+  color: #E8494A;
+  font-size: 22rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  display: inline-block;
+}
+
+/* ========================================
+ * Loading / Empty 占位
+ * ======================================== */
+.manager-loading {
+  text-align: center;
+  padding: 40rpx 0;
+  color: #999;
+  font-size: 26rpx;
+}
+
+.manager-empty {
+  text-align: center;
+  padding: 120rpx 40rpx;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* ========================================
+ * 分隔线
+ * ======================================== */
+.manager-divider {
+  height: 1rpx;
+  background: #EEEEEE;
+}
+
+/* ========================================
+ * 底部操作栏（固定底部）
+ * ======================================== */
+.manager-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 20rpx;
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+  z-index: 10;
+}

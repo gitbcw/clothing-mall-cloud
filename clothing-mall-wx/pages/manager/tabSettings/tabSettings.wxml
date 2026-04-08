@@ -1,0 +1,27 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight+16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-title">设置</view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 菜单列表 -->
+  <view class="menu-section" wx:for="{{menuList}}" wx:key="group">
+    <view class="section-label">{{item.group}}</view>
+    <view class="menu-card">
+      <view class="menu-item" wx:for="{{item.items}}" wx:for-item="menu" wx:key="key" bindtap="onMenuTap" data-key="{{menu.key}}">
+        <view class="menu-icon menu-icon--{{menu.icon}}"></view>
+        <view class="menu-info">
+          <text class="menu-label">{{menu.label}}</text>
+          <text class="menu-desc">{{menu.desc}}</text>
+        </view>
+        <view class="menu-arrow"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部 TabBar -->
+  <manager-tab-bar id="managerTabBar"></manager-tab-bar>
+</view>

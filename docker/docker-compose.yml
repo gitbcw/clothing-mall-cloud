@@ -1,0 +1,82 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: clothing-mall-mysql
+    ports:
+      - "3306:3306"
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+      --innodb-buffer-pool-size=128M
+      --max-connections=50
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./db/init-sql:/docker-entrypoint-initdb.d
+      - ./db/conf.d:/etc/mysql/conf.d
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: clothing_mall
+      MYSQL_USER: clothing_mall
+      MYSQL_PASSWORD: clothing123456
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    restart: always
+
+  app:
+    build:
+      context: litemall
+      dockerfile: Dockerfile
+    container_name: clothing-mall-app
+    ports:
+      - "8088:8080"
+    volumes:
+      - ./litemall/storage:/storage
+      - ./litemall/logs:/logs
+      - ./litemall/backup:/backup
+    environment:
+      - TZ=Asia/Shanghai
+      - JAVA_OPTS=-Xmx512m -Xms256m
+      # 快递物流查询（阿里云市场API）
+      - EXPRESS_ENABLE=${EXPRESS_ENABLE:-false}
+      - EXPRESS_APPCODE=${EXPRESS_APPCODE:-}
+      # 对象存储
+      - LITEMALL_STORAGE_ACTIVE=${STORAGE_ACTIVE:-local}
+      - LITEMALL_STORAGE_LOCAL_ADDRESS=http://47.107.151.70:8088/wx/storage/fetch/
+      - ALIYUN_OSS_ENDPOINT=${ALIYUN_OSS_ENDPOINT:-}
+      - ALIYUN_OSS_ACCESS_KEY_ID=${ALIYUN_OSS_ACCESS_KEY_ID:-}
+      - ALIYUN_OSS_ACCESS_KEY_SECRET=${ALIYUN_OSS_ACCESS_KEY_SECRET:-}
+      - ALIYUN_OSS_BUCKET_NAME=${ALIYUN_OSS_BUCKET_NAME:-}
+      # AI 识别（火山引擎 doubao）
+      - AI_TAG_ENABLED=${AI_TAG_ENABLED:-false}
+      - DOUBAO_API_KEY=${DOUBAO_API_KEY:-}
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    container_name: clothing-mall-nginx
+    ports:
+      - "8080:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./admin-dist:/usr/share/nginx/html
+    depends_on:
+      - app
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+    restart: always
+

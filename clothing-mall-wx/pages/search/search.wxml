@@ -1,0 +1,91 @@
+<wxs src="../../utils/image.wxs" module="img" />
+<scroll-view class="container" style="height: 100%;">
+  <view style="height: {{statusBarHeight}}px;"></view>
+  <view class="search-header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="input-box">
+      <van-icon name="search"/>
+      <input name="input" class="keywrod" focus="true" value="{{keyword}}" confirm-type="search" bindinput="inputChange" bindfocus="inputFocus" bindconfirm="onKeywordConfirm" placeholder="{{defaultKeyword.keyword}}" />
+      <van-icon class="del" wx:if="{{keyword}}" bindtap="clearKeyword" name="cross" />
+    </view>
+    <view class="right" bindtap="closeSearch">取消</view>
+  </view>
+  <view class="no-search" style="margin-top: {{statusBarHeight * 2 + 91}}rpx;" wx:if="{{ !searchStatus}}">
+    <view class="search-keywords search-history" wx:if="{{!keyword  && historyKeyword.length}}">
+      <view class="h">
+        <text class="title">历史记录</text>
+        <van-icon bindtap="clearHistory" name="delete" class="icon"/>
+      </view>
+      <view class="b">
+        <view class="item" bindtap="onKeywordTap" data-keyword="{{item.keyword}}" wx:for="{{historyKeyword}}" wx:key="keyword" hover-class="navigator-hover">{{item.keyword}}</view>
+      </view>
+    </view>
+    <view class="search-keywords search-hot" wx:if="{{!keyword && hotKeyword.length}}">
+      <view class="h">
+        <text class="title">热门搜索</text>
+      </view>
+      <view class="b">
+        <view class="item active" hover-class="navigator-hover" bindtap="onKeywordTap" data-keyword="{{item.keyword}}" wx:for="{{hotKeyword}}" wx:key="keyword">{{item.keyword}}</view>
+      </view>
+    </view>
+    <view class="search-keywords search-category" wx:if="{{!keyword && categoryList.length}}">
+      <view class="h">
+        <text class="title">分类</text>
+      </view>
+      <scroll-view class="tag-scroll" scroll-x="true">
+        <view class="b">
+          <view class="tag-item" hover-class="navigator-hover" bindtap="onCategoryTap" data-id="{{item.id}}" wx:for="{{categoryList}}" wx:key="id">{{item.name}}</view>
+        </view>
+      </scroll-view>
+    </view>
+    <view class="search-keywords search-scene" wx:if="{{!keyword && sceneList.length}}">
+      <view class="h">
+        <text class="title">场景</text>
+      </view>
+      <scroll-view class="tag-scroll" scroll-x="true">
+        <view class="b">
+          <view class="tag-item" hover-class="navigator-hover" bindtap="onSceneTap" data-id="{{item.id}}" wx:for="{{sceneList}}" wx:key="id">{{item.name}}</view>
+        </view>
+      </scroll-view>
+    </view>
+    <view class="suggestion-list" wx:if="{{keyword && suggestionList.length}}">
+      <view class="suggestion-item" hover-class="navigator-hover" wx:for="{{suggestionList}}" wx:key="text" bindtap="onSuggestionTap" data-item="{{item}}">
+        <text class="suggestion-tag suggestion-tag-{{item.type}}">{{item.type === 'history' ? '历史' : item.type === 'category' ? '分类' : item.type === 'scene' ? '场景' : '搜索'}}</text>
+        <text class="suggestion-text">{{item.text}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="search-result" wx:if="{{ searchStatus && goodsList.length}}">
+    <view class="sort" style="top: {{statusBarHeight * 2 + 91}}rpx;">
+      <view class="sort-box">
+        <view class="item {{currentSortType == 'default' ? 'active' : ''}}" bindtap="openSortFilter" id="defaultSort">
+          <text class="txt">综合</text>
+        </view>
+        <view class="item {{currentSortType == 'price' ? 'active' : ''}}" bindtap="openSortFilter" id="priceSort">
+          <text class="txt">价格</text>
+          <van-icon name="arrow-up" wx:if="{{ currentSortType == 'price' && currentSortOrder == 'asc' }}" />
+          <van-icon name="arrow-down" wx:elif="{{ currentSortType == 'price' && currentSortOrder == 'desc'}}" />
+        </view>
+        <view class="item {{currentSortType == 'new' ? 'active' : ''}}" bindtap="openSortFilter" id="newSort">
+          <text class="txt">上新</text>
+        </view>
+      </view>
+    </view>
+    <view class="cate-item">
+      <view class="b">
+        <navigator class="item {{(iindex + 1) % 2 == 0 ? 'item-b' : ''}}" url="/pages/goods_detail/goods_detail?id={{iitem.id}}" wx:for="{{goodsList}}" wx:key="id" wx:for-item="iitem" wx:for-index="iindex">
+          <image class="img" src="{{img.url(iitem.picUrl)}}" background-size="cover"></image>
+          <text class="name">{{iitem.name}}</text>
+          <text class="price">￥{{iitem.retailPrice}}</text>
+        </navigator>
+      </view>
+    </view>
+  </view>
+
+  <view class="search-result-empty" wx:if="{{!goodsList.length && searchStatus}}">
+    <text class="text">您寻找的商品还未上架</text>
+  </view>
+
+  <!-- 悬浮购物车 -->
+  <floating-cart />
+</scroll-view>

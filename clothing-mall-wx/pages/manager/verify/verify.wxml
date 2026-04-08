@@ -1,0 +1,80 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-back" bindtap="onBack">
+        <view class="nav-back-icon"></view>
+      </view>
+      <view class="nav-title">订单核销</view>
+      <view class="nav-placeholder-right"></view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 核销码输入区 -->
+  <view class="code-section">
+    <view class="code-card">
+      <view class="code-card-title">输入核销码</view>
+      <view class="code-input-row">
+        <input class="code-input" value="{{pickupCode}}" bindinput="onInputCode" bindconfirm="onVerify" placeholder="请输入或扫描核销码" focus="{{true}}" />
+        <view class="scan-btn" bindtap="onScanCode">
+          <view class="scan-icon"></view>
+        </view>
+      </view>
+      <view class="verify-btn {{verifying ? 'verify-btn-disabled' : ''}}" bindtap="{{verifying ? '' : 'onVerify'}}">
+        <text>{{verifying ? '核销中...' : '确认核销'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 核销结果 -->
+  <view class="result-section" wx:if="{{verifyResult}}">
+    <!-- 成功 -->
+    <view class="result-card result-success" wx:if="{{resultType === 'success'}}">
+      <view class="result-status">
+        <view class="result-icon icon-success"></view>
+        <text class="result-label success-label">核销成功</text>
+      </view>
+      <view class="result-info">
+        <view class="result-row" wx:if="{{verifyResult.orderSn}}">
+          <text class="result-key">订单编号</text>
+          <text class="result-val">{{verifyResult.orderSn}}</text>
+        </view>
+        <view class="result-row" wx:if="{{verifyResult.orderId}}">
+          <text class="result-key">订单ID</text>
+          <text class="result-val">{{verifyResult.orderId}}</text>
+        </view>
+      </view>
+      <view class="result-dismiss" bindtap="onClearResult">继续核销</view>
+    </view>
+
+    <!-- 失败 -->
+    <view class="result-card result-error" wx:if="{{resultType === 'error'}}">
+      <view class="result-status">
+        <view class="result-icon icon-error"></view>
+        <text class="result-label error-label">核销失败</text>
+      </view>
+      <view class="result-info">
+        <text class="error-msg">{{verifyResult.errmsg}}</text>
+      </view>
+      <view class="result-dismiss" bindtap="onClearResult">重新输入</view>
+    </view>
+  </view>
+
+  <!-- 核销记录 -->
+  <view class="history-section" wx:if="{{recentList.length > 0}}">
+    <view class="section-title">本次核销记录</view>
+    <view class="history-list">
+      <view class="history-item" wx:for="{{recentList}}" wx:key="orderId">
+        <view class="history-dot"></view>
+        <view class="history-info">
+          <view class="history-top">
+            <text class="history-sn">{{item.orderSn || item.orderId}}</text>
+            <text class="history-time">{{item.verifyTime}}</text>
+          </view>
+          <text class="history-code">核销码: {{item.pickupCode}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,234 @@
+<wxs src="../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 商品已下架提示 -->
+  <view class="unshelved-notice" wx:if="{{isUnshelved}}" style="margin-top: {{statusBarHeight + navBarHeight + 16}}px;">
+    <view class="unshelved-icon">!</view>
+    <text class="unshelved-text">该商品已下架</text>
+    <view class="unshelved-btn" bindtap="goBack">返回</view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-state" wx:if="{{loading}}" style="margin-top: {{statusBarHeight + navBarHeight + 16}}px;">
+    <view class="loading-spinner"></view>
+    <view class="loading-text">加载中...</view>
+  </view>
+
+  <!-- 正常商品内容（下架或隐藏） -->
+  <block wx:if="{{!isUnshelved && !loading}}">
+  <!-- 沉浸式自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight+16}}px; height: {{navBarHeight}}px;">
+    <view class="back-btn" bindtap="goBack">
+      <view class="back-icon"></view>
+    </view>
+    <view class="nav-title">商品详情</view>
+    <view class="nav-right"></view>
+  </view>
+
+  <!-- 顶部商品主图轮播 -->
+  <view class="swiper-wrap">
+    <swiper class="goods-swiper" bindchange="onSwiperChange" autoplay="{{true}}" interval="3000" circular="{{true}}">
+      <block wx:for="{{gallery}}" wx:key="*this">
+        <swiper-item>
+          <image src="{{img.url(item) || defaultImage}}" mode="aspectFill" class="swiper-image" bindtap="previewGalleryImage" data-index="{{index}}" binderror="onGoodsDetailImageError" data-source="gallery"></image>
+        </swiper-item>
+      </block>
+    </swiper>
+
+    <!-- 轮播指示器 -->
+    <view class="swiper-indicator">
+      {{currentSwiper}} / {{gallery.length}}
+    </view>
+  </view>
+
+  <!-- 商品基础信息区 -->
+  <view class="info-section">
+    <view class="title-share-wrap">
+      <view class="goods-title">{{goods.name}}</view>
+      <view class="share-btn" bindtap="shareFriendOrCircle" wx:if="{{shareImage}}">
+        <view class="share-icon"></view>
+        <text>分享</text>
+      </view>
+    </view>
+    <view class="goods-brief" wx:if="{{goods.brief}}">{{goods.brief}}</view>
+
+    <!-- 特价 -->
+    <view class="price-wrap" wx:if="{{goods.isSpecialPrice && goods.specialPrice}}">
+      <text class="price-symbol">￥</text>
+      <text class="price-num">{{goods.specialPrice}}</text>
+      <view class="price-tag">特价</view>
+      <text class="original-price">￥{{goods.retailPrice}}</text>
+    </view>
+    <!-- 普通价格 -->
+    <view class="price-wrap" wx:else>
+      <text class="price-symbol">￥</text>
+      <text class="price-num">{{goods.retailPrice}}</text>
+      <view class="price-tag" wx:if="{{goods.counterPrice > goods.retailPrice}}">特卖价</view>
+      <text class="original-price" wx:if="{{goods.counterPrice > goods.retailPrice}}">原价 ￥{{goods.counterPrice}}</text>
+    </view>
+
+    <view class="tags-wrap">
+      <view class="tag" wx:if="{{goods.isNew}}">新品</view>
+      <view class="tag" wx:if="{{goods.isHot}}">热销</view>
+      <view class="tag brand-tag" wx:if="{{brand && brand.name}}">{{brand.name}}</view>
+    </view>
+  </view>
+
+  <!-- 服务与选择区块（预览模式隐藏） -->
+  <view class="service-section" wx:if="{{!isPreview}}">
+    <!-- 配送 -->
+    <view class="service-item" bindtap="selectAddress">
+      <text class="label">配送</text>
+      <view class="content">
+        <view class="location-icon"></view>
+        <text class="value" wx:if="{{checkedAddress}}">{{checkedAddress.name}} {{checkedAddress.tel}} {{checkedAddress.address}}</text>
+        <text class="value" wx:else>请选择收货地址</text>
+      </view>
+      <view class="arrow"></view>
+    </view>
+    <!-- 服务 -->
+    <view class="service-item" bindtap="openServicePopup">
+      <text class="label">服务</text>
+      <view class="content">
+        <view class="heart-icon"></view>
+        <text class="value">只换不退 · 正品保障</text>
+      </view>
+      <view class="arrow"></view>
+    </view>
+    <!-- 选择规格 -->
+    <view class="service-item no-border" bindtap="openSkuPicker">
+      <text class="label">选择</text>
+      <view class="content">
+        <view class="clothes-icon"></view>
+        <text class="value" wx:if="{{selectedSize}}">已选：{{selectedSize}} x {{selectedQuantity}}</text>
+        <text class="value" wx:else>{{checkedSpecText}}</text>
+      </view>
+      <view class="arrow"></view>
+    </view>
+  </view>
+
+  <!-- 商品参数 -->
+  <view class="attr-section" wx:if="{{attribute.length > 0}}">
+    <view class="section-title">
+      <view class="title-bar"></view>
+      <text>商品参数</text>
+    </view>
+    <view class="attr-list">
+      <view class="attr-item" wx:for="{{attribute}}" wx:key="attribute">
+        <text class="attr-name">{{item.attribute}}</text>
+        <text class="attr-value">{{item.value}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 宝贝详情 -->
+  <view class="detail-section">
+    <view class="section-title">
+      <view class="title-bar"></view>
+      <text>宝贝详情</text>
+    </view>
+
+    <view class="detail-content">
+      <block wx:for="{{gallery}}" wx:key="*this">
+        <image src="{{img.url(item)}}" mode="widthFix" class="detail-image" bindtap="previewGalleryImage" data-index="{{index}}" binderror="onImageError" data-src="{{item}}"></image>
+      </block>
+      <rich-text nodes="{{goods.detail}}" wx:if="{{goods.detail}}"></rich-text>
+    </view>
+  </view>
+
+  <!-- 常见问题 -->
+  <view class="issue-section" wx:if="{{issueList.length > 0}}">
+    <view class="section-title">
+      <view class="title-bar"></view>
+      <text>常见问题</text>
+    </view>
+    <view class="issue-list">
+      <view class="issue-item" wx:for="{{issueList}}" wx:key="id">
+        <view class="question">{{item.question}}</view>
+        <view class="answer">{{item.answer}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 相关推荐 -->
+  <view class="related-section" wx:if="{{relatedGoods.length > 0}}">
+    <view class="section-title-center">
+      <view class="line"></view>
+      <text>相关推荐</text>
+      <view class="line"></view>
+    </view>
+    <view class="related-list">
+      <view class="related-item" wx:for="{{relatedGoods}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+        <image class="related-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onGoodsDetailImageError" data-source="relatedGoods" data-index="{{index}}"></image>
+        <view class="related-info">
+          <view class="related-title">{{item.name}}</view>
+          <view class="related-price">￥{{item.retailPrice}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部安全区占位 -->
+  <view class="safe-area-placeholder" wx:if="{{!isPreview}}"></view>
+
+  <!-- 底部操作栏（预览模式隐藏） -->
+  <view class="bottom-bar" wx:if="{{!isPreview}}">
+    <view class="icon-group">
+      <view class="icon-item" bindtap="contactService">
+        <view class="b-icon icon-service"></view>
+        <text>客服</text>
+      </view>
+      <view class="icon-item" bindtap="addCollectOrNot">
+        <view class="b-icon {{collect ? 'icon-star-active' : 'icon-star'}}"></view>
+        <text>{{collect ? '已收藏' : '收藏'}}</text>
+      </view>
+      <view class="icon-item" bindtap="openCartPage">
+        <view class="b-icon icon-cart"></view>
+        <text>购物车</text>
+        <view class="cart-badge" wx:if="{{cartGoodsCount > 0}}">{{cartGoodsCount}}</view>
+      </view>
+    </view>
+
+    <view class="btn-group">
+      <view class="action-btn btn-cart" bindtap="openSkuPicker">加入购物车</view>
+      <view class="action-btn btn-buy" bindtap="openSkuPicker">立即购买</view>
+    </view>
+  </view>
+
+  <!-- 服务详情弹窗 -->
+  <view class="service-popup" wx:if="{{showServicePopup}}">
+    <view class="service-popup-mask" bindtap="closeServicePopup"></view>
+    <view class="service-popup-container">
+      <view class="service-popup-header">
+        <text class="service-popup-title">服务说明</text>
+      </view>
+      <view class="service-popup-body">
+        <view class="service-popup-item">
+          <view class="service-popup-item-title">只换不退</view>
+          <view class="service-popup-item-desc">商品支持7天内换货服务，如有尺码不合适等问题可申请换货。</view>
+        </view>
+        <view class="service-popup-item">
+          <view class="service-popup-item-title">正品保障</view>
+          <view class="service-popup-item-desc">所有商品均为正品，支持专柜验货，假一赔十。</view>
+        </view>
+      </view>
+      <view class="service-popup-footer">
+        <view class="service-popup-btn" bindtap="closeServicePopup">我知道了</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 尺码选择器 -->
+  <sku-picker
+    visible="{{showSkuPicker}}"
+    goods-id="{{goods.id}}"
+    goods-image="{{goods.picUrl}}"
+    goods-price="{{goods.retailPrice}}"
+    enable-size="{{enableSize}}"
+    init-size="{{selectedSize}}"
+    init-quantity="{{selectedQuantity}}"
+    bind:close="closeSkuPicker"
+    bind:addcart="skuAddToCart"
+    bind:buynow="skuBuyNow"
+  />
+  </block>
+</view>

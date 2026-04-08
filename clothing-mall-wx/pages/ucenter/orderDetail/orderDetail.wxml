@@ -1,0 +1,196 @@
+<wxs src="../../../utils/image.wxs" module="img" />
+<view class="container">
+  <custom-nav title="订单详情" />
+
+  <!-- 配送/自提信息 -->
+  <view class="delivery-section" wx:if="{{orderInfo.orderSn}}">
+    <!-- 快递配送 - 收货地址 -->
+    <view class="delivery-card" wx:if="{{orderInfo.deliveryType !== 'pickup'}}">
+      <view class="shipping-label {{orderInfo.expNo ? 'shipping-label-clickable' : ''}}" bindtap="{{orderInfo.expNo ? 'goLogistics' : ''}}">
+        <view class="shipping-label-bar"></view>
+        <view class="shipping-label-body">
+          <view class="shipping-label-header">
+            <view class="shipping-badge">快递配送</view>
+          </view>
+          <view class="shipping-addr-row">
+            <view class="shipping-pin">📍</view>
+            <view class="shipping-addr-content">
+              <view class="shipping-addr-name-row">
+                <text class="shipping-name">{{orderInfo.consignee}}</text>
+                <text class="shipping-mobile">{{orderInfo.mobile}}</text>
+              </view>
+              <view class="shipping-addr-text">{{orderInfo.address}}</view>
+            </view>
+          </view>
+          <!-- 物流状态摘要（已发货时显示） -->
+          <view class="logistics-summary" wx:if="{{orderInfo.expNo && latestTrace}}">
+            <view class="logistics-summary-divider"></view>
+            <view class="logistics-summary-row">
+              <view class="logistics-summary-left">
+                <view class="logistics-status-dot"></view>
+                <text class="logistics-summary-text">{{latestTrace}}</text>
+              </view>
+              <view class="logistics-summary-arrow">
+                <text class="logistics-summary-link">查看物流</text>
+                <van-icon name="arrow" size="12px" color="#FF8096" />
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <!-- 到店自提 -->
+    <view class="pickup-card" wx:if="{{orderInfo.deliveryType === 'pickup'}}">
+      <!-- 取货码票面（仅已付款订单显示） -->
+      <view class="pickup-ticket" wx:if="{{orderInfo.pickupCode && !handleOption.pay}}">
+        <view class="pickup-ticket-top">
+          <view class="pickup-badge">到店自提</view>
+          <view class="pickup-ticket-label">取货码</view>
+        </view>
+        <view class="pickup-code-display">{{orderInfo.pickupCode}}</view>
+        <view class="pickup-ticket-divider">
+          <view class="pickup-ticket-notch pickup-ticket-notch-left"></view>
+          <view class="pickup-ticket-dash"></view>
+          <view class="pickup-ticket-notch pickup-ticket-notch-right"></view>
+        </view>
+        <view class="pickup-contact-row">
+          <view class="pickup-contact-item">
+            <text class="pickup-contact-label">联系人</text>
+            <text class="pickup-contact-value">{{orderInfo.pickupContact}}</text>
+          </view>
+          <view class="pickup-contact-divider"></view>
+          <view class="pickup-contact-item">
+            <text class="pickup-contact-label">联系电话</text>
+            <text class="pickup-contact-value">{{orderInfo.pickupPhone}}</text>
+          </view>
+        </view>
+      </view>
+      <!-- 无取货码时的联系人信息 -->
+      <view class="pickup-no-code" wx:if="{{!orderInfo.pickupCode}}">
+        <view class="pickup-badge">到店自提</view>
+        <view class="pickup-contact-row" style="padding-top: 16rpx;">
+          <view class="pickup-contact-item">
+            <text class="pickup-contact-label">联系人</text>
+            <text class="pickup-contact-value">{{orderInfo.pickupContact}}</text>
+          </view>
+          <view class="pickup-contact-divider"></view>
+          <view class="pickup-contact-item">
+            <text class="pickup-contact-label">联系电话</text>
+            <text class="pickup-contact-value">{{orderInfo.pickupPhone}}</text>
+          </view>
+        </view>
+      </view>
+      <!-- 门店信息 -->
+      <view class="store-card" wx:if="{{pickupStore}}">
+        <view class="store-card-name">{{pickupStore.name}}</view>
+        <view class="store-card-row">
+          <text class="store-card-icon">📍</text>
+          <text class="store-card-text">{{pickupStore.address}}</text>
+        </view>
+        <view class="store-card-row" wx:if="{{pickupStore.phone}}">
+          <text class="store-card-icon">📞</text>
+          <text class="store-card-text">{{pickupStore.phone}}</text>
+        </view>
+        <view class="store-card-row" wx:if="{{pickupStore.businessHours}}">
+          <text class="store-card-icon">🕐</text>
+          <text class="store-card-text">{{pickupStore.businessHours}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 商品信息 -->
+  <view class="order-goods">
+    <view class="goods-header">
+      <text class="goods-header-title">商品信息</text>
+      <text class="goods-header-status">{{orderInfo.orderStatusText}}</text>
+    </view>
+    <view class="goods-list">
+      <view class="goods-item" wx:for="{{orderGoods}}" wx:key="id">
+        <view class="goods-item-img">
+          <image src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onGoodsImageError" data-index="{{index}}"></image>
+        </view>
+        <view class="goods-item-info">
+          <view class="goods-item-row">
+            <text class="goods-item-name">{{item.goodsName}}</text>
+            <text class="goods-item-num">x{{item.number}}</text>
+          </view>
+          <view class="goods-item-spec" wx:if="{{item.specificationsStr}}">{{item.specificationsStr}}</view>
+          <view class="goods-item-bottom">
+            <text class="goods-item-price">{{item.price}}元</text>
+            <view class="goods-item-btn" wx:if="{{handleOption.rebuy}}">
+              <navigator url="../../goods_detail/goods_detail?id={{item.goodsId}}">再次购买</navigator>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 费用明细 -->
+  <view class="fee-section">
+    <view class="fee-row">
+      <text class="fee-label">商品合计</text>
+      <text class="fee-value">{{orderInfo.goodsPrice}}元</text>
+    </view>
+    <view class="fee-row">
+      <text class="fee-label">运费</text>
+      <text class="fee-value">{{orderInfo.freightPrice}}元</text>
+    </view>
+    <view class="fee-row">
+      <text class="fee-label">优惠</text>
+      <text class="fee-value fee-discount">-{{orderInfo.couponPrice}}元</text>
+    </view>
+    <view class="fee-row fee-total-row">
+      <text class="fee-label">实付金额</text>
+      <text class="fee-total">{{orderInfo.actualPrice}}元</text>
+    </view>
+  </view>
+
+  <!-- 订单信息 -->
+  <view class="order-meta">
+    <view class="meta-row">
+      <text class="meta-label">下单时间</text>
+      <text class="meta-value">{{orderInfo.addTime}}</text>
+    </view>
+    <view class="meta-row">
+      <text class="meta-label">订单编号</text>
+      <text class="meta-value">{{orderInfo.orderSn}}</text>
+    </view>
+    <view class="meta-row" wx:if="{{orderInfo.message}}">
+      <text class="meta-label">订单留言</text>
+      <text class="meta-value">{{orderInfo.message}}</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-bar">
+    <view class="action-btn action-btn-outline" bindtap="cancelOrder" wx:if="{{handleOption.cancel}}">取消订单</view>
+    <view class="action-btn action-btn-primary" bindtap="payOrder" wx:if="{{handleOption.pay}}">去付款</view>
+    <view class="action-btn action-btn-primary" bindtap="confirmOrder" wx:if="{{handleOption.confirm}}">确认收货</view>
+    <view class="action-btn action-btn-outline" bindtap="deleteOrder" wx:if="{{handleOption.delete}}">删除订单</view>
+    <view class="action-btn action-btn-outline" bindtap="aftersaleOrder" wx:if="{{handleOption.aftersale}}">申请换货</view>
+    <view class="action-btn action-btn-outline" bindtap="contactService">联系客服</view>
+  </view>
+
+  <!-- 物流信息 -->
+  <view class="express-section" bindtap="expandDetail" wx:if="{{ orderInfo.expNo && orderInfo.deliveryType !== 'pickup' }}">
+    <view class="express-header">
+      <view class="express-info">
+        <text class="express-company">{{orderInfo.expName}}</text>
+        <text class="express-no">{{orderInfo.expNo}}</text>
+      </view>
+      <van-icon class="express-arrow" name="arrow" />
+    </view>
+    <view class="express-timeline" wx:if="{{ flag }}">
+      <view class="timeline-item" wx:for="{{expressInfo.Traces}}" wx:key="item" wx:for-item="iitem">
+        <view class="timeline-dot"></view>
+        <view class="timeline-line" wx:if="{{index > 0}}"></view>
+        <view class="timeline-content">
+          <text class="timeline-station">{{iitem.AcceptStation}}</text>
+          <text class="timeline-time">{{iitem.AcceptTime}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

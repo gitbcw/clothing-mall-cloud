@@ -1,0 +1,38 @@
+# ===========================================
+# Clothing Mall 本地开发环境 Dockerfile
+# 支持代理和国内镜像源
+# ===========================================
+
+# 构建阶段参数
+ARG HTTP_PROXY=false
+ARG PROXY_HOST=host.docker.internal
+ARG PROXY_PORT=7897
+
+# 使用 Eclipse Temurin JRE 8（支持 ARM64）
+FROM eclipse-temurin:8-jre
+
+# 设置代理（仅在启用时）
+ARG HTTP_PROXY
+ARG PROXY_HOST
+ARG PROXY_PORT
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl tzdata && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    rm -rf /var/lib/apt/lists/*
+
+# 创建应用目录
+WORKDIR /app
+
+# 复制配置文件和应用
+COPY application.local.yml application.yml
+COPY litemall.jar litemall.jar
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+    CMD curl -f http://localhost:8080/admin/index/index || exit 1
+
+# 启动命令
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar litemall.jar"]

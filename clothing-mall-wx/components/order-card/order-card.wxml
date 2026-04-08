@@ -1,0 +1,74 @@
+<wxs src="../../utils/image.wxs" module="img" />
+<view class="order-card" bindtap="onOrderTap" data-id="{{order.id}}">
+  <!-- 订单头部 -->
+  <view class="order-header">
+    <view class="order-sn">订单号: {{order.orderSn}}</view>
+    <view class="order-status" style="color: {{statusMap[order.orderStatus].color || '#999'}}">
+      {{statusMap[order.orderStatus].text || '未知'}}
+    </view>
+  </view>
+
+  <!-- 商品列表 -->
+  <view class="goods-list">
+    <view
+      class="goods-item"
+      wx:for="{{order.goodsList}}"
+      wx:key="id"
+      bindtap="onGoodsTap"
+      data-id="{{item.goodsId}}"
+    >
+      <image class="goods-image" src="{{img.url(item.picUrl) || defaultGoodsImage}}" mode="aspectFill" binderror="onGoodsImageError" data-goods-index="{{index}}" />
+      <view class="goods-info">
+        <view class="goods-name">{{item.goodsName}}</view>
+        <view class="goods-spec" wx:if="{{item.specifications}}">{{item.specifications}}</view>
+        <view class="goods-price-row">
+          <view class="goods-price">¥{{item.price}}</view>
+          <view class="goods-number">x{{item.number}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 订单金额 -->
+  <view class="order-footer">
+    <view class="order-total">
+      共 {{order.goodsCount || 0}} 件商品
+      <text class="total-text">合计:</text>
+      <text class="total-price">¥{{order.actualPrice}}</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="order-actions" wx:if="{{order.handleOption}}">
+    <view
+      class="action-btn"
+      wx:if="{{order.handleOption.cancel}}"
+      data-action="cancel"
+      catchtap="onActionTap"
+    >取消订单</view>
+    <view
+      class="action-btn"
+      wx:if="{{order.handleOption.pay}}"
+      data-action="pay"
+      catchtap="onActionTap"
+    >立即支付</view>
+    <view
+      class="action-btn"
+      wx:if="{{order.handleOption.confirm}}"
+      data-action="confirm"
+      catchtap="onActionTap"
+    >确认收货</view>
+    <view
+      class="action-btn"
+      wx:if="{{order.handleOption.aftersale}}"
+      data-action="aftersale"
+      catchtap="onActionTap"
+    >申请售后</view>
+    <view
+      class="action-btn"
+      wx:if="{{order.handleOption.delete}}"
+      data-action="delete"
+      catchtap="onActionTap"
+    >删除</view>
+  </view>
+</view>

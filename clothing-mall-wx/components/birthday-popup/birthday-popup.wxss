@@ -1,0 +1,79 @@
+.birthday-popup {
+  background: #fff;
+  padding: 40rpx 32rpx;
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+}
+
+.popup-header {
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.popup-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12rpx;
+}
+
+.popup-subtitle {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.date-display {
+  background: #f8f8f8;
+  border-radius: 16rpx;
+  padding: 24rpx 32rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.date-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.date-value {
+  font-size: 28rpx;
+  color: #FF8096;
+  font-weight: 500;
+}
+
+.picker-wrapper {
+  margin: 0 -32rpx;
+}
+
+.button-group {
+  display: flex;
+  margin-top: 40rpx;
+  gap: 24rpx;
+}
+
+.btn-skip {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  font-size: 30rpx;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 44rpx;
+}
+
+.btn-submit {
+  flex: 1.5;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  font-size: 30rpx;
+  color: #fff;
+  background: #FF8096;
+  border-radius: 44rpx;
+}
+
+.btn-submit.disabled {
+  opacity: 0.6;
+}

@@ -1,0 +1,123 @@
+<wxs src="../../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-back" bindtap="onBack">
+        <view class="nav-back-icon"></view>
+      </view>
+      <view class="nav-title">企微推送</view>
+      <view class="nav-placeholder-right"></view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 内容类型切换 -->
+  <view class="content-type-tabs">
+    <view class="tab-item {{contentType === 'card' ? 'tab-active' : ''}}" bindtap="onSwitchContentType" data-type="card">
+      <text>小程序卡片</text>
+    </view>
+    <view class="tab-item {{contentType === 'text' ? 'tab-active' : ''}}" bindtap="onSwitchContentType" data-type="text">
+      <text>纯文字</text>
+    </view>
+  </view>
+
+  <!-- 卡片模式 -->
+  <view class="form-section" wx:if="{{contentType === 'card'}}">
+    <view class="form-card">
+      <view class="form-label">卡片标题</view>
+      <input class="field-input" value="{{form.title}}" bindinput="onInputTitle" placeholder="请输入卡片标题" maxlength="24" />
+    </view>
+
+    <view class="form-card">
+      <view class="form-label">卡片封面</view>
+      <view class="image-upload" wx:if="{{!form.mediaUrl}}" bindtap="onChooseImage">
+        <view class="upload-placeholder" wx:if="{{!uploading}}">
+          <view class="upload-icon"></view>
+          <text class="upload-text">上传封面图片</text>
+        </view>
+        <view class="uploading-state" wx:if="{{uploading}}">
+          <view class="loading-spinner"></view>
+          <text class="upload-text">上传中...</text>
+        </view>
+      </view>
+      <view class="image-preview" wx:if="{{form.mediaUrl}}">
+        <image class="preview-image" src="{{img.url(form.mediaUrl)}}" mode="aspectFill" />
+        <view class="image-overlay">
+          <view class="image-btn" bindtap="onChooseImage">更换</view>
+          <view class="image-btn image-btn-delete" bindtap="onRemoveImage">删除</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-card">
+      <view class="form-label">跳转页面</view>
+      <picker class="page-picker" range="{{pages}}" range-key="name" bindchange="onPageChange">
+        <view class="picker-display">
+          <text class="picker-text">{{form.page || '请选择跳转页面'}}</text>
+          <view class="picker-arrow"></view>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- 文字模式 -->
+  <view class="form-section" wx:if="{{contentType === 'text'}}">
+    <view class="form-card">
+      <view class="form-label">消息内容</view>
+      <textarea class="field-textarea" value="{{form.content}}" bindinput="onInputContent" placeholder="请输入要推送的文字内容" maxlength="500" auto-height />
+      <view class="char-count">{{form.content.length || 0}}/500</view>
+    </view>
+  </view>
+
+  <!-- 推送目标 -->
+  <view class="form-section">
+    <view class="form-card">
+      <view class="form-label">推送分组</view>
+      <view class="group-list">
+        <view class="group-item" wx:for="{{groups}}" wx:key="id" bindtap="onToggleGroup" data-id="{{item.id}}">
+          <view class="group-checkbox {{form.targetGroupIds.indexOf(item.id) > -1 ? 'checkbox-checked' : ''}}">
+            <view class="checkbox-icon" wx:if="{{form.targetGroupIds.indexOf(item.id) > -1}}"></view>
+          </view>
+          <text class="group-name">{{item.name}}</text>
+        </view>
+        <view class="empty-groups" wx:if="{{groups.length === 0}}">
+          <text class="empty-text">暂无分组数据</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 定时发送 -->
+  <view class="form-section">
+    <view class="form-card">
+      <view class="field-group field-row">
+        <view class="field-info">
+          <text class="field-label">定时发送</text>
+          <text class="field-hint">{{scheduledEnabled ? '到时间后自动发送' : '立即发送'}}</text>
+        </view>
+        <view class="toggle-switch {{scheduledEnabled ? 'toggle-active' : ''}}" bindtap="onToggleScheduled">
+          <view class="toggle-knob"></view>
+        </view>
+      </view>
+
+      <view class="field-divider" wx:if="{{scheduledEnabled}}"></view>
+
+      <view class="datetime-row" wx:if="{{scheduledEnabled}}">
+        <picker mode="date" bindchange="onDateChange">
+          <view class="picker-display">
+            <text class="picker-text">{{form.scheduledAt || '选择日期时间'}}</text>
+            <view class="picker-arrow"></view>
+          </view>
+        </picker>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部发送按钮 -->
+  <view class="send-bar">
+    <view class="send-btn {{sending ? 'send-btn-disabled' : ''}}" bindtap="{{sending ? '' : 'onSend'}}">
+      <text>{{sending ? '发送中...' : '发送'}}</text>
+    </view>
+  </view>
+</view>

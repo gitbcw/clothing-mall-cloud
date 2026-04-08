@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "sku-picker": "/components/sku-picker/sku-picker"
+  },
+  "navigationStyle": "custom"
+}

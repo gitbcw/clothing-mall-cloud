@@ -1,0 +1,153 @@
+.container {
+  height: 100vh;
+  box-sizing: border-box;
+}
+/* 重置微信原生 button 默认样式 */
+button {
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+}
+button::after {
+  display: none;
+}
+
+.login-box {
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+  padding: 0 40rpx;
+  margin-top: 150rpx;
+  background: #f4f4f4;
+  box-sizing: border-box;
+}
+
+/* 手动输入表单样式 */
+.form-group {
+  width: 100%;
+  margin-bottom: 60rpx;
+}
+
+.form-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100rpx;
+  background: #fff;
+  border-radius: 50rpx;
+  padding: 0 40rpx;
+  margin-bottom: 40rpx;
+}
+
+.input-icon {
+  font-size: 40rpx;
+  color: #666;
+  margin-right: 20rpx;
+}
+
+.mobile-input {
+  flex: 1;
+  height: 100%;
+  font-size: 30rpx;
+  color: #333;
+}
+
+.clear-icon {
+  padding: 20rpx;
+  font-size: 32rpx;
+  color: #999;
+}
+
+.manual-bind-btn {
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  font-size: 30rpx;
+  color: #fff;
+  border-radius: 50rpx;
+  background: #ff8096;
+  text-align: center;
+  letter-spacing: 3rpx;
+}
+
+/* 分割线样式 */
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 60rpx 0;
+}
+
+.divider .line {
+  width: 150rpx;
+  height: 1px;
+  background: #ddd;
+}
+
+.divider .text {
+  font-size: 26rpx;
+  color: #999;
+  margin: 0 30rpx;
+}
+
+.phone-login-btn {
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  font-size: 30rpx;
+  color: #ff8096;
+  border: 1px solid #ff8096;
+  border-radius: 50rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  letter-spacing: 3rpx;
+  background: transparent;
+}
+
+/* 测试登录模式样式 */
+.test-login-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 60rpx;
+}
+
+.test-login-tip {
+  font-size: 28rpx;
+  color: #999;
+  margin-bottom: 60rpx;
+  text-align: center;
+}
+
+.test-login-btn {
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  font-size: 30rpx;
+  color: #fff;
+  border-radius: 50rpx;
+  background: #999;
+  text-align: center;
+  letter-spacing: 3rpx;
+}
+
+.test-login-hint {
+  font-size: 22rpx;
+  color: #bbb;
+  margin-top: 20rpx;
+}
+
+/* 加载中样式 */
+.loading-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 100rpx;
+}
+
+.loading-text {
+  font-size: 30rpx;
+  color: #999;
+}

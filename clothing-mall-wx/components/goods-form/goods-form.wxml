@@ -1,0 +1,163 @@
+<wxs src="../../utils/image.wxs" module="img" />
+<view class="goods-form">
+  <!-- 商品图片 -->
+  <view class="section">
+    <view class="section-title">
+      <text>商品图片</text>
+    </view>
+    <view class="image-upload">
+      <view class="main-image" bindtap="chooseMainImage">
+        <image wx:if="{{_form.picUrl}}" src="{{img.url(_form.picUrl)}}" mode="aspectFill" class="preview-image"></image>
+        <view wx:else class="upload-placeholder">
+          <text class="upload-icon">+</text>
+          <text class="upload-text">主图</text>
+        </view>
+        <view wx:if="{{imageRecognizing}}" class="image-recognizing-overlay">
+          <text class="recognizing-text">AI 识别中...</text>
+        </view>
+      </view>
+    </view>
+    <view class="gallery-images">
+      <view class="gallery-item" wx:for="{{_galleryList}}" wx:key="index">
+        <image src="{{img.url(item)}}" mode="aspectFill" class="gallery-image"></image>
+        <view class="gallery-delete" catchtap="removeGallery" data-index="{{index}}">×</view>
+      </view>
+      <view class="gallery-add" bindtap="chooseGalleryImage" wx:if="{{_galleryList.length < 9}}">
+        <text class="upload-icon">+</text>
+        <text class="upload-text">轮播图</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="section">
+    <view class="section-title">
+      <text>基本信息</text>
+      <view class="tag-recognize-btn" bindtap="recognizeTag">
+        <text wx:if="{{!tagRecognizing}}">吊牌识别</text>
+        <text wx:else>识别中...</text>
+      </view>
+    </view>
+    <view class="form-item">
+      <text class="form-label">商品名称 <text class="required">*</text></text>
+      <view class="input-wrapper">
+        <input class="form-input" placeholder="请输入商品名称" placeholder-style="font-size:28rpx;color:#999;" value="{{_form.name}}" bindinput="onNameInput" />
+      </view>
+    </view>
+    <view class="form-row">
+      <view class="form-item half">
+        <text class="form-label">一口价 <text class="required">*</text></text>
+        <view class="input-wrapper">
+          <input class="form-input" type="digit" placeholder="一口价" placeholder-style="font-size:28rpx;color:#999;" value="{{_form.retailPrice}}" bindinput="onRetailPriceInput" />
+        </view>
+      </view>
+      <view class="form-item half">
+        <text class="form-label">特价</text>
+        <view class="input-wrapper">
+          <input class="form-input" type="digit" placeholder="特价（可选）" placeholder-style="font-size:28rpx;color:#999;" value="{{_form.specialPrice}}" bindinput="onSpecialPriceInput" />
+        </view>
+      </view>
+    </view>
+    <view class="form-item" bindtap="onShowCategoryPicker">
+      <text class="form-label">商品分类</text>
+      <view class="form-picker">
+        <text class="picker-value {{_form.categoryName ? '' : 'placeholder'}}">{{_form.categoryName || '请选择分类'}}</text>
+        <text class="picker-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 场景标签 -->
+  <view class="section">
+    <view class="section-title">场景标签</view>
+    <view class="scene-chips">
+      <view class="scene-chip {{_sceneMap[item] ? 'active' : ''}}"
+            wx:for="{{presetScenes}}" wx:key="*this" bindtap="onSceneToggle" data-scene="{{item}}">
+        {{item}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 商品简介 -->
+  <view class="section">
+    <view class="section-title">商品简介</view>
+    <view class="form-item" style="margin-bottom: 0;">
+      <textarea class="form-textarea" placeholder="请输入商品简介（一句话描述，最多200字）" value="{{_form.brief}}" bindinput="onBriefInput" maxlength="200"></textarea>
+    </view>
+  </view>
+
+  <!-- 商品详细介绍 -->
+  <view class="section">
+    <view class="section-title">商品详细介绍</view>
+    <view class="editor-wrap">
+      <view class="editor-toolbar">
+        <view class="toolbar-btn {{formats.bold ? 'active' : ''}}" bindtap="formatBold">B</view>
+        <view class="toolbar-btn italic {{formats.italic ? 'active' : ''}}" bindtap="formatItalic">I</view>
+        <view class="toolbar-btn" bindtap="formatHeader" data-level="2">标题</view>
+        <view class="toolbar-btn" bindtap="insertImage">插入图片</view>
+      </view>
+      <editor
+        id="editor"
+        class="editor-content"
+        placeholder="请输入商品详细介绍"
+        bindready="onEditorReady"
+        bindstatuschange="onEditorStatusChange"
+      />
+    </view>
+  </view>
+
+  <!-- 关键词 -->
+  <view class="section" wx:if="{{features.keywords}}">
+    <view class="section-title">关键词</view>
+    <view class="form-item" style="margin-bottom: 0;">
+      <view class="input-wrapper">
+        <input class="form-input" placeholder="多个关键词用逗号分隔，便于搜索" placeholder-style="font-size:28rpx;color:#999;" value="{{_form.keywords}}" bindinput="onKeywordsInput" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 商品参数 -->
+  <view class="section">
+    <view class="section-title">
+      <text>商品参数</text>
+      <view class="add-param-btn" bindtap="addParam">+ 添加参数</view>
+    </view>
+    <view class="params-list" wx:if="{{_params.length > 0}}">
+      <view class="param-row" wx:for="{{_params}}" wx:key="index">
+        <input class="param-input param-key" placeholder="参数名（如面料）" value="{{item.key}}" bindinput="onParamKeyInput" data-index="{{index}}" />
+        <input class="param-input param-value" placeholder="参数值（如棉麻混纺）" value="{{item.value}}" bindinput="onParamValueInput" data-index="{{index}}" />
+        <view class="param-delete" catchtap="removeParam" data-index="{{index}}">×</view>
+      </view>
+    </view>
+    <view class="params-empty" wx:else>
+      <text>暂无参数，点击上方按钮添加</text>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="action-bar {{showTabBar ? 'action-bar--with-tabbar' : 'action-bar--bottom'}}">
+    <!-- create 模式 -->
+    <block wx:if="{{mode === 'create'}}">
+      <view class="action-btn btn-preview" bindtap="onPreview">预览</view>
+      <view class="action-btn btn-save" bindtap="onSaveDraft">暂存草稿</view>
+      <view class="action-btn btn-publish" bindtap="onPublish">立即上架</view>
+    </block>
+    <!-- edit 模式 -->
+    <block wx:else>
+      <view class="action-btn btn-preview" bindtap="onPreview">预览</view>
+      <view class="action-btn btn-save" bindtap="onSaveDraft">暂存草稿</view>
+      <view class="action-btn btn-publish" bindtap="onPublish" wx:if="{{goodsStatus !== 'published'}}">保存并上架</view>
+      <view class="action-btn btn-unpublish" bindtap="onUnpublish" wx:if="{{goodsStatus === 'published' && isOnSale}}">下架</view>
+    </block>
+  </view>
+
+  <!-- 分类选择器 -->
+  <van-popup show="{{showCategoryPicker}}" position="bottom" round bind:close="onCategoryClose" custom-style="z-index: 2000">
+    <view class="picker-header">
+      <text class="picker-cancel" bindtap="onCategoryClose">取消</text>
+      <text class="picker-title">选择分类</text>
+      <text class="picker-confirm" bindtap="onCategoryConfirm">确定</text>
+    </view>
+    <van-picker columns="{{categoryList}}" value-key="name" bind:change="onCategoryChange" />
+  </van-popup>
+</view>

@@ -1,0 +1,171 @@
+spring:
+  profiles:
+    active: none
+  message:
+    encoding: UTF-8
+  datasource:
+    druid:
+      url: jdbc:mysql://mysql:3306/clothing_mall?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&verifyServerCertificate=false&useSSL=false&connectionCollation=utf8mb4_unicode_ci
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: clothing_mall
+      password: clothing123456
+      initial-size: 10
+      max-active: 50
+      min-idle: 10
+      max-wait: 60000
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      validation-query: SELECT 1 FROM DUAL
+      test-on-borrow: false
+      test-on-return: false
+      test-while-idle: true
+      time-between-eviction-runs-millis: 60000
+      filters: stat,wall
+
+server:
+  port: 8080
+
+logging:
+  config: classpath:logback-spring.xml
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+litemall:
+  # 开发者应该设置成自己的wx相关信息
+  wx:
+    app-id: wx1809b86df93c5107
+    app-secret: beb22cae55435ddee2f058b4dc920345
+    mch-id: 111111
+    mch-key: xxxxxx
+    notify-url: http://47.107.151.70:8088/wx/order/pay-notify
+    # 商户证书文件路径
+    # 请参考“商户证书”一节 https://pay.weixin.qq.com/wiki/doc/api/wxa/wxa_api.php?chapter=4_3
+    key-path: xxxxx
+    # 支付签名类型，可选 MD5 或 HMAC-SHA256（推荐）
+    sign-type: HMAC-SHA256
+
+  #通知相关配置
+  notify:
+    mail:
+      # 邮件通知配置,邮箱一般用于接收业务通知例如收到新的订单，sendto 定义邮件接收者，通常为商城运营人员
+      enable: false
+      host: smtp.exmail.qq.com
+      username: ex@ex.com.cn
+      password: XXXXXXXXXXXXX
+      sendfrom: ex@ex.com.cn
+      sendto: ex@qq.com
+      port: 465
+
+    # 短消息模版通知配置
+    # 短信息用于通知客户，例如发货短信通知，注意配置格式；template-name，template-templateId 请参考 NotifyType 枚举值
+    sms:
+      enable: false
+      # 如果是腾讯云短信，则设置active的值tencent
+      # 如果是阿里云短信，则设置active的值aliyun
+      active: tencent
+      sign: litemall
+      template:
+        - name: paySucceed
+          templateId: 156349
+        - name: captcha
+          templateId: 156433
+        - name: ship
+          templateId: 158002
+        - name: refund
+          templateId: 159447
+        # 售后相关模板（复用现有模板）
+        - name: aftersaleShip
+          templateId: 158002  # 复用发货通知模板，参数：快递公司、快递单号
+        - name: aftersaleRecept
+          templateId: 158002  # 暂复用发货模板，实际需申请"审核通过"专用模板
+      tencent:
+        appid: 111111111
+        appkey: xxxxxxxxxxxxxx
+      aliyun:
+        regionId: xxx
+        accessKeyId: xxx
+        accessKeySecret: xxx
+
+    # 微信小程序订阅消息配置
+    wx:
+      enable: false
+      template:
+        - name: ship
+          templateId: "待申请"
+        - name: autoConfirm
+          templateId: "待申请"
+
+  # 快递物流查询配置（阿里云市场API）
+  express:
+    enable: ${EXPRESS_ENABLE:false}
+    appcode: ${EXPRESS_APPCODE:}
+    vendors:
+      - code: "ZTO"
+        name: "中通快递"
+      - code: "YTO"
+        name: "圆通速递"
+      - code: "YD"
+        name: "韵达速递"
+      - code: "YZPY"
+        name: "邮政快递包裹"
+      - code: "EMS"
+        name: "EMS"
+      - code: "DBL"
+        name: "德邦快递"
+      - code: "FAST"
+        name: "快捷快递"
+      - code: "ZJS"
+        name: "宅急送"
+      - code: "TNT"
+        name: "TNT快递"
+      - code: "UPS"
+        name: "UPS"
+      - code: "DHL"
+        name: "DHL"
+      - code: "FEDEX"
+        name: "FEDEX联邦(国内件)"
+      - code: "FEDEX_GJ"
+        name: "FEDEX联邦(国际件)"
+
+  # 对象存储配置
+  storage:
+    # 当前工作的对象存储模式，分别是local、aliyun、tencent
+    active: ${LITEMALL_STORAGE_ACTIVE:local}
+    # 本地对象存储配置信息
+    local:
+      storagePath: storage
+      address: ${LITEMALL_STORAGE_LOCAL_ADDRESS:http://47.107.151.70:8088/wx/storage/fetch/}
+    # 阿里云对象存储配置信息
+    aliyun:
+      endpoint: ${ALIYUN_OSS_ENDPOINT:oss-cn-shenzhen.aliyuncs.com}
+      accessKeyId: ${ALIYUN_OSS_ACCESS_KEY_ID:}
+      accessKeySecret: ${ALIYUN_OSS_ACCESS_KEY_SECRET:}
+      bucketName: ${ALIYUN_OSS_BUCKET_NAME:}
+    # 腾讯对象存储配置信息
+    # 请参考 https://cloud.tencent.com/document/product/436/6249
+    tencent:
+      secretId: 111111
+      secretKey: xxxxxx
+      region: xxxxxx
+      bucketName: xxxxxx
+    # 七牛云对象存储配置信息
+    qiniu:
+      endpoint: http://pd5cb6ulu.bkt.clouddn.com
+      accessKey: 111111
+      secretKey: xxxxxx
+      bucketName: litemall
+  # 吊牌识别配置（火山引擎 doubao）
+  ai:
+    tag:
+      enabled: ${AI_TAG_ENABLED:true}
+      api-key: ${DOUBAO_API_KEY:9835e477-52e3-4cbe-ab64-6abe0a6f7ba1}
+      endpoint: https://ark.cn-beijing.volces.com/api/v3/chat/completions
+      model: ep-20260406233437-xddjl
+      timeout: 30000
+
+swagger:
+  production: true

@@ -1,0 +1,92 @@
+<wxs src="../../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-back" bindtap="onBack">
+        <view class="nav-back-icon"></view>
+      </view>
+      <view class="nav-title">穿搭推荐</view>
+      <view class="nav-action" bindtap="onAddOutfit">
+        <view class="nav-add-icon"></view>
+      </view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 穿搭列表 -->
+  <view class="outfit-list" wx:if="{{!loading}}">
+    <view class="outfit-card" wx:for="{{outfitList}}" wx:key="id" bindtap="onOutfitTap" data-id="{{item.id}}">
+      <!-- 封面 -->
+      <view class="outfit-cover" wx:if="{{item.coverPic}}">
+        <image class="cover-img" src="{{img.url(item.coverPic)}}" mode="aspectFill" />
+        <view class="cover-goods-count" wx:if="{{item.goodsList.length > 0}}">
+          {{item.goodsList.length}}件单品
+        </view>
+      </view>
+      <view class="outfit-cover outfit-cover--empty" wx:else>
+        <view class="cover-placeholder"></view>
+      </view>
+
+      <!-- 信息 -->
+      <view class="outfit-info">
+        <view class="outfit-title">{{item.title}}</view>
+        <view class="outfit-desc" wx:if="{{item.description}}">{{item.description}}</view>
+
+        <!-- 关联商品缩略图 -->
+        <view class="outfit-goods-row" wx:if="{{item.goodsList.length > 0}}">
+          <image class="goods-thumb" wx:for="{{item.goodsList}}" wx:for-item="goods" wx:key="id"
+                 wx:if="{{index < 4}}" src="{{img.url(goods.picUrl)}}" mode="aspectFill" />
+          <view class="goods-thumb goods-thumb-more" wx:if="{{item.goodsList.length > 4}}">
+            +{{item.goodsList.length - 4}}
+          </view>
+        </view>
+
+        <view class="outfit-meta">
+          <text class="outfit-sort">排序 {{item.sortOrder || 0}}</text>
+          <view class="outfit-status {{item.status === 1 ? 'status-on' : 'status-off'}}">
+            {{item.status === 1 ? '已启用' : '已禁用'}}
+          </view>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="outfit-actions">
+        <view class="action-btn action-toggle" catchtap="onToggleStatus" data-id="{{item.id}}" data-status="{{item.status}}">
+          <view class="toggle-icon {{item.status === 1 ? 'toggle-on' : 'toggle-off'}}"></view>
+        </view>
+        <view class="action-btn action-delete" catchtap="onDeleteOutfit" data-id="{{item.id}}">
+          <view class="delete-icon"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{outfitList.length === 0}}">
+      <view class="empty-icon"></view>
+      <text class="empty-text">还没有穿搭推荐</text>
+      <text class="empty-hint">创建第一个穿搭，吸引更多顾客</text>
+      <view class="empty-add-btn" bindtap="onAddOutfit">
+        <view class="empty-add-icon"></view>
+        <text>创建穿搭</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-dots">
+      <view class="dot"></view>
+      <view class="dot"></view>
+      <view class="dot"></view>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="bottom-bar" wx:if="{{!loading && outfitList.length > 0}}">
+    <view class="add-btn" bindtap="onAddOutfit">
+      <view class="add-btn-icon"></view>
+      <text>新增穿搭</text>
+    </view>
+  </view>
+</view>

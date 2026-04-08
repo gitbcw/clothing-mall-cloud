@@ -1,0 +1,193 @@
+<wxs src="../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-left"></view>
+    <view class="nav-title">川着·Transmute</view>
+    <view class="nav-right"></view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="page-loading" wx:if="{{loading}}" style="padding-top: {{statusBarHeight + navBarHeight}}px;">
+    <view class="loading-spinner-lg"></view>
+    <view class="loading-text-lg">正在为您加载...</view>
+  </view>
+
+  <scroll-view class="page-scroll" scroll-y="true" style="padding-top: {{statusBarHeight + navBarHeight}}px;" wx:if="{{!loading}}">
+
+    <swiper class="banner-swiper" indicator-dots="true" autoplay="true" circular="true" indicator-color="rgba(255,255,255,0.5)" indicator-active-color="#ffffff">
+      <swiper-item wx:for="{{banners}}" wx:key="id" bindtap="goToScene" data-scene-id="{{item.id}}">
+        <view class="banner-slide">
+          <image src="{{img.url(item.posterUrl)}}" mode="aspectFill" class="banner-image" binderror="onHomeImageError" data-source="banner" data-index="{{index}}" />
+          <!-- 艺术水印 -->
+          <view class="banner-watermark">{{item.name}}</view>
+          <!-- 底部场景信息 -->
+          <view class="banner-text-overlay">
+            <view class="banner-info-block">
+              <text class="banner-scene-name">{{item.name}}</text>
+              <view class="banner-view-more">
+                <text class="banner-view-more-text">查看更多</text>
+                <view class="banner-view-more-line"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+
+    <!-- 活动位 -->
+    <view class="activity-section" wx:if="{{activityGoodsTop.length > 0 || activityGoodsBottom.length > 0}}">
+      <view class="section-header-weekly">
+        <text class="section-title-cn">{{activityTitle}}</text>
+        <text class="section-title-en">{{activityTitleEn}}</text>
+      </view>
+
+      <scroll-view class="activity-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="activity-item" wx:for="{{activityGoodsTop}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+          <image src="{{img.url(item.picUrl)}}" mode="aspectFill" class="activity-img" binderror="onHomeImageError" data-source="activityGoodsTop" data-index="{{index}}" />
+          <view class="activity-info">
+            <text class="activity-name">{{item.name}}</text>
+            <view class="activity-price-wrap" wx:if="{{item.specialPrice}}">
+              <text class="activity-price price-special">
+                <text class="rmb">¥</text>
+                <text class="num">{{item.specialPrice}}</text>
+              </text>
+              <text class="activity-original-price">
+                <text class="rmb">¥</text>
+                <text class="num">{{item.specialPrice}}</text>
+              </text>
+            </view>
+            <text class="activity-price" wx:else>
+              <text class="rmb">¥</text>
+              <text class="num">{{item.retailPrice}}</text>
+            </text>
+          </view>
+        </view>
+      </scroll-view>
+
+      <scroll-view class="activity-scroll-sub" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="activity-item-sub" wx:for="{{activityGoodsBottom}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+          <image src="{{img.url(item.picUrl)}}" mode="aspectFill" class="activity-img-sub" binderror="onHomeImageError" data-source="activityGoodsBottom" data-index="{{index}}" />
+          <view class="activity-info">
+            <text class="activity-name">{{item.name}}</text>
+            <view class="activity-price-wrap" wx:if="{{item.specialPrice}}">
+              <text class="activity-price price-special">
+                <text class="rmb">¥</text>
+                <text class="num">{{item.specialPrice}}</text>
+              </text>
+              <text class="activity-original-price">
+                <text class="rmb">¥</text>
+                <text class="num">{{item.specialPrice}}</text>
+              </text>
+            </view>
+            <text class="activity-price" wx:else>
+              <text class="rmb">¥</text>
+              <text class="num">{{item.retailPrice}}</text>
+            </text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    
+
+    <!-- 热销推荐（无限循环滚动） -->
+    <view class="hot-sale-section">
+      <view class="section-header">
+        <view class="title-wrap">
+          <text class="title">热销推荐</text>
+          <text class="subtitle">HOT</text>
+        </view>
+      </view>
+      <view class="hot-scroll-wrapper" bindtouchstart="pauseHotScroll" bindtouchend="resumeHotScroll">
+        <view class="hot-scroll-inner" style="animation-duration: {{hotScrollDuration}}s; animation-play-state: {{hotScrollPaused ? 'paused' : 'running'}}">
+          <view class="hot-item" wx:for="{{hotSalesScroll}}" wx:key="{{item.id}}_{{index}}" bindtap="goToDetail" data-id="{{item.id}}">
+            <image class="hot-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onHomeImageError" data-source="hotSales" data-index="{{index % hotSales.length}}"></image>
+            <view class="hot-info">
+              <view class="hot-title">{{item.name}}</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color">￥</text>
+                <text class="price-num theme-color">{{item.retailPrice}}</text>
+                <text class="original-price" wx:if="{{item.counterPrice > item.retailPrice}}">￥{{item.counterPrice}}</text>
+              </view>
+              <view class="buy-btn" catchtap="buyNow" data-id="{{item.id}}">立即抢购</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 搭配推荐 -->
+    <view class="outfit-recommend-section" wx:if="{{matchRecommends.length > 0}}">
+      <view class="section-header-weekly" style="text-align: center; margin-bottom: 32rpx;">
+        <view class="section-title-cn" style="font-style: normal; font-size: 36rpx; margin-bottom: 8rpx; display: block; color: #333;">搭配推荐</view>
+        <view class="section-title-en" style="font-size: 24rpx; color: #FF8096; margin: 0; letter-spacing: 2rpx; display: block; font-weight: normal;">SELECTION LIST</view>
+      </view>
+      <scroll-view class="outfit-list-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="outfit-item-wrap" wx:for="{{matchRecommends}}" wx:key="id">
+          <!-- 背景海报图 -->
+          <image src="{{img.url(item.coverPic)}}" mode="aspectFill" class="outfit-bg-img" binderror="onHomeImageError" data-source="matchRecommends" data-index="{{index}}" />
+          <!-- 品牌水印（磨砂卡片） -->
+          <view class="outfit-brand-watermark outfit-brand--{{item.brandColor || 'white'}} outfit-brand-pos--{{item.brandPosition || 'top-right'}}">
+            <text class="outfit-brand-main">川着</text>
+            <text class="outfit-brand-sub">川行此着</text>
+          </view>
+          <!-- 商品浮窗 -->
+          <view class="outfit-float-panel float-pos--{{item.floatPosition || 'left'}}" wx:if="{{item.goods && item.goods.length > 0}}" catchtap="preventTap">
+            <view class="outfit-float-title">Get同款</view>
+            <scroll-view class="outfit-goods-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+              <view class="outfit-good-item" wx:for="{{item.goods}}" wx:key="id" wx:for-item="good" catchtap="goToDetail" data-id="{{good.id}}">
+                <image src="{{img.url(good.picUrl)}}" mode="aspectFill" class="outfit-good-img" />
+                <view class="outfit-good-price">¥{{good.retailPrice}}</view>
+              </view>
+            </scroll-view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 饰饰如意 -->
+    <view class="grid-section">
+      <view class="section-title-center">
+        <view class="line"></view>
+        <text class="title-text">饰饰如意</text>
+        <view class="line"></view>
+      </view>
+      <view class="grid-list">
+        <view class="grid-item" wx:for="{{accessories}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+          <image class="grid-img other" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onHomeImageError" data-source="accessories" data-index="{{index}}"></image>
+          <view class="grid-info">
+            <view class="grid-title">{{item.name}}</view>
+            <view class="grid-bottom">
+              <view class="grid-price-wrap">
+                <text class="price-symbol theme-color">￥</text>
+                <text class="price-num theme-color">{{item.retailPrice}}</text>
+              </view>
+              <view class="cart-icon-small" catchtap="addToCart" data-id="{{item.id}}"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="btn-more-center" bindtap="switchTab" data-url="/pages/category/category">查看更多</view>
+    </view>
+
+    <!-- 底部占位 -->
+    <view class="bottom-placeholder"></view>
+  </scroll-view>
+
+  <!-- 悬浮购物车 -->
+  <floating-cart />
+
+  <!-- 尺码选择器 -->
+  <sku-picker
+    visible="{{showSkuPicker}}"
+    goods-id="{{skuGoods.id}}"
+    goods-image="{{skuGoods.picUrl}}"
+    goods-price="{{skuGoods.retailPrice}}"
+    enable-size="{{skuGoods.enableSize}}"
+    bottom-offset="{{100}}"
+    bind:close="closeSkuPicker"
+    bind:addcart="skuAddToCart"
+    bind:buynow="skuBuyNow"
+  />
+</view>

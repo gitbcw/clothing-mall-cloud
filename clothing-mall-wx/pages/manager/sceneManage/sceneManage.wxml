@@ -1,0 +1,75 @@
+<wxs src="../../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-back" bindtap="onBack">
+        <view class="nav-back-icon"></view>
+      </view>
+      <view class="nav-title">场景管理</view>
+      <view class="nav-action" bindtap="onAddScene">
+        <view class="nav-add-icon"></view>
+      </view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 场景列表 -->
+  <view class="scene-list" wx:if="{{!loading}}">
+    <view class="scene-card" wx:for="{{sceneList}}" wx:key="id" bindtap="onSceneTap" data-id="{{item.id}}">
+      <!-- 海报 -->
+      <view class="scene-poster" wx:if="{{item.posterUrl}}">
+        <image class="poster-img" src="{{img.url(item.posterUrl)}}" mode="aspectFill" />
+      </view>
+      <view class="scene-poster scene-poster--empty" wx:else>
+        <view class="poster-placeholder"></view>
+      </view>
+
+      <!-- 信息 -->
+      <view class="scene-info">
+        <view class="scene-name">{{item.name}}</view>
+        <view class="scene-desc" wx:if="{{item.description}}">{{item.description}}</view>
+        <view class="scene-meta">
+          <text class="scene-sort">排序 {{item.sortOrder || 0}}</text>
+          <view class="scene-status {{item.enabled ? 'status-on' : 'status-off'}}">
+            {{item.enabled ? '已启用' : '已禁用'}}
+          </view>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="scene-actions">
+        <view class="action-btn action-toggle" catchtap="onToggleEnable" data-id="{{item.id}}" data-enabled="{{item.enabled}}">
+          <view class="toggle-icon {{item.enabled ? 'toggle-on' : 'toggle-off'}}"></view>
+        </view>
+        <view class="action-btn action-delete" catchtap="onDeleteScene" data-id="{{item.id}}">
+          <view class="delete-icon"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{sceneList.length === 0}}">
+      <view class="empty-icon"></view>
+      <text class="empty-text">还没有场景</text>
+      <text class="empty-hint">点击右上角 + 创建第一个场景</text>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-dots">
+      <view class="dot"></view>
+      <view class="dot"></view>
+      <view class="dot"></view>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="bottom-bar" wx:if="{{!loading && sceneList.length > 0}}">
+    <view class="add-btn" bindtap="onAddScene">
+      <view class="add-btn-icon"></view>
+      <text>新增场景</text>
+    </view>
+  </view>
+</view>

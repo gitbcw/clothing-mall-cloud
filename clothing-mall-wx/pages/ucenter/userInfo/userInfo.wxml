@@ -1,0 +1,55 @@
+<wxs src="../../../utils/image.wxs" module="img" />
+<view class="container">
+  <custom-nav title="个人信息" />
+  <!-- 头像区域 -->
+  <view class="profile-header">
+    <button class="avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+      <view class="avatar-wrap">
+        <image class="avatar" src="{{img.url(userInfo.avatarUrl) || '/static/images/user.png'}}" mode="aspectFill" />
+      </view>
+      <view class="avatar-edit-icon">
+        <view class="camera-body"></view>
+      </view>
+    </button>
+    <text class="avatar-hint">点击更换头像</text>
+  </view>
+  <!-- 表单卡片 -->
+  <view class="form-card">
+    <!-- 昵称 -->
+    <view class="form-row">
+      <text class="row-label">昵称</text>
+      <input type="nickname" class="row-input" value="{{userInfo.nickName}}" placeholder="请输入昵称" placeholder-class="row-placeholder" bindinput="bindNicknameInput" />
+      <view class="row-arrow"></view>
+    </view>
+    <view class="row-divider"></view>
+    <!-- 手机号：未绑定时可点击绑定 -->
+    <button wx:if="{{!userInfo.mobile}}" class="phone-bind-btn" open-type="getPhoneNumber" bindgetphonenumber="onGetPhoneNumber">
+      <view class="form-row">
+        <text class="row-label">手机号</text>
+        <text class="row-value muted">未绑定</text>
+        <view class="row-arrow"></view>
+      </view>
+    </button>
+    <view wx:else class="form-row">
+      <text class="row-label">手机号</text>
+      <text class="row-value">{{userInfo.mobile}}</text>
+    </view>
+    <view class="row-divider"></view>
+    <!-- 生日 -->
+    <picker mode="date" value="{{userInfo.birthday || '2000-01-01'}}" start="1900-01-01" end="{{today}}" bindchange="bindBirthdayChange">
+      <view class="form-row">
+        <text class="row-label">生日</text>
+        <text class="row-value {{!userInfo.birthday ? 'muted' : ''}}">{{ userInfo.birthday || '请选择生日'}}</text>
+        <view class="row-arrow"></view>
+      </view>
+    </picker>
+  </view>
+  <!-- 生日提示 -->
+  <view class="birthday-tip" wx:if="{{!userInfo.birthday}}">
+    <text>完善生日信息可享生日专属优惠</text>
+  </view>
+  <!-- 保存按钮 -->
+  <view class="save-area">
+    <button class="save-btn" bindtap="saveProfile" hover-class="save-btn-active">保存</button>
+  </view>
+</view>

@@ -1,0 +1,18 @@
+# 测试框架
+pytest>=7.0.0
+pytest-html>=3.1.0
+pytest-env>=0.8.0
+pytest-timeout>=2.1.0
+
+# HTTP 请求
+requests>=2.28.0
+
+# E2E 测试
+playwright>=1.30.0
+
+# 工具
+python-dotenv>=1.0.0
+faker>=18.0.0
+
+# 数据处理
+pyyaml>=6.0

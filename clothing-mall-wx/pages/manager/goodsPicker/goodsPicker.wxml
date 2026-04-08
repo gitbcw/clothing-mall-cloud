@@ -1,0 +1,72 @@
+<wxs src="../../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-back" bindtap="onBack">
+        <view class="nav-back-icon"></view>
+      </view>
+      <view class="nav-title">选择商品</view>
+      <view class="nav-placeholder-right"></view>
+    </view>
+  </view>
+  <view class="nav-spacer" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <view class="search-icon"></view>
+      <input class="search-input" value="{{keyword}}" bindinput="onSearchInput" bindconfirm="onSearch"
+             placeholder="搜索商品名称" confirm-type="search" />
+      <view class="search-clear" wx:if="{{keyword}}" bindtap="onClearSearch">
+        <view class="clear-x"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 穿搭预览面板（仅穿搭模式显示） -->
+  <outfit-preview-panel wx:if="{{maxSelect > 0}}"
+    goods="{{selectedGoods}}" max="{{maxSelect}}"
+    bind:remove="onPanelRemove" />
+
+  <!-- 商品列表 -->
+  <scroll-view class="goods-scroll" scroll-y="true" bindscrolltolower="onScrollBottom"
+               style="{{scrollHeight ? 'height:' + scrollHeight + 'px' : ''}}">
+    <view class="goods-grid">
+      <view class="goods-card {{selectedMap[item.id] ? 'card-selected' : 'card-unselected'}}"
+            wx:for="{{goodsList}}" wx:key="id"
+            bindtap="onToggleGoods" data-id="{{item.id}}">
+        <view class="card-img-area">
+          <image class="card-img" src="{{img.url(item.picUrl)}}" mode="aspectFill" />
+          <!-- 选中指示器 -->
+          <view class="indicator {{selectedMap[item.id] ? 'indicator-on' : 'indicator-off'}}">
+            <view class="indicator-check" wx:if="{{selectedMap[item.id]}}"></view>
+          </view>
+          <!-- 选中遮罩 -->
+          <view class="card-tint" wx:if="{{selectedMap[item.id]}}"></view>
+        </view>
+        <view class="card-body">
+          <text class="card-name">{{item.name}}</text>
+          <text class="card-price">¥{{item.retailPrice}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="scroll-footer" wx:if="{{loading}}">
+      <text class="footer-text">加载中...</text>
+    </view>
+    <view class="scroll-footer" wx:if="{{!hasMore && goodsList.length > 0}}">
+      <text class="footer-text">没有更多了</text>
+    </view>
+    <view class="empty-state" wx:if="{{!loading && goodsList.length === 0}}">
+      <text class="empty-text">暂无商品</text>
+    </view>
+  </scroll-view>
+
+  <!-- 底部确认栏 -->
+  <view class="confirm-bar">
+    <view class="confirm-btn {{selectedIds.length > 0 ? '' : 'confirm-btn-disabled'}}" bindtap="onConfirm">
+      <text>{{confirmText}}</text>
+    </view>
+  </view>
+</view>

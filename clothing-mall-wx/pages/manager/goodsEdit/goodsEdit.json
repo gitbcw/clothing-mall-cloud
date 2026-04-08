@@ -1,0 +1,6 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "goods-form": "/components/goods-form/goods-form"
+  }
+}

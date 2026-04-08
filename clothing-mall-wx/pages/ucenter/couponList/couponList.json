@@ -1,0 +1,9 @@
+{
+  "enablePullDownRefresh": true,
+  "navigationBarTitleText": "我的优惠券",
+  "navigationStyle": "custom",
+  "backgroundColor": "#f4f4f4",
+  "usingComponents": {
+    "custom-nav": "/components/custom-nav/custom-nav"
+  }
+}

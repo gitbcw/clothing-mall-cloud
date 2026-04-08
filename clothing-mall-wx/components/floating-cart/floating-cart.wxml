@@ -1,0 +1,4 @@
+<view class="floating-cart" bindtap="goToCart">
+  <van-icon name="shopping-cart-o" size="24px" color="#8B7355" />
+  <view class="cart-badge" wx:if="{{count > 0}}">{{count > 99 ? '99+' : count}}</view>
+</view>

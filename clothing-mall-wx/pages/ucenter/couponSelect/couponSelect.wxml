@@ -1,0 +1,27 @@
+<view class="container">
+  <custom-nav title="选择优惠券" />
+
+  <scroll-view class="coupon-list" scroll-y="true" scroll-top="{{scrollTop}}">
+
+    <view class="unselect" bindtap='unselectCoupon'>不选择优惠券</view>
+
+    <view class="item" wx:for="{{couponList}}" wx:for-index="index" wx:for-item="item" wx:key="id" bindtap="selectCoupon" data-id="{{item.id}}" data-cid="{{item.cid}}">
+      <view class="tag">{{item.tag}}</view>
+      <view class="birthday-badge" wx:if="{{item.isBirthday}}">仅限生日当天</view>
+      <view class="content">
+        <view class="left">
+          <view class="discount">{{item.discountText}}<text wx:if="{{item.discountType !== 1}}">元</text></view>
+          <view class="min"> 满{{item.min}}元使用</view>
+        </view>
+        <view class="right">
+          <view class="name">{{item.name}}</view>
+          <view class="time"> 有效期：{{item.startTime}} - {{item.endTime}}</view>
+        </view>
+      </view>
+      <view class="condition">
+        <text class="txt">{{item.desc}}</text>
+      </view>
+    </view>
+
+  </scroll-view>
+</view>  

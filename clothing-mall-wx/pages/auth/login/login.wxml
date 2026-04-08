@@ -1,0 +1,49 @@
+<view class="container">
+  <custom-nav title="绑定手机号" />
+
+  <!-- 加载中：静默登录 -->
+  <view wx:if="{{loading}}" class="login-box">
+    <view class="loading-section">
+      <view class="loading-text">正在登录...</view>
+    </view>
+  </view>
+
+  <!-- 未登录模式（仅开发环境可见测试登录） -->
+  <view wx:elif="{{!hasLogin && isDev}}" class="login-box">
+    <view class="test-login-section">
+      <view class="test-login-tip">当前为测试环境，请使用测试账号登录</view>
+      <button class="test-login-btn" bindtap="testLogin">一键登录（测试）</button>
+      <view class="test-login-hint">仅用于开发测试</view>
+    </view>
+  </view>
+
+  <!-- 已登录模式：绑定手机号 -->
+  <view wx:elif="{{hasLogin}}" class="login-box">
+    <!-- 手动输入手机号绑定 -->
+    <view class="form-group">
+      <view class="form-item">
+        <van-icon name="phone-o" class="input-icon" />
+        <input class="mobile-input" value="{{mobile}}" bindinput="bindMobileInput" placeholder="请输入手机号" type="number" maxlength="11" placeholder-style="color: #999; font-size: 30rpx;" />
+        <van-icon name="close" wx:if="{{ mobile.length > 0 }}" class="clear-icon" catchtap="clearInput"/>
+      </view>
+      <button class="manual-bind-btn" bindtap="bindPhoneNumberManual">确定绑定</button>
+    </view>
+
+    <!-- 分割线 -->
+    <view class="divider">
+      <text class="line"></text>
+      <text class="text">或</text>
+      <text class="line"></text>
+    </view>
+
+    <!-- 一键绑定 -->
+    <button class="phone-login-btn" open-type="getPhoneNumber" bindgetphonenumber="bindPhoneNumber">一键获取微信手机号</button>
+  </view>
+
+  <!-- 生日填写弹窗 -->
+  <birthday-popup
+    show="{{ showBirthdayPopup }}"
+    bind:submit="onBirthdaySubmit"
+    bind:skip="onBirthdaySkip"
+  />
+</view>

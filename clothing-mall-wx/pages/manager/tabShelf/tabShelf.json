@@ -1,0 +1,7 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "goods-form": "/components/goods-form/goods-form",
+    "manager-tab-bar": "/components/manager-tab-bar/index"
+  }
+}

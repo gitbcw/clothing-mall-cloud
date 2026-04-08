@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.linlinjava.litemall.db.dao.LitemallPushLogMapper">
+    <resultMap id="BaseResultMap" type="org.linlinjava.litemall.db.domain.LitemallPushLog">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="push_type" jdbcType="VARCHAR" property="pushType" />
+        <result column="title" jdbcType="VARCHAR" property="title" />
+        <result column="content" jdbcType="VARCHAR" property="content" />
+        <result column="content_type" jdbcType="VARCHAR" property="contentType" />
+        <result column="media_id" jdbcType="VARCHAR" property="mediaId" />
+        <result column="page" jdbcType="VARCHAR" property="page" />
+        <result column="target_type" jdbcType="VARCHAR" property="targetType" />
+        <result column="target_group_id" jdbcType="INTEGER" property="targetGroupId" />
+        <result column="target_tag_id" jdbcType="VARCHAR" property="targetTagId" />
+        <result column="total_count" jdbcType="INTEGER" property="totalCount" />
+        <result column="success_count" jdbcType="INTEGER" property="successCount" />
+        <result column="fail_count" jdbcType="INTEGER" property="failCount" />
+        <result column="scheduled_at" jdbcType="TIMESTAMP" property="scheduledAt" />
+        <result column="sent_at" jdbcType="TIMESTAMP" property="sentAt" />
+        <result column="status" jdbcType="VARCHAR" property="status" />
+        <result column="error_msg" jdbcType="VARCHAR" property="errorMsg" />
+        <result column="add_time" jdbcType="TIMESTAMP" property="addTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <result column="deleted" jdbcType="BIT" property="deleted" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, push_type, title, content, content_type, media_id, page, target_type, target_group_id, target_tag_id,
+        total_count, success_count, fail_count, scheduled_at, sent_at, status, error_msg,
+        add_time, update_time, deleted
+    </sql>
+
+    <select id="selectByExample" parameterType="org.linlinjava.litemall.db.domain.LitemallPushLogExample" resultMap="BaseResultMap">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        <include refid="Base_Column_List" />
+        from litemall_push_log
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause" />
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List" />
+        from litemall_push_log
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete from litemall_push_log
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <delete id="deleteByExample" parameterType="org.linlinjava.litemall.db.domain.LitemallPushLogExample">
+        delete from litemall_push_log
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause" />
+        </if>
+    </delete>
+
+    <insert id="insert" parameterType="org.linlinjava.litemall.db.domain.LitemallPushLog" useGeneratedKeys="true" keyProperty="id">
+        insert into litemall_push_log (push_type, title, content,
+            target_type, target_group_id, target_tag_id,
+            total_count, success_count, fail_count,
+            scheduled_at, sent_at, status,
+            error_msg, add_time, update_time, deleted)
+        values (#{pushType,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR},
+            #{targetType,jdbcType=VARCHAR}, #{targetGroupId,jdbcType=INTEGER}, #{targetTagId,jdbcType=VARCHAR},
+            #{totalCount,jdbcType=INTEGER}, #{successCount,jdbcType=INTEGER}, #{failCount,jdbcType=INTEGER},
+            #{scheduledAt,jdbcType=TIMESTAMP}, #{sentAt,jdbcType=TIMESTAMP}, #{status,jdbcType=VARCHAR},
+            #{errorMsg,jdbcType=VARCHAR}, #{addTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{deleted,jdbcType=BIT})
+    </insert>
+
+    <insert id="insertSelective" parameterType="org.linlinjava.litemall.db.domain.LitemallPushLog" useGeneratedKeys="true" keyProperty="id">
+        insert into litemall_push_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="pushType != null">push_type,</if>
+            <if test="title != null">title,</if>
+            <if test="content != null">content,</if>
+            <if test="contentType != null">content_type,</if>
+            <if test="mediaId != null">media_id,</if>
+            <if test="page != null">page,</if>
+            <if test="targetType != null">target_type,</if>
+            <if test="targetGroupId != null">target_group_id,</if>
+            <if test="targetTagId != null">target_tag_id,</if>
+            <if test="totalCount != null">total_count,</if>
+            <if test="successCount != null">success_count,</if>
+            <if test="failCount != null">fail_count,</if>
+            <if test="scheduledAt != null">scheduled_at,</if>
+            <if test="sentAt != null">sent_at,</if>
+            <if test="status != null">status,</if>
+            <if test="errorMsg != null">error_msg,</if>
+            <if test="addTime != null">add_time,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="deleted != null">deleted,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="pushType != null">#{pushType,jdbcType=VARCHAR},</if>
+            <if test="title != null">#{title,jdbcType=VARCHAR},</if>
+            <if test="content != null">#{content,jdbcType=VARCHAR},</if>
+            <if test="contentType != null">#{contentType,jdbcType=VARCHAR},</if>
+            <if test="mediaId != null">#{mediaId,jdbcType=VARCHAR},</if>
+            <if test="page != null">#{page,jdbcType=VARCHAR},</if>
+            <if test="targetType != null">#{targetType,jdbcType=VARCHAR},</if>
+            <if test="targetGroupId != null">#{targetGroupId,jdbcType=INTEGER},</if>
+            <if test="targetTagId != null">#{targetTagId,jdbcType=VARCHAR},</if>
+            <if test="totalCount != null">#{totalCount,jdbcType=INTEGER},</if>
+            <if test="successCount != null">#{successCount,jdbcType=INTEGER},</if>
+            <if test="failCount != null">#{failCount,jdbcType=INTEGER},</if>
+            <if test="scheduledAt != null">#{scheduledAt,jdbcType=TIMESTAMP},</if>
+            <if test="sentAt != null">#{sentAt,jdbcType=TIMESTAMP},</if>
+            <if test="status != null">#{status,jdbcType=VARCHAR},</if>
+            <if test="errorMsg != null">#{errorMsg,jdbcType=VARCHAR},</if>
+            <if test="addTime != null">#{addTime,jdbcType=TIMESTAMP},</if>
+            <if test="updateTime != null">#{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="deleted != null">#{deleted,jdbcType=BIT},</if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="org.linlinjava.litemall.db.domain.LitemallPushLog">
+        update litemall_push_log
+        <set>
+            <if test="pushType != null">push_type = #{pushType,jdbcType=VARCHAR},</if>
+            <if test="title != null">title = #{title,jdbcType=VARCHAR},</if>
+            <if test="content != null">content = #{content,jdbcType=VARCHAR},</if>
+            <if test="contentType != null">content_type = #{contentType,jdbcType=VARCHAR},</if>
+            <if test="mediaId != null">media_id = #{mediaId,jdbcType=VARCHAR},</if>
+            <if test="page != null">page = #{page,jdbcType=VARCHAR},</if>
+            <if test="targetType != null">target_type = #{targetType,jdbcType=VARCHAR},</if>
+            <if test="targetGroupId != null">target_group_id = #{targetGroupId,jdbcType=INTEGER},</if>
+            <if test="targetTagId != null">target_tag_id = #{targetTagId,jdbcType=VARCHAR},</if>
+            <if test="totalCount != null">total_count = #{totalCount,jdbcType=INTEGER},</if>
+            <if test="successCount != null">success_count = #{successCount,jdbcType=INTEGER},</if>
+            <if test="failCount != null">fail_count = #{failCount,jdbcType=INTEGER},</if>
+            <if test="scheduledAt != null">scheduled_at = #{scheduledAt,jdbcType=TIMESTAMP},</if>
+            <if test="sentAt != null">sent_at = #{sentAt,jdbcType=TIMESTAMP},</if>
+            <if test="status != null">status = #{status,jdbcType=VARCHAR},</if>
+            <if test="errorMsg != null">error_msg = #{errorMsg,jdbcType=VARCHAR},</if>
+            <if test="addTime != null">add_time = #{addTime,jdbcType=TIMESTAMP},</if>
+            <if test="updateTime != null">update_time = #{updateTime,jdbcType=TIMESTAMP},</if>
+            <if test="deleted != null">deleted = #{deleted,jdbcType=BIT},</if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="org.linlinjava.litemall.db.domain.LitemallPushLog">
+        update litemall_push_log
+        set push_type = #{pushType,jdbcType=VARCHAR},
+            title = #{title,jdbcType=VARCHAR},
+            content = #{content,jdbcType=VARCHAR},
+            target_type = #{targetType,jdbcType=VARCHAR},
+            target_group_id = #{targetGroupId,jdbcType=INTEGER},
+            target_tag_id = #{targetTagId,jdbcType=VARCHAR},
+            total_count = #{totalCount,jdbcType=INTEGER},
+            success_count = #{successCount,jdbcType=INTEGER},
+            fail_count = #{failCount,jdbcType=INTEGER},
+            scheduled_at = #{scheduledAt,jdbcType=TIMESTAMP},
+            sent_at = #{sentAt,jdbcType=TIMESTAMP},
+            status = #{status,jdbcType=VARCHAR},
+            error_msg = #{errorMsg,jdbcType=VARCHAR},
+            add_time = #{addTime,jdbcType=TIMESTAMP},
+            update_time = #{updateTime,jdbcType=TIMESTAMP},
+            deleted = #{deleted,jdbcType=BIT}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <update id="logicalDeleteByPrimaryKey" parameterType="java.lang.Integer">
+        update litemall_push_log set deleted = 1 where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <update id="logicalDeleteByExample" parameterType="org.linlinjava.litemall.db.domain.LitemallPushLogExample">
+        update litemall_push_log set deleted = 1
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause" />
+        </if>
+    </update>
+
+    <sql id="Example_Where_Clause">
+        <where>
+            <foreach collection="oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" prefixOverrides="and" suffix=")">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">and ${criterion.condition}</when>
+                                <when test="criterion.singleValue">and ${criterion.condition} #{criterion.value}</when>
+                                <when test="criterion.betweenValue">and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}</when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">#{listItem}</foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+</mapper>

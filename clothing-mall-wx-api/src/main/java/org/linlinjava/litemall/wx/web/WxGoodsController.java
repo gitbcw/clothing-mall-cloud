@@ -1,0 +1,341 @@
+package org.linlinjava.litemall.wx.web;
+
+import com.github.pagehelper.PageInfo;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.linlinjava.litemall.core.system.SystemConfig;
+import org.linlinjava.litemall.core.util.ResponseUtil;
+import org.linlinjava.litemall.core.validator.Order;
+import org.linlinjava.litemall.core.validator.Sort;
+import org.linlinjava.litemall.db.domain.*;
+import org.linlinjava.litemall.db.service.*;
+import org.linlinjava.litemall.wx.annotation.LoginUser;
+
+import static org.linlinjava.litemall.wx.util.WxResponseCode.GOODS_UNSHELVE;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.*;
+
+/**
+ * 商品服务
+ */
+@RestController
+@RequestMapping("/wx/goods")
+@Validated
+public class WxGoodsController {
+	private final Log logger = LogFactory.getLog(WxGoodsController.class);
+
+	@Autowired
+	private LitemallGoodsService goodsService;
+
+	@Autowired
+	private LitemallGoodsProductService productService;
+
+	@Autowired
+	private LitemallIssueService goodsIssueService;
+
+	@Autowired
+	private LitemallGoodsAttributeService goodsAttributeService;
+
+	@Autowired
+	private LitemallBrandService brandService;
+
+	@Autowired
+	private LitemallUserService userService;
+
+	@Autowired
+	private LitemallCollectService collectService;
+
+	@Autowired
+	private LitemallFootprintService footprintService;
+
+	@Autowired
+	private LitemallCategoryService categoryService;
+
+	@Autowired
+	private LitemallSearchHistoryService searchHistoryService;
+
+	@Autowired
+	private LitemallGoodsSpecificationService goodsSpecificationService;
+
+	private final static ArrayBlockingQueue<Runnable> WORK_QUEUE = new ArrayBlockingQueue<>(9);
+
+	private final static RejectedExecutionHandler HANDLER = new ThreadPoolExecutor.CallerRunsPolicy();
+
+	private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(16, 16, 1000, TimeUnit.MILLISECONDS, WORK_QUEUE, HANDLER);
+
+	/**
+	 * 商品详情
+	 * <p>
+	 * 用户可以不登录。
+	 * 如果用户登录，则记录用户足迹以及返回用户收藏信息。
+	 *
+	 * @param userId 用户ID
+	 * @param id     商品ID
+	 * @return 商品详情
+	 */
+	@GetMapping("detail")
+	public Object detail(@LoginUser Integer userId, @NotNull Integer id) {
+		// 商品信息
+		LitemallGoods info = goodsService.findById(id);
+
+		// 商品已下架或不存在
+		if (info == null || !LitemallGoods.STATUS_PUBLISHED.equals(info.getStatus())) {
+			return ResponseUtil.fail(GOODS_UNSHELVE, "商品已下架");
+		}
+
+		// 商品属性
+		Callable<List> goodsAttributeListCallable = () -> goodsAttributeService.queryByGid(id);
+
+		// 商品规格 返回的是定制的GoodsSpecificationVo
+		Callable<Object> objectCallable = () -> goodsSpecificationService.getSpecificationVoList(id);
+
+		// 商品规格对应的数量和价格
+		Callable<List> productListCallable = () -> productService.queryByGid(id);
+
+		// 商品问题，这里是一些通用问题
+		Callable<List> issueCallable = () -> goodsIssueService.querySelective("", 1, 4, "", "");
+
+		// 商品品牌商
+		Callable<LitemallBrand> brandCallable = ()->{
+			Integer brandId = info.getBrandId();
+			LitemallBrand brand;
+			if (brandId == 0) {
+				brand = new LitemallBrand();
+			} else {
+				brand = brandService.findById(info.getBrandId());
+			}
+			return brand;
+		};
+
+		// 用户收藏
+		int userHasCollect = 0;
+		if (userId != null) {
+			userHasCollect = collectService.count(userId, (byte)0, id);
+		}
+
+		// 记录用户的足迹 异步处理
+		if (userId != null) {
+			executorService.execute(()->{
+				LitemallFootprint footprint = new LitemallFootprint();
+				footprint.setUserId(userId);
+				footprint.setGoodsId(id);
+				footprintService.add(footprint);
+			});
+		}
+		FutureTask<List> goodsAttributeListTask = new FutureTask<>(goodsAttributeListCallable);
+		FutureTask<Object> objectCallableTask = new FutureTask<>(objectCallable);
+		FutureTask<List> productListCallableTask = new FutureTask<>(productListCallable);
+		FutureTask<List> issueCallableTask = new FutureTask<>(issueCallable);
+		FutureTask<LitemallBrand> brandCallableTask = new FutureTask<>(brandCallable);
+
+		executorService.submit(goodsAttributeListTask);
+		executorService.submit(objectCallableTask);
+		executorService.submit(productListCallableTask);
+		executorService.submit(issueCallableTask);
+		executorService.submit(brandCallableTask);
+
+		Map<String, Object> data = new HashMap<>();
+
+		try {
+			data.put("info", info);
+			data.put("userHasCollect", userHasCollect);
+			data.put("issue", issueCallableTask.get());
+			data.put("specificationList", objectCallableTask.get());
+			data.put("productList", productListCallableTask.get());
+			data.put("attribute", goodsAttributeListTask.get());
+			data.put("brand", brandCallableTask.get());
+			//SystemConfig.isAutoCreateShareImage()
+			data.put("share", SystemConfig.isAutoCreateShareImage());
+
+			// 根据商品分类获取是否启用尺码选择（L2 继承 L1 设置）
+			boolean enableSize = true;
+			if (info.getCategoryId() != null) {
+				LitemallCategory cat = categoryService.findById(info.getCategoryId());
+				if (cat != null) {
+					if (cat.getPid() != null && cat.getPid() > 0) {
+						// L2 分类，查找 L1 父分类
+						LitemallCategory parent = categoryService.findById(cat.getPid());
+						if (parent != null && parent.getEnableSize() != null) {
+							enableSize = parent.getEnableSize();
+						}
+					} else if (cat.getEnableSize() != null) {
+						enableSize = cat.getEnableSize();
+					}
+				}
+			}
+			data.put("enableSize", enableSize);
+
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		//商品分享图片地址
+		data.put("shareImage", info.getShareUrl());
+		return ResponseUtil.ok(data);
+	}
+
+	/**
+	 * 商品分类类目
+	 *
+	 * @param id 分类类目ID
+	 * @return 商品分类类目
+	 */
+	@GetMapping("category")
+	public Object category(@NotNull Integer id) {
+		List<LitemallCategory> l1CategoryList = categoryService.queryL1();
+		if (l1CategoryList.isEmpty()) {
+			return ResponseUtil.ok(new HashMap<>(0));
+		}
+		LitemallCategory cur = categoryService.findById(id);
+		if (cur == null || id == 0) {
+			cur = l1CategoryList.get(0);
+		}
+		LitemallCategory parent = null;
+		List<LitemallCategory> children = null;
+
+		if (cur.getPid() == 0) {
+			parent = cur;
+			children = l1CategoryList;
+		} else {
+			parent = categoryService.findById(cur.getPid());
+			children = categoryService.queryByPid(cur.getPid());
+		}
+		Map<String, Object> data = new HashMap<>();
+		data.put("currentCategory", cur);
+		data.put("parentCategory", parent);
+		data.put("brotherCategory", children);
+		return ResponseUtil.ok(data);
+	}
+
+	/**
+	 * 根据条件搜素商品
+	 * <p>
+	 * 1. 这里的前五个参数都是可选的，甚至都是空
+	 * 2. 用户是可选登录，如果登录，则记录用户的搜索关键字
+	 *
+	 * @param categoryId 分类类目ID，可选
+	 * @param brandId    品牌商ID，可选
+	 * @param keyword    关键字，可选
+	 * @param isNew      是否新品，可选
+	 * @param isHot      是否热买，可选
+	 * @param userId     用户ID
+	 * @param page       分页页数
+	 * @param limit       分页大小
+	 * @param sort       排序方式，支持"add_time", "retail_price"或"name"
+	 * @param order      排序类型，顺序或者降序
+	 * @return 根据条件搜素的商品详情
+	 */
+	@GetMapping("list")
+	public Object list(
+		Integer categoryId,
+		Integer brandId,
+		String keyword,
+		Boolean isNew,
+		Boolean isHot,
+		Integer sceneId,
+		@LoginUser Integer userId,
+		@RequestParam(defaultValue = "1") Integer page,
+		@RequestParam(defaultValue = "10") Integer limit,
+		@Sort(accepts = {"add_time", "retail_price", "name", "default"}) @RequestParam(defaultValue = "default") String sort,
+		@Order @RequestParam(defaultValue = "desc") String order) {
+
+		//添加到搜索历史
+		if (userId != null && !StringUtils.isEmpty(keyword)) {
+			LitemallSearchHistory searchHistoryVo = new LitemallSearchHistory();
+			searchHistoryVo.setKeyword(keyword);
+			searchHistoryVo.setUserId(userId);
+			searchHistoryVo.setFrom("wx");
+			searchHistoryService.save(searchHistoryVo);
+		}
+
+		//查询列表数据
+		List<LitemallGoods> goodsList = goodsService.querySelectiveWithScene(categoryId, brandId, keyword, isHot, isNew, sceneId, page, limit, sort, order);
+
+		// 查询商品所属类目列表。
+		List<Integer> goodsCatIds = goodsService.getCatIds(brandId, keyword, isHot, isNew);
+		List<LitemallCategory> categoryList = null;
+		if (goodsCatIds.size() != 0) {
+			categoryList = categoryService.queryL2ByIds(goodsCatIds);
+		} else {
+			categoryList = new ArrayList<>(0);
+		}
+
+		PageInfo<LitemallGoods> pagedList = PageInfo.of(goodsList);
+
+		// 计算每个分类的 enableSize（L2 继承 L1 设置）
+		Map<Integer, Boolean> enableSizeMap = new HashMap<>();
+		for (LitemallGoods goods : goodsList) {
+			Integer catId = goods.getCategoryId();
+			if (catId != null && !enableSizeMap.containsKey(catId)) {
+				LitemallCategory cat = categoryService.findById(catId);
+				if (cat != null) {
+					if (cat.getPid() != null && cat.getPid() > 0) {
+						LitemallCategory parent = categoryService.findById(cat.getPid());
+						enableSizeMap.put(catId, parent != null && parent.getEnableSize() != null ? parent.getEnableSize() : true);
+					} else {
+						enableSizeMap.put(catId, cat.getEnableSize() != null ? cat.getEnableSize() : true);
+					}
+				}
+			}
+		}
+
+		Map<String, Object> entity = new HashMap<>();
+		entity.put("list", goodsList);
+		entity.put("total", pagedList.getTotal());
+		entity.put("page", pagedList.getPageNum());
+		entity.put("limit", pagedList.getPageSize());
+		entity.put("pages", pagedList.getPages());
+		entity.put("filterCategoryList", categoryList);
+		entity.put("enableSizeMap", enableSizeMap);
+
+		// 因为这里需要返回额外的filterCategoryList参数，因此不能方便使用ResponseUtil.okList
+		return ResponseUtil.ok(entity);
+	}
+
+	/**
+	 * 商品详情页面“大家都在看”推荐商品
+	 *
+	 * @param id, 商品ID
+	 * @return 商品详情页面推荐商品
+	 */
+	@GetMapping("related")
+	public Object related(@NotNull Integer id) {
+		LitemallGoods goods = goodsService.findById(id);
+		if (goods == null) {
+			return ResponseUtil.badArgumentValue();
+		}
+
+		// 目前的商品推荐算法仅仅是推荐同类目的其他商品
+		int cid = goods.getCategoryId();
+
+		// 查找六个相关商品
+		int related = 6;
+		List<LitemallGoods> goodsList = goodsService.queryByCategory(cid, 0, related);
+		return ResponseUtil.okList(goodsList);
+	}
+
+	/**
+	 * 在售的商品总数
+	 *
+	 * @return 在售的商品总数
+	 */
+	@GetMapping("count")
+	public Object count() {
+		Integer goodsCount = goodsService.queryOnSale();
+		return ResponseUtil.ok(goodsCount);
+	}
+
+}

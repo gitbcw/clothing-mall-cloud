@@ -1,0 +1,9 @@
+var BASE = 'https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/';
+
+function url(key) {
+  if (!key) return '';
+  if (key.indexOf('/') !== -1) return key;
+  return BASE + key;
+}
+
+module.exports = { url: url };

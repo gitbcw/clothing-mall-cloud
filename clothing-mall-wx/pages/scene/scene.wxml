@@ -1,0 +1,77 @@
+<wxs src="../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight+16}}px;">
+    <view class="nav-bar" style="height: {{navBarHeight}}px;">
+      <view class="nav-back" bindtap="goBack">
+        <view class="back-icon"></view>
+      </view>
+      <view class="nav-title">{{sceneName}}</view>
+    </view>
+  </view>
+
+  <!-- 导航栏占位 -->
+  <view style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 场景描述 -->
+  <view class="scene-header" wx:if="{{sceneDesc}}">
+    <text class="scene-desc">{{sceneDesc}}</text>
+  </view>
+
+  <!-- 商品列表（瀑布流） -->
+  <view class="goods-content" wx:if="{{leftGoodsList.length > 0 || rightGoodsList.length > 0}}">
+    <view class="waterfall-col">
+      <view class="goods-card" wx:for="{{leftGoodsList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+        <image src="{{img.url(item.picUrl)}}" mode="widthFix" class="goods-img" binderror="onImageError" data-index="{{index}}" data-col="left" />
+        <view class="goods-info">
+          <text class="goods-name">{{item.name}}</text>
+          <view class="goods-price-row">
+            <text class="goods-price-symbol">¥</text>
+            <text class="goods-price">{{item.retailPrice}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="waterfall-col">
+      <view class="goods-card" wx:for="{{rightGoodsList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+        <image src="{{img.url(item.picUrl)}}" mode="widthFix" class="goods-img" binderror="onImageError" data-index="{{index}}" data-col="right" />
+        <view class="goods-info">
+          <text class="goods-name">{{item.name}}</text>
+          <view class="goods-price-row">
+            <text class="goods-price-symbol">¥</text>
+            <text class="goods-price">{{item.retailPrice}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="load-more" wx:if="{{loading}}">
+    <view class="loading-dots">
+      <view class="loading-dot"></view>
+      <view class="loading-dot"></view>
+      <view class="loading-dot"></view>
+    </view>
+    <text>正在加载</text>
+  </view>
+
+  <!-- 没有更多 -->
+  <view class="no-more" wx:elif="{{page > pages && goodsList.length > 0}}">
+    <view class="no-more-line"></view>
+    <text>已经到底了</text>
+    <view class="no-more-line"></view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && goodsList.length === 0}}">
+    <view class="empty-icon">
+      <view class="empty-hanger"></view>
+    </view>
+    <text class="empty-title">暂无该场景下的商品</text>
+    <text class="empty-hint">去看看其他场景吧</text>
+  </view>
+
+  <!-- 底部占位 -->
+  <view style="height: calc(60rpx + env(safe-area-inset-bottom));"></view>
+</view>

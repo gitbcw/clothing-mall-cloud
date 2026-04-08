@@ -1,0 +1,438 @@
+@import "../../../styles/manager-common.wxss";
+
+.container {
+  min-height: 100vh;
+  background-color: #F7F8FA;
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
+}
+
+/* ---- 导航栏 ---- */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30rpx;
+}
+
+.nav-back {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-back-icon {
+  width: 18rpx;
+  height: 18rpx;
+  border-left: 4rpx solid #333;
+  border-bottom: 4rpx solid #333;
+  transform: rotate(45deg);
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.nav-placeholder-right {
+  width: 60rpx;
+}
+
+.nav-placeholder {
+  background: transparent;
+}
+
+/* ---- 内容类型切换 ---- */
+.content-type-tabs {
+  display: flex;
+  margin: 20rpx 24rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 6rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.tab-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 28rpx;
+  color: #999;
+  border-radius: 12rpx;
+  transition: all 0.25s ease;
+}
+
+.tab-active {
+  color: #FFFFFF;
+  background: #FF8096;
+  font-weight: 600;
+  box-shadow: 0 4rpx 16rpx rgba(255, 128, 150, 0.3);
+}
+
+/* ---- 表单区域 ---- */
+.form-section {
+  padding: 0 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.form-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.form-label {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+/* ---- 输入框 ---- */
+.field-input {
+  font-size: 28rpx;
+  color: #333;
+  padding: 16rpx 0;
+  width: 100%;
+}
+
+.field-textarea {
+  font-size: 28rpx;
+  color: #333;
+  padding: 16rpx 0;
+  width: 100%;
+  min-height: 200rpx;
+  line-height: 1.6;
+}
+
+.char-count {
+  text-align: right;
+  font-size: 22rpx;
+  color: #BBB;
+  margin-top: 8rpx;
+}
+
+/* ---- 图片上传 ---- */
+.image-upload {
+  width: 100%;
+  height: 300rpx;
+  border-radius: 12rpx;
+  border: 2rpx dashed #D4A86C;
+  background: linear-gradient(135deg, #FDF9F4, #F7F3EF);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.upload-icon {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: rgba(212, 168, 108, 0.15);
+  position: relative;
+}
+
+.upload-icon::before,
+.upload-icon::after {
+  content: '';
+  position: absolute;
+  background: #D4A86C;
+  border-radius: 2rpx;
+}
+
+.upload-icon::before {
+  width: 50%;
+  height: 3rpx;
+  top: 50%;
+  left: 25%;
+  transform: translateY(-50%);
+}
+
+.upload-icon::after {
+  width: 3rpx;
+  height: 50%;
+  left: 50%;
+  top: 25%;
+  transform: translateX(-50%);
+}
+
+.upload-text {
+  font-size: 24rpx;
+  color: #D4A86C;
+}
+
+.uploading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.loading-spinner {
+  width: 48rpx;
+  height: 48rpx;
+  border: 4rpx solid #F0EBE6;
+  border-top-color: #D4A86C;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.image-preview {
+  width: 100%;
+  height: 300rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
+  position: relative;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+}
+
+.image-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16rpx 20rpx;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+  display: flex;
+  justify-content: flex-end;
+  gap: 16rpx;
+}
+
+.image-btn {
+  font-size: 22rpx;
+  color: #FFFFFF;
+  padding: 8rpx 24rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+}
+
+.image-btn:active {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.image-btn-delete {
+  background: rgba(232, 73, 74, 0.6);
+}
+
+.image-btn-delete:active {
+  background: rgba(232, 73, 74, 0.8);
+}
+
+/* ---- 页面选择器 ---- */
+.page-picker {
+  width: 100%;
+}
+
+.picker-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 0;
+}
+
+.picker-text {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.picker-arrow {
+  width: 14rpx;
+  height: 14rpx;
+  border-right: 3rpx solid #999;
+  border-bottom: 3rpx solid #999;
+  transform: rotate(-45deg);
+}
+
+/* ---- 推送分组 ---- */
+.group-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  gap: 16rpx;
+}
+
+.group-item:active {
+  opacity: 0.7;
+}
+
+.group-checkbox {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 8rpx;
+  border: 2rpx solid #DEDEDE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.checkbox-checked {
+  background: #FF8096;
+  border-color: transparent;
+}
+
+.checkbox-icon {
+  width: 16rpx;
+  height: 10rpx;
+  border-left: 3rpx solid #FFFFFF;
+  border-bottom: 3rpx solid #FFFFFF;
+  transform: rotate(-45deg);
+  margin-top: -4rpx;
+}
+
+.group-name {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.empty-groups {
+  padding: 32rpx 0;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: #999;
+}
+
+/* ---- 字段组 ---- */
+.field-group {
+  padding: 8rpx 0;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.field-label {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.field-hint {
+  display: block;
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+
+.field-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-divider {
+  height: 1rpx;
+  background: #F0F0F0;
+  margin: 16rpx 0;
+}
+
+/* ---- 开关 ---- */
+.toggle-switch {
+  width: 88rpx;
+  height: 48rpx;
+  border-radius: 24rpx;
+  background: #E0E0E0;
+  position: relative;
+  transition: background 0.3s ease;
+  flex-shrink: 0;
+}
+
+.toggle-active {
+  background: #07c160;
+}
+
+.toggle-knob {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #FFFFFF;
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.15);
+}
+
+.toggle-active .toggle-knob {
+  transform: translateX(40rpx);
+}
+
+/* ---- 定时时间 ---- */
+.datetime-row {
+  padding: 16rpx 0;
+}
+
+/* ---- 发送按钮 ---- */
+.send-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 40rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1rpx solid rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+.send-btn {
+  background: #FF8096;
+  color: #FFFFFF;
+  border-radius: 44rpx;
+  padding: 24rpx 0;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 500;
+  box-shadow: 0 8rpx 24rpx rgba(255, 128, 150, 0.3);
+}
+
+.send-btn:active {
+  opacity: 0.85;
+}
+
+.send-btn-disabled {
+  opacity: 0.5;
+}

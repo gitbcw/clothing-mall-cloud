@@ -1,0 +1,28 @@
+<!-- 骨架屏 -->
+<view class="skeleton" wx:if="{{skeleton && loading}}">
+  <view class="skeleton-item" wx:for="{{skeletonRows}}" wx:key="index">
+    <view class="skeleton-image skeleton-animate"></view>
+    <view class="skeleton-content">
+      <view class="skeleton-title skeleton-animate"></view>
+      <view class="skeleton-text skeleton-animate"></view>
+      <view class="skeleton-text short skeleton-animate"></view>
+    </view>
+  </view>
+</view>
+
+<!-- 加载更多 -->
+<view class="loadmore" wx:if="{{!skeleton && hasMore}}">
+  <view class="loadmore-loading" wx:if="{{loading}}">
+    <view class="loading-dot"></view>
+    <view class="loading-dot"></view>
+    <view class="loading-dot"></view>
+  </view>
+  <view class="loadmore-text" wx:else>上拉加载更多</view>
+</view>
+
+<!-- 没有更多 -->
+<view class="loadmore-end" wx:if="{{!hasMore && !loading}}">
+  <view class="end-line"></view>
+  <text class="end-text">没有更多了</text>
+  <view class="end-line"></view>
+</view>

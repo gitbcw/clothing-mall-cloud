@@ -1,0 +1,114 @@
+<wxs src="../../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-back" bindtap="onBack">
+        <view class="nav-back-icon"></view>
+      </view>
+      <view class="nav-title">{{isEdit ? '编辑场景' : '新建场景'}}</view>
+      <view class="nav-placeholder-right"></view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 表单 -->
+  <view class="form-section">
+    <!-- 海报图片 -->
+    <view class="form-card">
+      <view class="form-label">海报图片</view>
+      <view class="poster-upload" wx:if="{{!form.posterUrl}}" bindtap="onChoosePoster">
+        <view class="upload-placeholder" wx:if="{{!uploading}}">
+          <view class="upload-icon"></view>
+          <text class="upload-text">上传海报</text>
+        </view>
+        <view class="uploading-state" wx:if="{{uploading}}">
+          <view class="loading-spinner"></view>
+          <text class="upload-text">上传中...</text>
+        </view>
+      </view>
+      <view class="poster-preview" wx:if="{{form.posterUrl}}">
+        <image class="poster-image" src="{{img.url(form.posterUrl)}}" mode="aspectFill" />
+        <view class="poster-overlay">
+          <view class="poster-btn" bindtap="onChoosePoster">更换</view>
+          <view class="poster-btn poster-btn-delete" bindtap="onRemovePoster">删除</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 基本信息 -->
+    <view class="form-card">
+      <view class="field-group">
+        <view class="field-label">
+          <text>场景名称</text>
+          <text class="field-hint-inline">（必填）</text>
+        </view>
+        <input class="field-input" value="{{form.name}}" bindinput="onInputName" placeholder="如：通勤、约会、休闲" maxlength="20" />
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field-group">
+        <view class="field-label">场景描述</view>
+        <textarea class="field-textarea" value="{{form.description}}" bindinput="onInputDesc" placeholder="简短描述该场景的特点" maxlength="200" auto-height />
+      </view>
+    </view>
+
+    <!-- 设置 -->
+    <view class="form-card">
+      <view class="field-group field-row">
+        <view class="field-label">场景排序</view>
+        <view class="stepper">
+          <view class="stepper-btn stepper-minus {{form.sortOrder <= 1 ? 'stepper-btn-disabled' : ''}}" bindtap="onSortMinus">-</view>
+          <input class="stepper-input" type="number" value="{{form.sortOrder}}" bindinput="onInputSort" />
+          <view class="stepper-btn stepper-plus" bindtap="onSortPlus">+</view>
+        </view>
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field-group field-row">
+        <view class="field-info">
+          <text class="field-label">启用状态</text>
+          <text class="field-hint">{{form.enabled ? '启用后将展示给用户' : '禁用后用户不可见'}}</text>
+        </view>
+        <view class="toggle-switch {{form.enabled ? 'toggle-active' : ''}}" bindtap="onToggleEnabled">
+          <view class="toggle-knob"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 关联商品 -->
+    <view class="form-card">
+      <view class="field-group">
+        <view class="field-row">
+          <view class="field-label">关联商品</view>
+          <view class="add-goods-btn" bindtap="onAddGoods">
+            <text class="add-goods-text">+ 添加</text>
+          </view>
+        </view>
+        <text class="field-hint" wx:if="{{goodsList.length === 0}}">选择该场景下展示的商品</text>
+      </view>
+
+      <view class="goods-list" wx:if="{{goodsList.length > 0}}">
+        <view class="goods-item" wx:for="{{goodsList}}" wx:key="id" bindtap="onViewGoods" data-id="{{item.id}}">
+          <image class="goods-item-img" src="{{img.url(item.picUrl)}}" mode="aspectFill" />
+          <view class="goods-item-info">
+            <text class="goods-item-name">{{item.name}}</text>
+            <text class="goods-item-price">¥{{item.retailPrice}}</text>
+          </view>
+          <view class="goods-item-remove" catchtap="onRemoveGoods" data-index="{{index}}">
+            <text class="remove-icon">x</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 保存按钮 -->
+  <view class="save-bar">
+    <view class="save-btn {{saving ? 'save-btn-disabled' : ''}}" bindtap="{{saving ? '' : 'onSave'}}">
+      <text>{{saving ? '保存中...' : '保存'}}</text>
+    </view>
+  </view>
+</view>

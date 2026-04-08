@@ -1,0 +1,95 @@
+<view class="container">
+  <custom-nav title="我的优惠券" />
+
+  <!-- Empty State -->
+  <view class="empty-state" wx:if="{{couponList.length <= 0 && !loading}}">
+    <view class="empty-circle">
+      <view class="empty-ticket">
+        <view class="empty-ticket-line"></view>
+      </view>
+    </view>
+    <text class="empty-title">暂无可用优惠券</text>
+  </view>
+
+  <!-- Coupon List -->
+  <view class="coupon-list">
+    <view class="coupon-card" wx:for="{{couponList}}" wx:key="id">
+      <!-- 主体：左金额 右信息 -->
+      <view class="card-main">
+        <view class="card-left">
+          <text class="card-symbol">{{item.discountSymbol}}</text>
+          <text class="card-amount">{{item.discountText}}</text>
+        </view>
+        <view class="card-right">
+          <text class="card-condition">满{{item.min}}元可用</text>
+          <text class="card-name">{{item.name}}</text>
+          <text class="card-time">{{item.startTimeText}} - {{item.endTimeText}}</text>
+          <view class="card-action">
+            <view class="btn-use" bindtap="goUse">去使用</view>
+          </view>
+        </view>
+      </view>
+      <!-- 底部小字 -->
+      <view class="card-footer" bindtap="toggleRule" data-id="{{item.id}}">
+        <text class="footer-text">线上、门店通用</text>
+        <text class="footer-link">规则详情 ></text>
+      </view>
+      <!-- 展开规则 -->
+      <view class="card-rules" wx:if="{{expandedId === item.id}}">
+        <view class="rule-section">
+          <text class="rule-title">使用规则</text>
+          <text class="rule-content">{{item.desc || '无特殊限制'}}</text>
+        </view>
+        <view class="rule-section">
+          <text class="rule-title">使用说明</text>
+          <text class="rule-content">结算时选择优惠券自动抵扣，每笔订单仅可使用一张优惠券</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 查看失效优惠券 -->
+  <view class="expired-entry" wx:if="{{couponList.length > 0}}" bindtap="showExpiredCoupons">
+    <text wx:if="{{!showExpired}}">查看失效的优惠券</text>
+  </view>
+
+  <!-- 失效优惠券列表 -->
+  <view class="expired-list" wx:if="{{showExpired && expiredList.length > 0}}">
+    <view class="expired-header">失效优惠券</view>
+    <view class="coupon-card card-disabled" wx:for="{{expiredList}}" wx:key="id">
+      <view class="card-main">
+        <view class="card-left">
+          <text class="card-symbol">{{item.discountSymbol}}</text>
+          <text class="card-amount">{{item.discountText}}</text>
+        </view>
+        <view class="card-right">
+          <text class="card-condition">满{{item.min}}元可用</text>
+          <text class="card-name">{{item.name}}</text>
+          <text class="card-time">{{item.startTimeText}} - {{item.endTimeText}}</text>
+          <view class="card-action">
+            <view class="btn-expired">已失效</view>
+          </view>
+        </view>
+      </view>
+      <view class="card-footer" bindtap="toggleRule" data-id="{{item.id}}">
+        <text class="footer-text">线上、门店通用</text>
+        <text class="footer-link">规则详情 ></text>
+      </view>
+      <view class="card-rules" wx:if="{{expandedId === item.id}}">
+        <view class="rule-section">
+          <text class="rule-title">使用规则</text>
+          <text class="rule-content">{{item.desc || '无特殊限制'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="expired-empty" wx:if="{{showExpired && expiredList.length === 0}}">
+    <text>暂无失效优惠券</text>
+  </view>
+
+  <!-- Footer -->
+  <view class="list-footer" wx:if="{{couponList.length > 0 && page * limit >= count}}">
+    <text class="no-more-text">— 到底了 —</text>
+  </view>
+</view>

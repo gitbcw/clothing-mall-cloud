@@ -1,0 +1,205 @@
+<wxs src="../../../utils/image.wxs" module="img" />
+<view class="container" wx:if="{{!loading}}">
+  <!-- 订单状态 -->
+  <view class="status-section">
+    <text class="status-text">{{order.orderStatusText}}</text>
+  </view>
+
+  <!-- 收货信息（快递订单） -->
+  <view class="address-section" wx:if="{{order.deliveryType !== 'pickup'}}">
+    <view class="address-info">
+      <text class="name">{{order.consignee}}</text>
+      <text class="mobile">{{order.mobile}}</text>
+    </view>
+    <text class="address">{{order.address}}</text>
+  </view>
+
+  <!-- 自提信息 -->
+  <view class="address-section pickup-section" wx:if="{{order.deliveryType === 'pickup'}}">
+    <view class="info-item">
+      <text class="label">取货码</text>
+      <text class="value pickup-code">{{order.pickupCode}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">联系人</text>
+      <text class="value">{{order.pickupContact}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">联系电话</text>
+      <text class="value">{{order.pickupPhone}}</text>
+    </view>
+    <view class="info-item" wx:if="{{order.pickupStore}}">
+      <text class="label">自提门店</text>
+      <text class="value">{{order.pickupStore.name}}</text>
+    </view>
+    <view class="info-item" wx:if="{{order.pickupStore}}">
+      <text class="label">门店地址</text>
+      <text class="value">{{order.pickupStore.address}}</text>
+    </view>
+  </view>
+
+  <!-- 商品列表 -->
+  <view class="goods-section">
+    <view class="goods-item" wx:for="{{goodsList}}" wx:key="id">
+      <image class="goods-image" src="{{img.url(item.picUrl)}}" mode="aspectFill"></image>
+      <view class="goods-info">
+        <text class="goods-name">{{item.goodsName}}</text>
+        <text class="goods-spec" wx:if="{{item.specifications}}">{{item.specifications}}</text>
+        <text class="goods-spec" wx:elif="{{item.size}}">{{item.size}}</text>
+        <view class="goods-price-num">
+          <text class="goods-price">¥{{item.price}}</text>
+          <text class="goods-num">x{{item.number}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 物流信息（已发货时显示） -->
+  <view class="info-section" wx:if="{{order.shipSn}}">
+    <view class="section-title">物流信息</view>
+    <view class="info-item">
+      <text class="label">物流公司</text>
+      <text class="value">{{order.shipChannel}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">物流单号</text>
+      <text class="value">{{order.shipSn}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">发货时间</text>
+      <text class="value">{{order.shipTime}}</text>
+    </view>
+  </view>
+
+  <!-- 退款信息（退款中时显示） -->
+  <view class="info-section" wx:if="{{order.orderStatus === 202}}">
+    <view class="section-title">退款信息</view>
+    <view class="info-item">
+      <text class="label">退款金额</text>
+      <text class="value price">¥{{order.actualPrice}}</text>
+    </view>
+    <view class="info-item" wx:if="{{order.refundContent}}">
+      <text class="label">退款原因</text>
+      <text class="value">{{order.refundContent}}</text>
+    </view>
+  </view>
+
+  <!-- 核销信息（待核销时显示） -->
+  <view class="info-section" wx:if="{{order.orderStatus === 501}}">
+    <view class="section-title">核销信息</view>
+    <view class="info-item">
+      <text class="label">取货码</text>
+      <text class="value pickup-code">{{order.pickupCode}}</text>
+    </view>
+  </view>
+
+  <!-- 订单信息 -->
+  <view class="info-section">
+    <view class="section-title">订单信息</view>
+    <view class="info-item">
+      <text class="label">订单编号</text>
+      <text class="value">{{order.orderSn}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">下单时间</text>
+      <text class="value">{{order.addTime}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">支付方式</text>
+      <text class="value">微信支付</text>
+    </view>
+    <view class="info-item">
+      <text class="label">订单金额</text>
+      <text class="value">¥{{order.goodsPrice}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">运费</text>
+      <text class="value">¥{{order.freightPrice}}</text>
+    </view>
+    <view class="info-item">
+      <text class="label">实付金额</text>
+      <text class="value price">¥{{order.actualPrice}}</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="action-section">
+    <!-- 201 已付款：发货（快递订单）、取消 -->
+    <block wx:if="{{order.orderStatus === 201}}">
+      <view class="action-btn btn-cancel" bindtap="handleCancel">取消订单</view>
+      <view class="action-btn btn-primary" wx:if="{{order.deliveryType !== 'pickup'}}" bindtap="handleShip">发货</view>
+    </block>
+
+    <!-- 501 待核销：核销 -->
+    <block wx:if="{{order.orderStatus === 501}}">
+      <view class="action-btn btn-primary" bindtap="handleVerify">确认核销</view>
+    </block>
+
+    <!-- 202 退款中：拒绝退款、同意退款 -->
+    <block wx:if="{{order.orderStatus === 202}}">
+      <view class="action-btn btn-danger" bindtap="handleRefundReject">拒绝退款</view>
+      <view class="action-btn btn-warning" bindtap="handleRefundAgree">同意退款</view>
+    </block>
+  </view>
+
+  <!-- 发货弹窗 -->
+  <view class="dialog-mask" wx:if="{{showShipDialog}}" bindtap="closeShipDialog"></view>
+  <view class="dialog" wx:if="{{showShipDialog}}">
+    <view class="dialog-title">发货</view>
+    <view class="dialog-content">
+      <view class="form-item">
+        <text class="form-label">物流公司</text>
+        <picker mode="selector" range="{{channelOptions}}" value="{{channelIndex}}" bindchange="onChannelChange">
+          <view class="picker">
+            {{channelOptions[channelIndex]}}
+            <text class="arrow">></text>
+          </view>
+        </picker>
+      </view>
+      <view class="form-item">
+        <text class="form-label">物流单号</text>
+        <input class="form-input" placeholder="请输入物流单号" value="{{shipSn}}" bindinput="onShipSnInput" />
+      </view>
+    </view>
+    <view class="dialog-actions">
+      <view class="btn-cancel" bindtap="closeShipDialog">取消</view>
+      <view class="btn-confirm" bindtap="confirmShip">确认发货</view>
+    </view>
+  </view>
+
+  <!-- 核销弹窗 -->
+  <view class="dialog-mask" wx:if="{{showVerifyDialog}}" bindtap="closeVerifyDialog"></view>
+  <view class="dialog" wx:if="{{showVerifyDialog}}">
+    <view class="dialog-title">核销确认</view>
+    <view class="dialog-content">
+      <view class="form-item">
+        <text class="form-label">取货码</text>
+        <input class="form-input" placeholder="请输入取货码" value="{{inputPickupCode}}" bindinput="onPickupCodeInput" />
+      </view>
+    </view>
+    <view class="dialog-actions">
+      <view class="btn-cancel" bindtap="closeVerifyDialog">取消</view>
+      <view class="btn-confirm" bindtap="confirmVerify">确认核销</view>
+    </view>
+  </view>
+
+  <!-- 拒绝退款弹窗 -->
+  <view class="dialog-mask" wx:if="{{showRejectDialog}}" bindtap="closeRejectDialog"></view>
+  <view class="dialog" wx:if="{{showRejectDialog}}">
+    <view class="dialog-title">拒绝退款</view>
+    <view class="dialog-content">
+      <view class="form-item">
+        <text class="form-label">拒绝原因</text>
+        <textarea class="form-textarea" placeholder="请输入拒绝原因" value="{{rejectReason}}" bindinput="onRejectReasonInput" />
+      </view>
+    </view>
+    <view class="dialog-actions">
+      <view class="btn-cancel" bindtap="closeRejectDialog">取消</view>
+      <view class="btn-confirm btn-danger-text" bindtap="confirmReject">确认拒绝</view>
+    </view>
+  </view>
+</view>
+
+<view class="loading" wx:if="{{loading}}">
+  <text>加载中...</text>
+</view>

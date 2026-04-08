@@ -1,0 +1,13 @@
+<view class="empty-state">
+  <image
+    class="empty-image"
+    src="{{configs[type].image}}"
+    mode="aspectFit"
+  />
+  <view class="empty-message">{{message || configs[type].message}}</view>
+  <view
+    class="empty-button"
+    wx:if="{{showButton}}"
+    bindtap="onButtonTap"
+  >{{buttonText}}</view>
+</view>

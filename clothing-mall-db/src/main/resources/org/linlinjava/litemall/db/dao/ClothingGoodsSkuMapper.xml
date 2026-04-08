@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.linlinjava.litemall.db.dao.ClothingGoodsSkuMapper">
+
+    <resultMap id="BaseResultMap" type="org.linlinjava.litemall.db.domain.ClothingGoodsSku">
+        <id column="id" property="id"/>
+        <result column="goods_id" property="goodsId"/>
+        <result column="status" property="status"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="brand" property="brand"/>
+        <result column="name" property="name"/>
+        <result column="brief" property="brief"/>
+        <result column="material" property="material"/>
+        <result column="season" property="season"/>
+        <result column="style" property="style"/>
+        <result column="ai_recognized" property="aiRecognized"/>
+        <result column="ai_confidence" property="aiConfidence"/>
+        <result column="source_image" property="sourceImage"/>
+        <result column="sku_code" property="skuCode"/>
+        <result column="color" property="color"/>
+        <result column="color_image" property="colorImage"/>
+        <result column="size" property="size"/>
+        <result column="price" property="price"/>
+        <result column="stock" property="stock"/>
+        <result column="image_url" property="imageUrl"/>
+        <result column="bar_code" property="barCode"/>
+        <result column="is_default" property="isDefault"/>
+        <result column="deleted" property="deleted"/>
+        <result column="add_time" property="addTime"/>
+        <result column="update_time" property="updateTime"/>
+        <!-- 关联字段 -->
+        <result column="goods_name" property="goodsName"/>
+        <result column="goods_image_url" property="goodsImageUrl"/>
+        <result column="category_name" property="categoryName"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, goods_id, status, category_id, brand, name, brief, material, season, style,
+        ai_recognized, ai_confidence, source_image, sku_code, color, color_image, size,
+        price, stock, image_url, bar_code, is_default, deleted, add_time, update_time
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT s.*, g.name as goods_name, g.pic_url as goods_image_url, c.name as category_name
+        FROM clothing_goods_sku s
+        LEFT JOIN litemall_goods g ON s.goods_id = g.id
+        LEFT JOIN litemall_category c ON s.category_id = c.id
+        WHERE s.id = #{id} AND s.deleted = 0
+    </select>
+
+    <select id="selectByGoodsId" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM clothing_goods_sku
+        WHERE goods_id = #{goodsId} AND deleted = 0
+        ORDER BY id
+    </select>
+
+    <select id="selectByGoodsIdAndColor" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM clothing_goods_sku
+        WHERE goods_id = #{goodsId} AND color = #{color} AND deleted = 0
+        ORDER BY id
+    </select>
+
+    <select id="selectByGoodsIdColorSize" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM clothing_goods_sku
+        WHERE goods_id = #{goodsId} AND color = #{color} AND size = #{size} AND deleted = 0
+    </select>
+
+    <!-- 查询独立 SKU 列表（支持分页和筛选） -->
+    <select id="selectSkuList" resultMap="BaseResultMap">
+        SELECT s.*, g.name as goods_name, g.pic_url as goods_image_url, c.name as category_name
+        FROM clothing_goods_sku s
+        LEFT JOIN litemall_goods g ON s.goods_id = g.id
+        LEFT JOIN litemall_category c ON s.category_id = c.id
+        <where>
+            s.deleted = 0
+            <if test="status != null">AND s.status = #{status}</if>
+            <if test="categoryId != null">AND s.category_id = #{categoryId}</if>
+            <if test="color != null">AND s.color LIKE CONCAT('%', #{color}, '%')</if>
+            <if test="size != null">AND s.size = #{size}</if>
+            <if test="keyword != null">AND (s.name LIKE CONCAT('%', #{keyword}, '%') OR s.sku_code LIKE CONCAT('%', #{keyword}, '%'))</if>
+            <if test="goodsId != null">AND s.goods_id = #{goodsId}</if>
+            <if test="hasGoods != null and hasGoods == true">AND s.goods_id IS NOT NULL</if>
+            <if test="hasGoods != null and hasGoods == false">AND s.goods_id IS NULL</if>
+        </where>
+        ORDER BY s.update_time DESC
+    </select>
+
+    <!-- 统计 SKU 数量 -->
+    <select id="countSkuList" resultType="int">
+        SELECT COUNT(*)
+        FROM clothing_goods_sku s
+        <where>
+            s.deleted = 0
+            <if test="status != null">AND s.status = #{status}</if>
+            <if test="categoryId != null">AND s.category_id = #{categoryId}</if>
+            <if test="color != null">AND s.color LIKE CONCAT('%', #{color}, '%')</if>
+            <if test="size != null">AND s.size = #{size}</if>
+            <if test="keyword != null">AND (s.name LIKE CONCAT('%', #{keyword}, '%') OR s.sku_code LIKE CONCAT('%', #{keyword}, '%'))</if>
+            <if test="goodsId != null">AND s.goods_id = #{goodsId}</if>
+            <if test="hasGoods != null and hasGoods == true">AND s.goods_id IS NOT NULL</if>
+            <if test="hasGoods != null and hasGoods == false">AND s.goods_id IS NULL</if>
+        </where>
+    </select>
+
+    <update id="reduceStock">
+        UPDATE clothing_goods_sku
+        SET stock = stock - #{num}
+        WHERE id = #{id} AND stock >= #{num}
+    </update>
+
+    <update id="addStock">
+        UPDATE clothing_goods_sku
+        SET stock = stock + #{num}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectSelective" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM clothing_goods_sku
+        <where>
+            deleted = 0
+            <if test="goodsId != null">AND goods_id = #{goodsId}</if>
+            <if test="color != null">AND color = #{color}</if>
+            <if test="size != null">AND size = #{size}</if>
+            <if test="barCode != null">AND bar_code = #{barCode}</if>
+            <if test="status != null">AND status = #{status}</if>
+        </where>
+    </select>
+
+    <select id="countSelective" resultType="int">
+        SELECT COUNT(*)
+        FROM clothing_goods_sku
+        <where>
+            deleted = 0
+            <if test="goodsId != null">AND goods_id = #{goodsId}</if>
+            <if test="color != null">AND color = #{color}</if>
+            <if test="size != null">AND size = #{size}</if>
+            <if test="status != null">AND status = #{status}</if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="org.linlinjava.litemall.db.domain.ClothingGoodsSku" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO clothing_goods_sku (
+            goods_id, status, category_id, brand, name, brief, material, season, style,
+            ai_recognized, ai_confidence, source_image, sku_code, color, color_image, size,
+            price, stock, image_url, bar_code, is_default, deleted, add_time, update_time
+        ) VALUES (
+            #{goodsId}, #{status}, #{categoryId}, #{brand}, #{name}, #{brief}, #{material}, #{season}, #{style},
+            #{aiRecognized}, #{aiConfidence}, #{sourceImage}, #{skuCode}, #{color}, #{colorImage}, #{size},
+            #{price}, #{stock}, #{imageUrl}, #{barCode}, #{isDefault}, 0, NOW(), NOW()
+        )
+    </insert>
+
+    <insert id="insertSelective" parameterType="org.linlinjava.litemall.db.domain.ClothingGoodsSku" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO clothing_goods_sku
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="goodsId != null">goods_id,</if>
+            status,
+            <if test="categoryId != null">category_id,</if>
+            <if test="brand != null">brand,</if>
+            <if test="name != null">name,</if>
+            <if test="brief != null">brief,</if>
+            <if test="material != null">material,</if>
+            <if test="season != null">season,</if>
+            <if test="style != null">style,</if>
+            <if test="aiRecognized != null">ai_recognized,</if>
+            <if test="aiConfidence != null">ai_confidence,</if>
+            <if test="sourceImage != null">source_image,</if>
+            <if test="skuCode != null">sku_code,</if>
+            <if test="color != null">color,</if>
+            <if test="colorImage != null">color_image,</if>
+            <if test="size != null">size,</if>
+            <if test="price != null">price,</if>
+            stock,
+            <if test="imageUrl != null">image_url,</if>
+            <if test="barCode != null">bar_code,</if>
+            <if test="isDefault != null">is_default,</if>
+            deleted, add_time, update_time,
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="goodsId != null">#{goodsId},</if>
+            <choose>
+                <when test="status != null">#{status},</when>
+                <otherwise>'draft',</otherwise>
+            </choose>
+            <if test="categoryId != null">#{categoryId},</if>
+            <if test="brand != null">#{brand},</if>
+            <if test="name != null">#{name},</if>
+            <if test="brief != null">#{brief},</if>
+            <if test="material != null">#{material},</if>
+            <if test="season != null">#{season},</if>
+            <if test="style != null">#{style},</if>
+            <if test="aiRecognized != null">#{aiRecognized},</if>
+            <if test="aiConfidence != null">#{aiConfidence},</if>
+            <if test="sourceImage != null">#{sourceImage},</if>
+            <if test="skuCode != null">#{skuCode},</if>
+            <if test="color != null">#{color},</if>
+            <if test="colorImage != null">#{colorImage},</if>
+            <if test="size != null">#{size},</if>
+            <if test="price != null">#{price},</if>
+            <if test="stock != null">#{stock},</if> ELSE 0,
+            <if test="imageUrl != null">#{imageUrl},</if>
+            <if test="barCode != null">#{barCode},</if>
+            <if test="isDefault != null">#{isDefault},</if>
+            0, NOW(), NOW(),
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="org.linlinjava.litemall.db.domain.ClothingGoodsSku">
+        UPDATE clothing_goods_sku
+        <set>
+            <if test="goodsId != null">goods_id = #{goodsId},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="brand != null">brand = #{brand},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="brief != null">brief = #{brief},</if>
+            <if test="material != null">material = #{material},</if>
+            <if test="season != null">season = #{season},</if>
+            <if test="style != null">style = #{style},</if>
+            <if test="aiRecognized != null">ai_recognized = #{aiRecognized},</if>
+            <if test="aiConfidence != null">ai_confidence = #{aiConfidence},</if>
+            <if test="sourceImage != null">source_image = #{sourceImage},</if>
+            <if test="skuCode != null">sku_code = #{skuCode},</if>
+            <if test="color != null">color = #{color},</if>
+            <if test="colorImage != null">color_image = #{colorImage},</if>
+            <if test="size != null">size = #{size},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="stock != null">stock = #{stock},</if>
+            <if test="imageUrl != null">image_url = #{imageUrl},</if>
+            <if test="barCode != null">bar_code = #{barCode},</if>
+            <if test="isDefault != null">is_default = #{isDefault},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteByPrimaryKey">
+        UPDATE clothing_goods_sku SET deleted = 1 WHERE id = #{id}
+    </update>
+
+    <update id="deleteByGoodsId">
+        UPDATE clothing_goods_sku SET deleted = 1 WHERE goods_id = #{goodsId}
+    </update>
+
+    <!-- 批量更新状态 -->
+    <update id="updateStatusBatch">
+        UPDATE clothing_goods_sku
+        SET status = #{status}, update_time = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <!-- 批量关联商品 -->
+    <update id="bindGoodsBatch">
+        UPDATE clothing_goods_sku
+        SET goods_id = #{goodsId}, status = 'published', update_time = NOW()
+        WHERE id IN
+        <foreach collection="skuIds" item="skuId" open="(" separator="," close=")">
+            #{skuId}
+        </foreach>
+    </update>
+
+    <!-- 解除商品关联（将 goods_id 置空，状态重置为 draft） -->
+    <update id="unbindByGoodsId">
+        UPDATE clothing_goods_sku
+        SET goods_id = NULL, status = 'draft', update_time = NOW()
+        WHERE goods_id = #{goodsId}
+    </update>
+
+</mapper>

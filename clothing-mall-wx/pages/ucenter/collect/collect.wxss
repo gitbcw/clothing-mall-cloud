@@ -1,0 +1,165 @@
+page {
+  background: #f4f4f4;
+  min-height: 100%;
+}
+
+.container {
+  background: #f4f4f4;
+  min-height: 100%;
+}
+
+/* ================================================================
+   Empty State
+   ================================================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 240rpx;
+}
+
+.empty-circle {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFF5F7, #FFE8EC);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 36rpx;
+}
+
+.empty-plus {
+  width: 48rpx;
+  height: 48rpx;
+  position: relative;
+}
+
+.empty-plus::before,
+.empty-plus::after {
+  content: '';
+  position: absolute;
+  background: #FFD4DC;
+  border-radius: 2rpx;
+}
+
+.empty-plus::before {
+  width: 48rpx;
+  height: 4rpx;
+  top: 22rpx;
+  left: 0;
+}
+
+.empty-plus::after {
+  width: 4rpx;
+  height: 48rpx;
+  left: 22rpx;
+  top: 0;
+}
+
+.empty-title {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+}
+
+.empty-desc {
+  font-size: 26rpx;
+  color: #999;
+}
+
+/* ================================================================
+   Goods List
+   ================================================================ */
+.goods-list {
+  padding: 16rpx 24rpx 0;
+}
+
+.list-hint {
+  padding: 16rpx 0 8rpx;
+}
+
+.list-hint-text {
+  font-size: 22rpx;
+  color: #ccc;
+}
+
+.goods-card {
+  display: flex;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+}
+
+.goods-card:active {
+  opacity: 0.85;
+}
+
+.goods-img {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 12rpx;
+  flex-shrink: 0;
+  background: #f4f4f4;
+}
+
+.goods-info {
+  flex: 1;
+  margin-left: 24rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 4rpx 0;
+}
+
+.goods-top {
+  display: flex;
+  flex-direction: column;
+}
+
+.goods-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  line-height: 40rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.goods-brief {
+  font-size: 24rpx;
+  color: #999;
+  line-height: 34rpx;
+  margin-top: 8rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goods-bottom {
+  display: flex;
+  align-items: center;
+}
+
+.goods-price {
+  font-size: 32rpx;
+  color: #FF8096;
+  font-weight: 600;
+}
+
+/* ================================================================
+   Footer
+   ================================================================ */
+.list-footer {
+  padding: 32rpx 0 64rpx;
+  text-align: center;
+}
+
+.no-more-text {
+  font-size: 24rpx;
+  color: #ccc;
+}

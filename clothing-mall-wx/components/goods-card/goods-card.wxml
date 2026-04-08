@@ -1,0 +1,47 @@
+<view class="goods-card {{mode === 'list' ? 'goods-card-list' : ''}}" bindtap="onGoodsTap" data-id="{{goods.id}}">
+  <!-- 商品图片 -->
+  <view class="goods-image-wrap">
+    <image
+      class="goods-image"
+      src="{{imageError ? defaultImage : (goods.picUrl || defaultImage)}}"
+      mode="aspectFill"
+      lazy-load
+      binderror="onImageError"
+      bindload="onImageLoad"
+    />
+    <!-- 标签 -->
+    <view class="goods-tag special" wx:if="{{goods.isSpecialPrice}}">特价</view>
+    <view class="goods-tag" wx:elif="{{goods.isNew}}">新品</view>
+    <view class="goods-tag hot" wx:elif="{{goods.isHot}}">热销</view>
+  </view>
+
+  <!-- 商品信息 -->
+  <view class="goods-info">
+    <view class="goods-name">{{goods.name}}</view>
+    <view class="goods-brief" wx:if="{{goods.brief}}">{{goods.brief}}</view>
+    <view class="goods-price-row">
+      <view class="goods-price" wx:if="{{goods.specialPrice}}">
+        <text class="price-symbol">¥</text>
+        <text class="price-value">{{goods.specialPrice}}</text>
+      </view>
+      <view class="goods-price" wx:else>
+        <text class="price-symbol">¥</text>
+        <text class="price-value">{{goods.retailPrice}}</text>
+      </view>
+      <view class="goods-origin-price" wx:if="{{goods.specialPrice && goods.counterPrice}}">
+        ¥{{goods.counterPrice}}
+      </view>
+      <view class="goods-origin-price" wx:elif="{{showOriginPrice && goods.counterPrice > goods.retailPrice}}">
+        ¥{{goods.counterPrice}}
+      </view>
+    </view>
+    <view class="goods-sales" wx:if="{{showSales && goods.sales}}">
+      已售 {{goods.sales}}
+    </view>
+  </view>
+
+  <!-- 快速加购按钮 -->
+  <view class="quick-cart" catchtap="onQuickCart" wx:if="{{showCartIcon !== false}}">
+    <van-icon name="shopping-cart-o" size="18px" color="#fff" />
+  </view>
+</view>

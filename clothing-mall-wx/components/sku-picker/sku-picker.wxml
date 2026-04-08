@@ -1,0 +1,60 @@
+<wxs src="../../utils/image.wxs" module="img" />
+<!-- 尺码选择器组件 - 服装店专用（只选尺码） -->
+<view class="sku-picker" wx:if="{{visible}}">
+  <view class="sku-mask" bindtap="onClose"></view>
+  <view class="sku-container">
+    <!-- 关闭按钮 -->
+    <view class="sku-close" bindtap="onClose">
+      <text class="close-icon">×</text>
+    </view>
+
+    <!-- 商品信息 -->
+    <view class="sku-header">
+      <image class="sku-image" src="{{img.url(goodsImage)}}" mode="aspectFill"></image>
+      <view class="sku-info">
+        <view class="sku-price">￥{{goodsPrice}}</view>
+        <view class="sku-selected" wx:if="{{enableSize && selectedSize}}">已选：{{selectedSize}}</view>
+        <view class="sku-selected" wx:elif="{{enableSize}}">请选择尺码</view>
+        <view class="sku-selected" wx:else>已选：均码</view>
+      </view>
+    </view>
+
+    <!-- 尺码选择 -->
+    <view class="sku-section">
+      <view class="sku-section-title">尺码</view>
+      <view class="sku-options">
+        <!-- enableSize=false 时只显示均码，默认选中不可取消 -->
+        <block wx:if="{{!enableSize}}">
+          <view class="sku-option size-option selected">均码</view>
+        </block>
+        <!-- enableSize=true 时正常显示尺码列表 -->
+        <block wx:else>
+          <view
+            wx:for="{{sizes}}"
+            wx:key="*this"
+            class="sku-option size-option {{selectedSize === item ? 'selected' : ''}}"
+            bindtap="onSelectSize"
+            data-size="{{item}}">
+            {{item}}
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 数量选择 -->
+    <view class="sku-section">
+      <view class="sku-section-title">数量</view>
+      <view class="sku-quantity">
+        <view class="quantity-btn {{quantity <= 1 ? 'disabled' : ''}}" bindtap="onDecrease">-</view>
+        <input class="quantity-input" type="number" value="{{quantity}}" disabled />
+        <view class="quantity-btn {{quantity >= 99 ? 'disabled' : ''}}" bindtap="onIncrease">+</view>
+      </view>
+    </view>
+
+    <!-- 底部按钮 -->
+    <view class="sku-footer" style="padding-bottom: calc(24rpx + env(safe-area-inset-bottom) + {{bottomOffset}}rpx)">
+      <view class="sku-btn btn-cart" bindtap="onAddToCart">加入购物车</view>
+      <view class="sku-btn btn-buy" bindtap="onBuyNow">立即购买</view>
+    </view>
+  </view>
+</view>

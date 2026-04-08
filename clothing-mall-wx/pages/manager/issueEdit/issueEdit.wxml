@@ -1,0 +1,43 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-back" bindtap="onBack">
+        <view class="nav-back-icon"></view>
+      </view>
+      <view class="nav-title">{{isEdit ? '编辑问题' : '新增问题'}}</view>
+      <view class="nav-placeholder-right"></view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 表单 -->
+  <view class="form-section">
+    <view class="form-card">
+      <view class="field-group">
+        <view class="field-label">
+          <text class="field-required">*</text>
+          <text>问题</text>
+        </view>
+        <textarea class="field-textarea" value="{{form.question}}" bindinput="onInputQuestion" placeholder="请输入常见问题" maxlength="200" auto-height />
+      </view>
+
+      <view class="field-divider"></view>
+
+      <view class="field-group">
+        <view class="field-label">
+          <text class="field-required">*</text>
+          <text>回答</text>
+        </view>
+        <textarea class="field-textarea field-textarea--answer" value="{{form.answer}}" bindinput="onInputAnswer" placeholder="请输入问题的回答" maxlength="2000" auto-height />
+      </view>
+    </view>
+  </view>
+
+  <!-- 保存按钮 -->
+  <view class="save-bar">
+    <view class="save-btn {{saving ? 'save-btn-disabled' : ''}}" bindtap="{{saving ? '' : 'onSave'}}">
+      <text>{{saving ? '保存中...' : '保存'}}</text>
+    </view>
+  </view>
+</view>

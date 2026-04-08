@@ -1,0 +1,57 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-back" bindtap="onBack">
+        <view class="nav-back-icon"></view>
+      </view>
+      <view class="nav-title">常见问题管理</view>
+      <view class="nav-action" bindtap="onAddIssue">
+        <view class="nav-add-icon"></view>
+      </view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 问题列表 -->
+  <view class="issue-list" wx:if="{{!loading}}">
+    <view class="issue-card" wx:for="{{issueList}}" wx:key="id" bindtap="onIssueTap" data-id="{{item.id}}">
+      <!-- 信息 -->
+      <view class="issue-info">
+        <view class="issue-question">{{item.question}}</view>
+        <view class="issue-answer" wx:if="{{item.answer}}">{{item.answer}}</view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="issue-actions">
+        <view class="action-btn action-delete" catchtap="onDeleteIssue" data-id="{{item.id}}">
+          <view class="delete-icon"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{issueList.length === 0}}">
+      <view class="empty-icon"></view>
+      <text class="empty-text">还没有问题</text>
+      <text class="empty-hint">点击右上角 + 创建第一个常见问题</text>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-dots">
+      <view class="dot"></view>
+      <view class="dot"></view>
+      <view class="dot"></view>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="bottom-bar" wx:if="{{!loading && issueList.length > 0}}">
+    <view class="add-btn" bindtap="onAddIssue">
+      <view class="add-btn-icon"></view>
+      <text>新增问题</text>
+    </view>
+  </view>
+</view>

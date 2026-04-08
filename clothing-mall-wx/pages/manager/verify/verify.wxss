@@ -1,0 +1,344 @@
+@import "../../../styles/manager-common.wxss";
+
+.container {
+  min-height: 100vh;
+  background-color: #F7F8FA;
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+}
+
+/* ---- 导航栏 ---- */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30rpx;
+}
+
+.nav-back {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-back-icon {
+  width: 18rpx;
+  height: 18rpx;
+  border-left: 4rpx solid #333;
+  border-bottom: 4rpx solid #333;
+  transform: rotate(45deg);
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.nav-placeholder-right {
+  width: 60rpx;
+}
+
+.nav-placeholder {
+  background: transparent;
+}
+
+/* ---- 核销码输入区 ---- */
+.code-section {
+  padding: 32rpx 24rpx;
+}
+
+.code-card {
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 40rpx 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+.code-card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 28rpx;
+}
+
+.code-input-row {
+  display: flex;
+  align-items: center;
+  background: #F7F8FA;
+  border-radius: 16rpx;
+  padding: 0 24rpx;
+  margin-bottom: 32rpx;
+  height: 96rpx;
+}
+
+.code-input {
+  flex: 1;
+  font-size: 32rpx;
+  color: #333;
+  height: 96rpx;
+}
+
+.scan-btn {
+  width: 88rpx;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.scan-icon {
+  width: 44rpx;
+  height: 44rpx;
+  border: 4rpx solid #666;
+  border-radius: 8rpx;
+  position: relative;
+}
+
+.scan-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20rpx;
+  height: 20rpx;
+  border: 3rpx solid #D4A86C;
+  border-radius: 50%;
+}
+
+.verify-btn {
+  background: #FF8096;
+  color: #FFFFFF;
+  border-radius: 44rpx;
+  padding: 28rpx 0;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  min-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(255, 128, 150, 0.3);
+}
+
+.verify-btn:active {
+  opacity: 0.85;
+}
+
+.verify-btn-disabled {
+  opacity: 0.5;
+}
+
+/* ---- 核销结果 ---- */
+.result-section {
+  padding: 0 24rpx;
+  margin-bottom: 32rpx;
+}
+
+.result-card {
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 40rpx 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+.result-success {
+  border-top: 6rpx solid #07c160;
+}
+
+.result-error {
+  border-top: 6rpx solid #E8494A;
+}
+
+.result-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  margin-bottom: 28rpx;
+}
+
+.result-icon {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  position: relative;
+}
+
+.icon-success {
+  background: #07c160;
+}
+
+.icon-success::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16rpx;
+  height: 10rpx;
+  border-left: 4rpx solid #FFFFFF;
+  border-bottom: 4rpx solid #FFFFFF;
+  transform: translate(-50%, -65%) rotate(-45deg);
+}
+
+.icon-error {
+  background: #E8494A;
+}
+
+.icon-error::before,
+.icon-error::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20rpx;
+  height: 4rpx;
+  background: #FFFFFF;
+  border-radius: 2rpx;
+}
+
+.icon-error::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.icon-error::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.result-label {
+  font-size: 34rpx;
+  font-weight: 600;
+}
+
+.success-label {
+  color: #07c160;
+}
+
+.error-label {
+  color: #E8494A;
+}
+
+.result-info {
+  padding: 20rpx 0;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+}
+
+.result-key {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.result-val {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.error-msg {
+  font-size: 28rpx;
+  color: #666;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.result-dismiss {
+  margin-top: 24rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #FF8096;
+  padding: 16rpx 0;
+  border-top: 1rpx solid #F0F0F0;
+}
+
+.result-dismiss:active {
+  opacity: 0.7;
+}
+
+/* ---- 核销记录 ---- */
+.history-section {
+  padding: 0 24rpx;
+}
+
+.section-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #999;
+  margin-bottom: 16rpx;
+  padding-left: 8rpx;
+}
+
+.history-list {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 8rpx 32rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.history-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 24rpx 0;
+  gap: 20rpx;
+  position: relative;
+}
+
+.history-item:not(:last-child) {
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.history-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: #07c160;
+  margin-top: 8rpx;
+  flex-shrink: 0;
+}
+
+.history-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.history-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6rpx;
+}
+
+.history-sn {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.history-time {
+  font-size: 22rpx;
+  color: #BBB;
+}
+
+.history-code {
+  font-size: 22rpx;
+  color: #999;
+}

@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "付款结果",
+  "navigationBarBackgroundColor": "#fafafa",
+  "navigationStyle": "custom",
+  "backgroundColor": "#f4f4f4",
+  "usingComponents": {
+    "custom-nav": "/components/custom-nav/custom-nav"
+  }
+}

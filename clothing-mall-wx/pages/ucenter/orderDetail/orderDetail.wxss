@@ -1,0 +1,631 @@
+page {
+  height: 100%;
+  width: 100%;
+  background: #f4f4f4;
+}
+
+/* ================================================================
+   配送信息区域
+   ================================================================ */
+.delivery-section {
+  background: #fff;
+  margin-bottom: 20rpx;
+}
+
+.delivery-card {
+  padding: 24rpx 31.25rpx;
+}
+
+/* 自提卡片容器 */
+.pickup-card {
+  background: #fff;
+  padding: 24rpx 31.25rpx 0;
+}
+
+.shipping-label {
+  display: flex;
+  border-radius: 16rpx;
+  overflow: hidden;
+  background: #FAFBFC;
+}
+
+.shipping-label-bar {
+  width: 8rpx;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #FF8096 0%, #FFB3C1 100%);
+}
+
+.shipping-label-body {
+  flex: 1;
+  padding: 28rpx 24rpx;
+}
+
+.shipping-label-header {
+  margin-bottom: 20rpx;
+}
+
+.shipping-badge {
+  font-size: 22rpx;
+  color: #FF8096;
+  background: rgba(255, 128, 150, 0.12);
+  display: inline-block;
+  padding: 4rpx 16rpx;
+  border-radius: 6rpx;
+}
+
+.shipping-label-clickable {
+  /* 可点击卡片 - 去除默认 hover 效果外的额外样式 */
+}
+
+.shipping-label-clickable:active {
+  opacity: 0.85;
+}
+
+.shipping-addr-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.shipping-pin {
+  font-size: 28rpx;
+  margin-right: 14rpx;
+  margin-top: 4rpx;
+  flex-shrink: 0;
+}
+
+.shipping-addr-content {
+  flex: 1;
+}
+
+.shipping-addr-name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.shipping-name {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: bold;
+  margin-right: 24rpx;
+}
+
+.shipping-mobile {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.shipping-addr-text {
+  font-size: 26rpx;
+  color: #888;
+  line-height: 40rpx;
+}
+
+/* 物流状态摘要 */
+.logistics-summary {
+  margin-top: 20rpx;
+}
+
+.logistics-summary-divider {
+  height: 1rpx;
+  background: rgba(0, 0, 0, 0.06);
+  margin-bottom: 20rpx;
+}
+
+.logistics-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logistics-summary-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  margin-right: 16rpx;
+  overflow: hidden;
+}
+
+.logistics-status-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #FF8096;
+  flex-shrink: 0;
+  margin-right: 12rpx;
+  box-shadow: 0 0 8rpx rgba(255, 128, 150, 0.4);
+}
+
+.logistics-summary-text {
+  font-size: 26rpx;
+  color: #555;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logistics-summary-arrow {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.logistics-summary-link {
+  font-size: 24rpx;
+  color: #FF8096;
+  margin-right: 4rpx;
+}
+
+/* ================================================================
+   自提票面卡片
+   ================================================================ */
+.pickup-card {
+  background: #fff;
+  padding: 24rpx 31.25rpx 0;
+}
+
+.pickup-ticket {
+  background: linear-gradient(135deg, #FFF5F7 0%, #FFF0F3 100%);
+  border-radius: 16rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.pickup-ticket::before {
+  content: '';
+  position: absolute;
+  right: -40rpx;
+  top: -40rpx;
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 50%;
+  background: rgba(255, 128, 150, 0.08);
+}
+
+.pickup-ticket-top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.pickup-badge {
+  font-size: 22rpx;
+  color: #FF8096;
+  background: rgba(255, 128, 150, 0.15);
+  padding: 4rpx 16rpx;
+  border-radius: 6rpx;
+  margin-right: 16rpx;
+}
+
+.pickup-ticket-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.pickup-code-display {
+  font-size: 72rpx;
+  color: #FF8096;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 16rpx;
+  padding: 16rpx 0 24rpx;
+  position: relative;
+}
+
+.pickup-ticket-divider {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+  position: relative;
+}
+
+.pickup-ticket-notch {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.pickup-ticket-notch-left {
+  margin-left: -42rpx;
+}
+
+.pickup-ticket-notch-right {
+  margin-right: -42rpx;
+}
+
+.pickup-ticket-dash {
+  flex: 1;
+  border-top: 2rpx dashed rgba(255, 128, 150, 0.3);
+}
+
+.pickup-contact-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pickup-contact-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.pickup-contact-label {
+  font-size: 22rpx;
+  color: #bbb;
+  margin-bottom: 6rpx;
+}
+
+.pickup-contact-value {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.pickup-contact-divider {
+  width: 1rpx;
+  height: 48rpx;
+  background: rgba(255, 128, 150, 0.2);
+  margin: 0 24rpx;
+}
+
+.pickup-no-code {
+  background: linear-gradient(135deg, #FFF5F7 0%, #FFF0F3 100%);
+  border-radius: 16rpx;
+  padding: 24rpx 32rpx;
+  margin-bottom: 24rpx;
+}
+
+.store-card {
+  background: #FAFAFA;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.store-card-name {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 16rpx;
+}
+
+.store-card-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12rpx;
+}
+
+.store-card-row:last-child {
+  margin-bottom: 0;
+}
+
+.store-card-icon {
+  font-size: 24rpx;
+  margin-right: 12rpx;
+  margin-top: 2rpx;
+  flex-shrink: 0;
+}
+
+.store-card-text {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 38rpx;
+}
+
+/* ================================================================
+   商品信息
+   ================================================================ */
+.order-goods {
+  background: #fff;
+  margin-bottom: 20rpx;
+}
+
+.goods-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 31.25rpx;
+  height: 88rpx;
+  border-bottom: 1rpx solid #f4f4f4;
+}
+
+.goods-header-title {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.goods-header-status {
+  font-size: 26rpx;
+  color: #FF8096;
+}
+
+.goods-list {
+  padding: 20rpx 31.25rpx;
+}
+
+.goods-item {
+  display: flex;
+  padding: 16rpx 0;
+}
+
+.goods-item + .goods-item {
+  border-top: 1rpx solid #f4f4f4;
+}
+
+.goods-item-img {
+  width: 150rpx;
+  height: 150rpx;
+  flex-shrink: 0;
+  border-radius: 12rpx;
+  overflow: hidden;
+  background: #f4f4f4;
+}
+
+.goods-item-img image {
+  width: 150rpx;
+  height: 150rpx;
+}
+
+.goods-item-info {
+  flex: 1;
+  margin-left: 20rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.goods-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.goods-item-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  flex: 1;
+  margin-right: 16rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goods-item-num {
+  font-size: 26rpx;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.goods-item-spec {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 8rpx;
+}
+
+.goods-item-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8rpx;
+}
+
+.goods-item-price {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.goods-item-btn {
+  font-size: 24rpx;
+  color: #FF8096;
+  border: 1rpx solid #FF8096;
+  border-radius: 24rpx;
+  padding: 6rpx 20rpx;
+}
+
+/* ================================================================
+   费用明细
+   ================================================================ */
+.fee-section {
+  background: #fff;
+  padding: 0 31.25rpx;
+  margin-bottom: 20rpx;
+}
+
+.fee-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 76rpx;
+  border-top: 1rpx solid #f4f4f4;
+}
+
+.fee-label {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.fee-value {
+  font-size: 26rpx;
+  color: #333;
+}
+
+.fee-discount {
+  color: #FF8096;
+}
+
+.fee-total-row {
+  border-top: none;
+  padding-top: 8rpx;
+}
+
+.fee-total {
+  font-size: 32rpx;
+  color: #FF8096;
+  font-weight: bold;
+}
+
+/* ================================================================
+   订单信息
+   ================================================================ */
+.order-meta {
+  background: #fff;
+  padding: 8rpx 31.25rpx;
+  margin-bottom: 20rpx;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 76rpx;
+}
+
+.meta-label {
+  font-size: 26rpx;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.meta-value {
+  font-size: 26rpx;
+  color: #333;
+  text-align: right;
+  margin-left: 24rpx;
+}
+
+/* ================================================================
+   操作按钮
+   ================================================================ */
+.action-bar {
+  background: #fff;
+  padding: 24rpx 31.25rpx;
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.action-btn {
+  font-size: 26rpx;
+  padding: 12rpx 28rpx;
+  border-radius: 28rpx;
+  text-align: center;
+}
+
+.action-btn-outline {
+  color: #666;
+  border: 1rpx solid #ddd;
+  background: #fff;
+}
+
+.action-btn-primary {
+  color: #fff;
+  background: #FF8096;
+  border: 1rpx solid #FF8096;
+}
+
+/* ================================================================
+   物流信息
+   ================================================================ */
+.express-section {
+  background: #fff;
+  padding: 0 31.25rpx;
+  margin-bottom: 20rpx;
+}
+
+.express-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 96rpx;
+}
+
+.express-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.express-company {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 4rpx;
+}
+
+.express-no {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.express-arrow {
+  color: #ccc;
+  font-size: 28rpx;
+}
+
+/* 时间轴 */
+.express-timeline {
+  padding: 16rpx 0 24rpx;
+  border-top: 1rpx solid #f4f4f4;
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 36rpx;
+  padding-bottom: 32rpx;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 4rpx;
+  top: 8rpx;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #FFD4DC;
+  border: 3rpx solid #FF8096;
+  box-sizing: border-box;
+}
+
+.timeline-item:first-child .timeline-dot {
+  background: #FF8096;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 10rpx;
+  top: 26rpx;
+  bottom: 0;
+  width: 2rpx;
+  background: #FFD4DC;
+}
+
+.timeline-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-station {
+  font-size: 26rpx;
+  color: #333;
+  line-height: 38rpx;
+  margin-bottom: 4rpx;
+}
+
+.timeline-time {
+  font-size: 22rpx;
+  color: #bbb;
+}

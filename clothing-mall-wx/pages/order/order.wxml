@@ -1,0 +1,62 @@
+<wxs src="../../utils/image.wxs" module="img" />
+<view class="container">
+  <!-- 自定义导航栏与 Tabs (吸顶) -->
+  <view class="header-wrap" style="padding-top: {{statusBarHeight}}px;">
+    <!-- 导航栏 -->
+    <view class="nav-bar" style="height: {{navBarHeight}}px;">
+      <view class="back-btn" bindtap="goBack">
+        <view class="back-icon"></view>
+      </view>
+      <view class="nav-title">我的订单</view>
+      <view class="nav-right"></view>
+    </view>
+
+    <!-- Tabs 分类 -->
+    <view class="tabs">
+      <block wx:for="{{tabs}}" wx:key="*this">
+        <view class="tab-item {{currentTab === index ? 'active' : ''}}" bindtap="switchTab" data-index="{{index}}">
+          <text>{{item}}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 顶部占位，防止内容被 fixed 头部遮挡 -->
+  <view class="header-placeholder" style="height: {{statusBarHeight + navBarHeight + 44}}px;"></view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{orderList.length === 0}}">
+    <view class="empty-icon"></view>
+    <text class="empty-text">暂无订单</text>
+  </view>
+
+  <!-- 订单列表区 -->
+  <view class="order-list">
+    <block wx:for="{{orderList}}" wx:key="id" wx:for-index="orderIndex">
+      <view class="order-card" bindtap="goOrderDetail" data-id="{{item.id}}">
+        <!-- 订单头部 -->
+        <view class="order-header">
+          <text class="order-sn">订单编号：{{item.orderSn}}</text>
+          <text class="order-status">{{item.orderStatusText}}</text>
+        </view>
+
+        <!-- 商品信息区 -->
+        <view class="goods-info" wx:for="{{item.goodsList}}" wx:for-item="goods" wx:for-index="goodsIndex" wx:key="id">
+          <image class="goods-img" src="{{img.url(goods.picUrl) || defaultImage}}" mode="aspectFill" binderror="onOrderImageError" data-order-index="{{orderIndex}}" data-goods-index="{{goodsIndex}}"></image>
+
+          <view class="goods-detail">
+            <!-- 标题 -->
+            <view class="goods-title">{{goods.goodsName}}</view>
+            <!-- 数量 -->
+            <view class="goods-count">共{{goods.number}}件商品</view>
+          </view>
+        </view>
+
+        <!-- 订单底部 -->
+        <view class="order-footer">
+          <text class="order-total">实付：￥{{item.actualPrice}}</text>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

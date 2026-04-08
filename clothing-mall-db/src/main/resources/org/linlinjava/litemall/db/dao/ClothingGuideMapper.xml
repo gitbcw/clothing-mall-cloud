@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.linlinjava.litemall.db.dao.ClothingGuideMapper">
+
+    <resultMap id="BaseResultMap" type="org.linlinjava.litemall.db.domain.ClothingGuide">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="phone" property="phone"/>
+        <result column="avatar" property="avatar"/>
+        <result column="store_id" property="storeId"/>
+        <result column="qrcode_url" property="qrcodeUrl"/>
+        <result column="commission_rate" property="commissionRate"/>
+        <result column="status" property="status"/>
+        <result column="add_time" property="addTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+        <result column="store_name" property="storeName"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        g.id, g.name, g.phone, g.avatar, g.store_id, g.qrcode_url, g.commission_rate, g.status, g.add_time, g.update_time, g.deleted
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>, s.name as store_name
+        FROM clothing_guide g
+        LEFT JOIN clothing_store s ON g.store_id = s.id
+        WHERE g.id = #{id} AND g.deleted = 0
+    </select>
+
+    <select id="selectSelective" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>, s.name as store_name
+        FROM clothing_guide g
+        LEFT JOIN clothing_store s ON g.store_id = s.id
+        <where>
+            g.deleted = 0
+            <if test="name != null">AND g.name LIKE CONCAT('%', #{name}, '%')</if>
+            <if test="phone != null">AND g.phone = #{phone}</if>
+            <if test="storeId != null">AND g.store_id = #{storeId}</if>
+            <if test="status != null">AND g.status = #{status}</if>
+        </where>
+        ORDER BY g.id
+    </select>
+
+    <select id="countSelective" resultType="int">
+        SELECT COUNT(*)
+        FROM clothing_guide
+        <where>
+            deleted = 0
+            <if test="name != null">AND name LIKE CONCAT('%', #{name}, '%')</if>
+            <if test="phone != null">AND phone = #{phone}</if>
+            <if test="storeId != null">AND store_id = #{storeId}</if>
+            <if test="status != null">AND status = #{status}</if>
+        </where>
+    </select>
+
+    <select id="selectByPhone" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM clothing_guide
+        WHERE phone = #{phone} AND deleted = 0
+    </select>
+
+    <insert id="insert" parameterType="org.linlinjava.litemall.db.domain.ClothingGuide" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO clothing_guide (name, phone, avatar, store_id, qrcode_url, commission_rate, status, deleted, add_time, update_time)
+        VALUES (#{name}, #{phone}, #{avatar}, #{storeId}, #{qrcodeUrl}, #{commissionRate}, #{status}, 0, NOW(), NOW())
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="org.linlinjava.litemall.db.domain.ClothingGuide">
+        UPDATE clothing_guide
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="storeId != null">store_id = #{storeId},</if>
+            <if test="qrcodeUrl != null">qrcode_url = #{qrcodeUrl},</if>
+            <if test="commissionRate != null">commission_rate = #{commissionRate},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="deleteByPrimaryKey">
+        UPDATE clothing_guide SET deleted = 1 WHERE id = #{id}
+    </update>
+
+</mapper>
