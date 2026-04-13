@@ -76,8 +76,9 @@ page {
 
 .tab-item text {
   font-size: 28rpx;
-  color: #999999;
+  color: #666666;
   white-space: nowrap;
+  font-family: UICTFontTextStyleBody;
 }
 
 .tab-item.active text {
@@ -234,16 +235,42 @@ page {
 }
 
 .empty-icon {
-  width: 200rpx;
-  height: 200rpx;
-  background-color: #F0F0F0;
-  border-radius: 50%;
+  width: 176rpx;
+  height: 176rpx;
   margin-bottom: 24rpx;
 }
 
-.empty-text {
-  font-size: 28rpx;
+.empty-title {
+  font-size: 34rpx;
+  color: #333333;
+  font-weight: 500;
+  margin-bottom: 12rpx;
+}
+
+.empty-desc {
+  font-size: 24rpx;
   color: #999999;
+  text-align: center;
+  line-height: 36rpx;
+  margin-bottom: 40rpx;
+}
+
+.action-row {
+  margin-top: 8rpx;
+  display: flex;
+  align-items: center;
+}
+
+.ghost-btn {
+  min-width: 170rpx;
+  height: 68rpx;
+  line-height: 68rpx;
+  text-align: center;
+  border-radius: 34rpx;
+  border: 1rpx solid #d9d9d9;
+  color: #666666;
+  font-size: 26rpx;
+  padding: 0 40rpx;
 }
 
 /* 订单卡片头部 */
@@ -265,6 +292,22 @@ page {
   font-size: 24rpx;
   color: #FF8096;
   font-weight: 500;
+}
+
+.order-status-group {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.aftersale-badge {
+  background: #FFE8EC;
+  color: #FF8096;
+  font-size: 20rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 20rpx;
+  font-weight: 400;
+  white-space: nowrap;
 }
 
 /* 订单卡片底部 */

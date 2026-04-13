@@ -4,6 +4,10 @@ var user = require('./utils/user.js');
 
 App({
   onLaunch: function() {
+    // 初始化云开发
+    if (wx.cloud) {
+      wx.cloud.init({ env: 'clo-test-4g8ukdond34672de', traceUser: true })
+    }
     // Promise.finally polyfill
     Promise.prototype.finally = function(callback) {
       let P = this.constructor;
@@ -37,8 +41,10 @@ App({
     user.checkLogin().then(res => {
       this.globalData.hasLogin = true;
     }).catch(() => {
-      this.globalData.hasLogin = false;
-      this.silentLogin();
+      // 仅在当前未登录时才重置并尝试静默登录
+      if (!this.globalData.hasLogin) {
+        this.silentLogin();
+      }
     });
   },
 

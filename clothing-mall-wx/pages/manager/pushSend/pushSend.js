@@ -1,5 +1,4 @@
 var util = require('../../../utils/util.js');
-var api = require('../../../config/api.js');
 
 Page({
   data: {
@@ -39,7 +38,7 @@ Page({
 
   loadTags: function() {
     var that = this;
-    util.request(api.ManagerWeWorkTags, {}, 'GET').then(function(res) {
+    util.request({ func: 'wx-manager-wework', action: 'tags' }, {}, 'GET').then(function(res) {
       that.setData({
         tags: (res.data && res.data.list) || []
       });
@@ -48,7 +47,7 @@ Page({
 
   loadPages: function() {
     var that = this;
-    util.request(api.ManagerWeWorkPages, {}, 'GET').then(function(res) {
+    util.request({ func: 'wx-manager-wework', action: 'pages' }, {}, 'GET').then(function(res) {
       that.setData({
         pages: (res.data && res.data.list) || []
       });
@@ -57,7 +56,7 @@ Page({
 
   loadGroups: function() {
     var that = this;
-    util.request(api.ManagerWeWorkPushGroups, {}, 'GET').then(function(res) {
+    util.request({ func: 'wx-manager-wework', action: 'pushGroups' }, {}, 'GET').then(function(res) {
       that.setData({
         groups: (res.data && res.data.list) || []
       });
@@ -100,35 +99,34 @@ Page({
 
   uploadToWeWork: function(filePath) {
     var that = this;
-    wx.uploadFile({
-      url: api.ManagerWeWorkUploadMedia,
-      filePath: filePath,
-      name: 'file',
-      header: {
-        'X-Litemall-Token': wx.getStorageSync('token')
-      },
-      success: function(res) {
-        try {
-          var data = JSON.parse(res.data);
-          if (data.errno === 0) {
-            that.setData({
-              'form.mediaId': data.data.mediaId || '',
-              'form.mediaUrl': data.data.url || filePath,
-              uploading: false
-            });
-          } else {
-            wx.showToast({ title: data.errmsg || '上传失败', icon: 'none' });
-            that.setData({ uploading: false });
-          }
-        } catch (e) {
-          wx.showToast({ title: '上传失败', icon: 'none' });
-          that.setData({ uploading: false });
-        }
-      },
-      fail: function() {
+    // 先上传到云存储
+    util.uploadFile(filePath, 'wework').then(function(fileID) {
+      if (!fileID) {
         wx.showToast({ title: '上传失败', icon: 'none' });
         that.setData({ uploading: false });
+        return;
       }
+      // 再调用企微云函数上传素材
+      util.request({ func: 'wx-manager-wework', action: 'uploadMedia' }, {
+        fileID: fileID
+      }, 'POST').then(function(res) {
+        that.setData({ uploading: false });
+        if (res.errno === 0) {
+          that.setData({
+            'form.mediaId': res.data.mediaId || '',
+            'form.mediaUrl': res.data.url || fileID,
+            uploading: false
+          });
+        } else {
+          wx.showToast({ title: res.errmsg || '上传失败', icon: 'none' });
+        }
+      }).catch(function() {
+        that.setData({ uploading: false });
+        wx.showToast({ title: '上传失败', icon: 'none' });
+      });
+    }).catch(function() {
+      that.setData({ uploading: false });
+      wx.showToast({ title: '上传失败', icon: 'none' });
     });
   },
 
@@ -196,7 +194,7 @@ Page({
       scheduledAt: that.data.scheduledEnabled ? form.scheduledAt : ''
     };
 
-    util.request(api.ManagerWeWorkSendMessage, requestData, 'POST').then(function(res) {
+    util.request({ func: 'wx-manager-wework', action: 'sendMessage' }, requestData, 'POST').then(function(res) {
       that.setData({ sending: false });
       if (res.errno === 0) {
         wx.showToast({ title: '推送成功', icon: 'success' });

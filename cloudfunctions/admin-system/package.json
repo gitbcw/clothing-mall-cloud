@@ -1,0 +1,7 @@
+{
+  "name": "admin-system",
+  "version": "1.0.0",
+  "description": "Admin log and region management",
+  "main": "index.js",
+  "dependencies": {}
+}

@@ -45,14 +45,12 @@
         <el-form-item :label="$t('goods_edit.form.pic_url')">
           <el-upload
             ref="picUpload"
-            :action="uploadPath"
+            :http-request="cloudUpload"
             :show-file-list="false"
-            :headers="headers"
             :auto-upload="false"
             :on-change="handlePicChange"
             :on-success="uploadPicUrl"
             :on-error="uploadError"
-            :http-request="httpUpload"
             class="avatar-uploader"
             accept=".jpg,.jpeg,.png,.gif"
           >
@@ -63,13 +61,11 @@
 
         <el-form-item :label="$t('goods_edit.form.gallery')">
           <el-upload
-            :action="uploadPath"
+            :http-request="cloudUpload"
             :limit="5"
-            :headers="headers"
             :on-exceed="uploadOverrun"
             :on-success="handleGalleryUrl"
             :on-error="uploadError"
-            :http-request="httpUpload"
             :on-remove="handleRemove"
             :file-list="galleryFileList"
             multiple
@@ -227,10 +223,9 @@
 <script>
 import { findByGoodsSn, editGoods, listCatAndBrand } from '@/api/goods'
 import { listScene } from '@/api/scene'
-import { createStorage, uploadPath } from '@/api/storage'
+import { cloudUpload, cloudUploadFile } from '@/utils/upload'
 import Editor from '@tinymce/tinymce-vue'
 import { MessageBox } from 'element-ui'
-import { getToken } from '@/utils/auth'
 
 export default {
   name: 'GoodsCreate',
@@ -238,7 +233,7 @@ export default {
 
   data() {
     return {
-      uploadPath,
+      cloudUpload,
       // 查询相关
       searchGoodsSn: '',
       searchMsg: '',
@@ -271,21 +266,14 @@ export default {
         plugins: ['advlist anchor autolink autosave code codesample colorpicker colorpicker contextmenu directionality emoticons fullscreen hr image imagetools importcss insertdatetime link lists media nonbreaking noneditable pagebreak paste preview print save searchreplace spellchecker tabfocus table template textcolor textpattern visualblocks visualchars wordcount'],
         toolbar: ['searchreplace bold italic underline strikethrough alignleft aligncenter alignright outdent indent  blockquote undo redo removeformat subscript superscript code codesample', 'hr bullist numlist link image charmap preview anchor pagebreak insertdatetime media table emoticons forecolor backcolor fullscreen'],
         images_upload_handler: function(blobInfo, success, failure) {
-          const formData = new FormData()
-          formData.append('file', blobInfo.blob())
-          createStorage(formData).then(res => {
-            success(res.data.data.url)
+          const file = blobInfo.blob()
+          file.name = blobInfo.filename()
+          cloudUploadFile(file).then(url => {
+            success(url)
           }).catch(() => {
             failure('上传失败，请重新上传')
           })
         }
-      }
-    }
-  },
-  computed: {
-    headers() {
-      return {
-        'X-Litemall-Admin-Token': getToken()
       }
     }
   },
@@ -360,12 +348,8 @@ export default {
       // 如果有待上传的商品图片，先上传
       if (this.picFile) {
         try {
-          const formData = new FormData()
-          formData.append('file', this.picFile)
-          const uploadRes = await createStorage(formData)
-          if (uploadRes.data.errno === 0) {
-            this.goods.picUrl = uploadRes.data.data.url
-          }
+          const url = await cloudUploadFile(this.picFile)
+          this.goods.picUrl = url
         } catch (e) {
           console.warn('图片上传失败:', e)
         }
@@ -454,9 +438,6 @@ export default {
         type: 'error',
         message: '上传失败: ' + (err?.message || '未知错误')
       })
-    },
-    httpUpload: function() {
-      // 保留空实现以避免 Vue 警告
     },
     handleGalleryUrl(response, file, fileList) {
       if (response && response.errno === 0 && response.data && response.data.url) {

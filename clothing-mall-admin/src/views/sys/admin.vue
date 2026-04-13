@@ -49,8 +49,7 @@
         </el-form-item>
         <el-form-item :label="$t('sys_admin.form.avatar')" prop="avatar">
           <el-upload
-            :headers="headers"
-            :action="uploadPath"
+            :http-request="cloudUpload"
             :show-file-list="false"
             :on-success="uploadAvatar"
             class="avatar-uploader"
@@ -110,8 +109,7 @@
 <script>
 import { listAdmin, createAdmin, updateAdmin, deleteAdmin } from '@/api/admin'
 import { roleOptions } from '@/api/role'
-import { uploadPath } from '@/api/storage'
-import { getToken } from '@/utils/auth'
+import { cloudUpload } from '@/utils/upload'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
@@ -119,7 +117,7 @@ export default {
   components: { Pagination },
   data() {
     return {
-      uploadPath,
+      cloudUpload,
       list: null,
       total: 0,
       roleOptions: null,
@@ -151,13 +149,6 @@ export default {
         password: [{ required: true, message: '密码不能为空', trigger: 'blur' }]
       },
       downloadLoading: false
-    }
-  },
-  computed: {
-    headers() {
-      return {
-        'X-Litemall-Admin-Token': getToken()
-      }
     }
   },
   created() {

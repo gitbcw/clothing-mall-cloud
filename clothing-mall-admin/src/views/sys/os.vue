@@ -63,7 +63,8 @@
 </template>
 
 <script>
-import { listStorage, createStorage, updateStorage, deleteStorage } from '@/api/storage'
+import { listStorage, updateStorage, deleteStorage } from '@/api/storage'
+import { cloudUploadFile } from '@/utils/upload'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
@@ -126,10 +127,8 @@ export default {
     handleUpload(item) {
       this.$refs.upload.clearFiles()
 
-      const formData = new FormData()
-      formData.append('file', item.file)
-      createStorage(formData).then(response => {
-        this.list.unshift(response.data.data)
+      cloudUploadFile(item.file).then(url => {
+        this.list.unshift({ url, name: item.file.name, type: item.file.type, size: item.file.size })
         this.createDialogVisible = false
         this.$notify.success({
           title: '成功',

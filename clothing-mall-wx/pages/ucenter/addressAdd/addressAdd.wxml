@@ -2,25 +2,28 @@
   <custom-nav title="编辑地址" />
   <view class="add-form">
     <view class="form-item">
-      <input class="input" bindinput="bindinputName" placeholder="姓名" value="{{address.name}}" auto-focus/>
+      <input class="input" bindinput="bindinputName" placeholder="请输入收货人姓名" value="{{address.name}}" auto-focus/>
     </view>
     <view class="form-item">
-      <input class="input" type="number" maxlength="11" bindinput="bindinputMobile" value="{{address.tel}}" placeholder="手机号码" />
+      <input class="input" type="number" maxlength="11" bindinput="bindinputMobile" value="{{address.tel}}" placeholder="请输入收货人手机号" />
+      <view class="phone"></view>
     </view>
     <view class="form-item">
-      <input class="input" value="{{address.province + address.city + address.county}}" disabled="true" bindtap="chooseRegion" placeholder="省份、城市、区县" />
+      <input class="input" value="{{address.province + address.city + address.county}}" disabled="true" bindtap="chooseRegion" placeholder="请选择省份、城市、区县" />
+      <view class="arrow"></view>
     </view>
     <view class="form-item">
-      <input class="input" bindinput="bindinputAddress" value="{{address.addressDetail}}" placeholder="详细地址, 如街道、楼盘号等" />
+      <input class="input" bindinput="bindinputAddress" value="{{address.addressDetail}}" placeholder="请输入收货人详细地址" />
     </view>
-    <view class="form-default">
-      <van-checkbox value="{{ address.isDefault == 1 }}" bind:change="bindIsDefault">设为默认地址</van-checkbox>
+    <view class="form-item form-default">
+      <text>设为默认地址</text>
+      <switch checked="{{address.isDefault == 1}}" bind:change="bindIsDefault" color="#FF8096"/>
     </view>
   </view>
 
   <view class="btns">
-    <button class="cannel" bindtap="cancelAddress">取消</button>
-    <button class="save" bindtap="saveAddress">保存</button>
+    <view class="cannel" bindtap="cancelAddress" >取消</view>
+    <view class="save" bindtap="saveAddress" >保存</view>
   </view>
 
   <view class="region-select" wx:if="{{openSelectRegion}}">

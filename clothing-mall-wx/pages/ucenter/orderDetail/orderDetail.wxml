@@ -147,6 +147,52 @@
     </view>
   </view>
 
+  <!-- 售后追踪卡片 -->
+  <view class="aftersale-tracker" wx:if="{{orderInfo.aftersaleStatus > 0}}" bindtap="goAftersaleDetail">
+    <!-- 顶部：类型标签 + 状态文字 -->
+    <view class="tracker-header">
+      <view class="tracker-type-badge">
+        <text class="tracker-type-text">换货申请</text>
+      </view>
+      <view class="tracker-status-text" style="color: {{aftersaleStatusColor}};">{{aftersaleStatusText}}</view>
+    </view>
+
+    <!-- 横向流程线 -->
+    <view class="tracker-steps">
+      <view class="tracker-step {{aftersaleStatus >= 1 ? 'step-done' : ''}} {{aftersaleStatus == 1 ? 'step-active' : ''}}">
+        <view class="step-dot"></view>
+        <text class="step-label">已申请</text>
+      </view>
+      <view class="step-line {{aftersaleStatus >= 2 ? 'line-done' : ''}}"></view>
+      <view class="tracker-step {{aftersaleStatus >= 2 ? 'step-done' : ''}} {{aftersaleStatus == 2 ? 'step-active' : ''}}">
+        <view class="step-dot"></view>
+        <text class="step-label">审核通过</text>
+      </view>
+      <view class="step-line {{aftersaleStatus >= 3 ? 'line-done' : ''}}"></view>
+      <view class="tracker-step {{aftersaleStatus >= 3 ? 'step-done' : ''}} {{aftersaleStatus == 3 ? 'step-active' : ''}}">
+        <view class="step-dot"></view>
+        <text class="step-label">换货发出</text>
+      </view>
+      <view class="step-line {{aftersaleStatus >= 6 ? 'line-done' : ''}}"></view>
+      <view class="tracker-step {{aftersaleStatus == 6 ? 'step-done step-active' : ''}}">
+        <view class="step-dot"></view>
+        <text class="step-label">完成</text>
+      </view>
+    </view>
+
+    <!-- 被拒绝 / 已取消 单独显示 -->
+    <view class="tracker-reject-hint" wx:if="{{aftersaleStatus == 4 || aftersaleStatus == 5}}">
+      <text class="reject-icon">⚠️</text>
+      <text class="reject-text">{{aftersaleStatusText}}</text>
+    </view>
+
+    <!-- 底部操作栏 -->
+    <view class="tracker-footer">
+      <text class="tracker-action-hint">查看售后详情</text>
+      <van-icon name="arrow" size="13px" color="#FF8096" />
+    </view>
+  </view>
+
   <!-- 订单信息 -->
   <view class="order-meta">
     <view class="meta-row">
@@ -177,13 +223,12 @@
   <view class="express-section" bindtap="expandDetail" wx:if="{{ orderInfo.expNo && orderInfo.deliveryType !== 'pickup' }}">
     <view class="express-header">
       <view class="express-info">
-        <text class="express-company">{{orderInfo.expName}}</text>
         <text class="express-no">{{orderInfo.expNo}}</text>
       </view>
       <van-icon class="express-arrow" name="arrow" />
     </view>
     <view class="express-timeline" wx:if="{{ flag }}">
-      <view class="timeline-item" wx:for="{{expressInfo.Traces}}" wx:key="item" wx:for-item="iitem">
+      <view class="timeline-item" wx:for="{{expressInfo}}" wx:key="index" wx:for-item="iitem">
         <view class="timeline-dot"></view>
         <view class="timeline-line" wx:if="{{index > 0}}"></view>
         <view class="timeline-content">

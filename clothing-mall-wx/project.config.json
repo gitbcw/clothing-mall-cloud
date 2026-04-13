@@ -1,4 +1,8 @@
 {
+  "cloudfunctionRoot": "",
+  "cloudbaseConfig": {
+    "env": "clo-test-4g8ukdond34672de"
+  },
   "setting": {
     "es6": true,
     "postcss": true,
@@ -26,7 +30,9 @@
   "compileType": "miniprogram",
   "simulatorPluginLibVersion": {},
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "folder", "value": "minium_tests" }
+    ],
     "include": []
   },
   "appid": "wx1809b86df93c5107",

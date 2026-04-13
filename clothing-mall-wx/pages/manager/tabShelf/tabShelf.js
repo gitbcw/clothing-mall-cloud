@@ -89,7 +89,7 @@ Page({
     let that = this;
     util.request(api.SceneList).then(function(res) {
       if (res.errno === 0 && res.data) {
-        that.setData({ presetScenes: res.data || [] });
+        that.setData({ presetScenes: (res.data || []).map(function(item) { return item.name || item }) });
       }
     });
   },

@@ -14,7 +14,9 @@ Page({
     page: 1,
     limit: 10,
     totalPages: 1,
-    defaultImage: '/static/images/fallback-image.svg'
+    defaultImage: '/static/images/fallback-image.svg',
+    emptyOrderImage: '/static/images/fallback-image.svg',
+    aftersaleStatusColumns: ['可申请', '已申请，待审核', '审核通过，待补发', '换货已发货', '审核不通过，已拒绝', '已取消', '换货完成']
   },
 
   onLoad(options) {
@@ -63,6 +65,9 @@ Page({
         const list = (res.data.list || []).map(item => {
           if (item.orderStatusText === '待评价') {
             item.orderStatusText = '已完成'
+          }
+          if (item.aftersaleStatus > 0) {
+            item.aftersaleStatusText = that.data.aftersaleStatusColumns[item.aftersaleStatus] || '售后中'
           }
           return item
         })
@@ -126,5 +131,17 @@ Page({
         wx.switchTab({ url: '/pages/mine/mine' })
       }
     })
+  },
+
+  // 空状态图片加载失败
+  onEmptyImageError() {
+    this.setData({
+      emptyOrderImage: this.data.defaultImage
+    })
+  },
+
+  // 跳转首页逛逛
+  goIndex() {
+    wx.switchTab({ url: '/pages/index/index' })
   }
 })

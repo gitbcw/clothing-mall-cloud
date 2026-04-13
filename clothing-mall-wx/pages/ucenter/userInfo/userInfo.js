@@ -1,6 +1,4 @@
 const util = require('../../../utils/util.js');
-const api = require('../../../config/api.js');
-const app = getApp();
 
 Page({
   data: {
@@ -23,7 +21,7 @@ Page({
   },
 
   getUserInfo: function () {
-    util.request(api.UserInfo).then(res => {
+    util.request({ func: 'wx-user', action: 'info' }).then(res => {
       if (res.errno === 0) {
         this.setData({
           userInfo: {
@@ -39,22 +37,12 @@ Page({
 
   onChooseAvatar(e) {
     const { avatarUrl } = e.detail;
-    // 这里需要将头像上传到服务器，获取URL，暂时直接使用本地临时路径或上传接口
-    // 为了完整性，我们先调用上传接口
-    wx.uploadFile({
-      url: api.StorageUpload,
-      filePath: avatarUrl,
-      name: 'file',
-      header: {
-        'X-Litemall-Token': wx.getStorageSync('token')
-      },
-      success: (res) => {
-        let data = JSON.parse(res.data);
-        if (data.errno === 0) {
-          this.setData({
-            'userInfo.avatarUrl': data.data.url
-          });
-        }
+    // 上传到云存储
+    util.uploadFile(avatarUrl, 'avatar').then(fileID => {
+      if (fileID) {
+        this.setData({
+          'userInfo.avatarUrl': fileID
+        });
       }
     });
   },
@@ -79,7 +67,7 @@ Page({
       return;
     }
 
-    util.request(api.AuthBindPhone, {
+    util.request({ func: 'wx-auth', action: 'bindPhone' }, {
       encryptedData: e.detail.encryptedData,
       iv: e.detail.iv
     }, 'POST').then(res => {
@@ -101,7 +89,7 @@ Page({
       return;
     }
 
-    util.request(api.UserProfile, {
+    util.request({ func: 'wx-user', action: 'profile' }, {
       nickname: nickName,
       avatar: avatarUrl,
       mobile: mobile,

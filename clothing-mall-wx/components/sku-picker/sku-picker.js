@@ -34,6 +34,10 @@ Component({
     initQuantity: {
       type: Number,
       value: 1
+    },
+    preview: {
+      type: Boolean,
+      value: false
     }
   },
 

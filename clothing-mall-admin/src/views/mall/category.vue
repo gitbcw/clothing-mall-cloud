@@ -64,8 +64,7 @@
         </el-form-item>
         <el-form-item :label="$t('mall_category.form.icon_url')" prop="iconUrl">
           <el-upload
-            :headers="headers"
-            :action="uploadPath"
+            :http-request="cloudUpload"
             :show-file-list="false"
             :on-success="uploadIconUrl"
             class="avatar-uploader"
@@ -77,8 +76,7 @@
         </el-form-item>
         <el-form-item :label="$t('mall_category.form.pic_url')" prop="picUrl">
           <el-upload
-            :headers="headers"
-            :action="uploadPath"
+            :http-request="cloudUpload"
             :show-file-list="false"
             :on-success="uploadPicUrl"
             class="avatar-uploader"
@@ -130,14 +128,13 @@
 
 <script>
 import { listCategory, listCatL1, createCategory, updateCategory, deleteCategory } from '@/api/category'
-import { uploadPath } from '@/api/storage'
-import { getToken } from '@/utils/auth'
+import { cloudUpload } from '@/utils/upload'
 
 export default {
   name: 'Category',
   data() {
     return {
-      uploadPath,
+      cloudUpload,
       list: [],
       listLoading: true,
       catL1: {},
@@ -160,13 +157,6 @@ export default {
       },
       rules: {
         name: [{ required: true, message: '类目名不能为空', trigger: 'blur' }]
-      }
-    }
-  },
-  computed: {
-    headers() {
-      return {
-        'X-Litemall-Admin-Token': getToken()
       }
     }
   },

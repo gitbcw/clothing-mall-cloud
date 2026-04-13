@@ -1,0 +1,7 @@
+{
+  "name": "layer-wechat",
+  "version": "1.0.0",
+  "description": "CloudBase shared layer: WeChat Work API, AI recognition (Doubao Vision)",
+  "main": "index.js",
+  "dependencies": {}
+}

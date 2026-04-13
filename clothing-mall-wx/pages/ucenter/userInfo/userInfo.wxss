@@ -106,9 +106,9 @@
 
 .row-label {
   width: 140rpx;
-  font-size: 30rpx;
+  font-size: 32rpx;
   color: #333;
-  font-weight: bold;
+  font-weight: bolder;
   flex-shrink: 0;
 }
 

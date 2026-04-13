@@ -59,17 +59,19 @@ Page({
   },
   bindPhoneNumberManual: function() {
     if (this.data.mobile.length !== 11) {
-      util.showErrorToast('请输入11位手机号');
+      wx.showToast({ title: '请输入11位手机号', icon: 'none' });
       return;
     }
 
     const that = this;
+    wx.showLoading({ title: '绑定中...' });
     util.request(api.AuthBindPhoneManual, { mobile: this.data.mobile }, 'POST').then(res => {
+      console.log('[bindPhoneManual] response:', JSON.stringify(res));
       if (res.errno === 0) {
-        util.showToast('绑定成功');
-
-        // 重新获取用户信息以更新 mobile
+        // 绑定成功，刷新用户信息后返回
         util.request(api.UserInfo, {}, 'GET').then(infoRes => {
+          wx.hideLoading();
+          console.log('[userInfo] response:', JSON.stringify(infoRes));
           if (infoRes.errno === 0) {
             wx.setStorageSync('userInfo', {
               nickName: infoRes.data.nickname,
@@ -84,14 +86,24 @@ Page({
           if (userInfo && !userInfo.birthday) {
             that.setData({ showBirthdayPopup: true });
           } else {
-            wx.navigateBack({ delta: 1 });
+            wx.showToast({ title: '绑定成功', icon: 'success' });
+            setTimeout(function() { wx.navigateBack({ delta: 1 }); }, 1000);
           }
+        }).catch(function(err) {
+          wx.hideLoading();
+          console.error('[userInfo] error:', err);
+          // 即使获取用户信息失败，绑定已经成功，直接返回
+          wx.showToast({ title: '绑定成功', icon: 'success' });
+          setTimeout(function() { wx.navigateBack({ delta: 1 }); }, 1000);
         });
       } else {
-        util.showErrorToast(res.errmsg || '绑定失败');
+        wx.hideLoading();
+        wx.showToast({ title: res.errmsg || '绑定失败', icon: 'none' });
       }
     }).catch(err => {
-      util.showErrorToast('绑定失败');
+      wx.hideLoading();
+      console.error('[bindPhoneManual] error:', err);
+      wx.showToast({ title: '绑定失败', icon: 'none' });
     });
   },
   bindPhoneNumber: function(e) {
@@ -114,7 +126,7 @@ Page({
 
     util.request(api.AuthBindPhone, data, 'POST').then(res => {
       if (res.errno === 0) {
-        util.showToast('绑定成功');
+        wx.showToast({ title: '绑定成功', icon: 'success' });
 
         // 重新获取用户信息以更新 mobile
         util.request(api.UserInfo, {}, 'GET').then(infoRes => {
@@ -156,23 +168,20 @@ Page({
     }, 'POST').then(function(res) {
       wx.hideLoading();
       if (res.errno === 0) {
-        wx.setStorageSync('token', res.data.token);
         app.globalData.hasLogin = true;
 
-        // 拉取用户信息
-        util.request(api.UserInfo, {}, 'GET').then(function(infoRes) {
-          if (infoRes.errno === 0) {
-            wx.setStorageSync('userInfo', {
-              nickName: infoRes.data.nickname,
-              avatarUrl: infoRes.data.avatar,
-              mobile: infoRes.data.mobile,
-              birthday: infoRes.data.birthday
-            });
-          }
-          that.setData({ hasLogin: true });
-        }).catch(function() {
-          that.setData({ hasLogin: true });
+        // 直接使用返回的用户信息
+        var userInfo = res.data.userInfo || {};
+        wx.setStorageSync('userInfo', {
+          nickName: userInfo.nickName || '',
+          avatarUrl: userInfo.avatarUrl || '',
+          mobile: userInfo.mobile || ''
         });
+        // 存储 token（checkLogin 依赖此字段判断登录状态）
+        wx.setStorageSync('token', 'cloud-base');
+
+        that.setData({ hasLogin: true });
+        wx.navigateBack({ delta: 1 });
       } else {
         util.showErrorToast(res.errmsg || '登录失败');
       }

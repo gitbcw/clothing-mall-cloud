@@ -40,7 +40,7 @@ Page({
 
   loadScene: function(id) {
     var that = this;
-    util.request(api.ManagerSceneRead + '?id=' + id, {}, 'GET').then(function(res) {
+    util.request(api.ManagerSceneRead, { id: id }, 'GET').then(function(res) {
       var scene = res.data;
       that.setData({
         form: {
@@ -56,19 +56,10 @@ Page({
 
   loadSceneGoods: function(sceneId) {
     var that = this;
-    util.request(api.ManagerSceneGoods + '?sceneId=' + sceneId, {}, 'GET').then(function(res) {
-      var goodsIds = res.data || [];
-      if (goodsIds.length === 0) return;
-      // 加载全部已上架商品，匹配已绑定的 ID
-      util.request(api.ManagerGoodsList, { limit: 1000 }, 'GET').then(function(goodsRes) {
-        var allGoods = (goodsRes.data && goodsRes.data.list) || [];
-        var bound = allGoods.filter(function(g) {
-          return goodsIds.indexOf(g.id) > -1;
-        }).map(function(g) {
-          return { id: g.id, name: g.name, picUrl: g.picUrl, retailPrice: g.retailPrice };
-        });
-        that.setData({ goodsList: bound });
-      });
+    util.request(api.ManagerSceneGoods, { sceneId: sceneId }, 'GET').then(function(res) {
+      that.setData({ goodsList: res.data || [] });
+    }).catch(function(err) {
+      console.error('loadSceneGoods failed:', err);
     });
   },
 

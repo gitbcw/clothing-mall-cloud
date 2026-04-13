@@ -1,0 +1,118 @@
+{
+    "case_name": "test_05_category_page_load",
+    "run_time": "20260410 10:49:14",
+    "test_type": "SmokeTest",
+    "case_doc": "IX-02: \u5206\u7c7b\u9875\u52a0\u8f7d",
+    "success": false,
+    "failures": "",
+    "errors": "Traceback (most recent call last):\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/libs/unittest/case.py\", line 266, in testPartExecutor\n    yield\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/libs/unittest/case.py\", line 351, in run\n    self._callTestMethod(testMethod)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/minitest.py\", line 789, in _callTestMethod\n    method()\n  File \"/Users/combo/MyFile/projects/clothing-mall-cloud/clothing-mall-wx/minium_tests/round1_smoke/test_smoke.py\", line 79, in test_05_category_page_load\n    self._switch_tab('/pages/category/category', 5)\n  File \"/Users/combo/MyFile/projects/clothing-mall-cloud/clothing-mall-wx/minium_tests/round1_smoke/test_smoke.py\", line 28, in _switch_tab\n    self.mini.app.call_wx_method('switchTab', {'url': path})\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/minium_log.py\", line 148, in wrapper\n    result = func(*args, **kwargs)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/app.py\", line 757, in call_wx_method\n    return self._call_wx_method(method=method, args=args, plugin_appid=plugin_appid)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/minium_object.py\", line 162, in _call_wx_method\n    return self.connection.send(\"App.callWxMethod\", params)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/connection.py\", line 457, in send\n    return self._receive_response(cmd)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/connection.py\", line 501, in _receive_response\n    raise MiniTimeoutError(\nminium.framework.exception.MiniTimeoutError: [5abee512-64f6-42bc-a0b5-025eb959f762][call App.callWxMethod] receive from remote timeout\n",
+    "start_timestamp": 1775789354.578442,
+    "is_failure": false,
+    "is_error": true,
+    "module": ".Users.combo.MyFile.projects.clothing-mall-cloud.clothing-mall-wx.minium_tests.round1_smoke.test_smoke",
+    "package": "minium_tests",
+    "failed_line_num": 79,
+    "device": {
+        "system_info": {
+            "batteryLevel": 100,
+            "benchmarkLevel": -1,
+            "brand": "devtools",
+            "memorySize": 2048,
+            "model": "iPhone 12/13 (Pro)",
+            "system": "iOS 10.0.1",
+            "platform": "devtools",
+            "pixelRatio": 3,
+            "safeArea": {
+                "top": 47,
+                "left": 0,
+                "right": 390,
+                "bottom": 810,
+                "width": 390,
+                "height": 763
+            },
+            "screenWidth": 390,
+            "screenHeight": 844,
+            "screenTop": 0,
+            "windowWidth": 390,
+            "windowHeight": 844,
+            "statusBarHeight": 47,
+            "version": "8.0.5",
+            "language": "zh_CN",
+            "SDKVersion": "3.15.0",
+            "enableDebug": false,
+            "fontSizeScaleFactor": 0.91,
+            "fontSizeSetting": 16,
+            "mode": "default",
+            "host": {
+                "env": "WeChat"
+            },
+            "bluetoothEnabled": true,
+            "locationEnabled": true,
+            "wifiEnabled": true,
+            "locationReducedAccuracy": true,
+            "albumAuthorized": true,
+            "bluetoothAuthorized": true,
+            "cameraAuthorized": true,
+            "locationAuthorized": true,
+            "microphoneAuthorized": true,
+            "notificationAuthorized": true,
+            "notificationAlertAuthorized": true,
+            "notificationBadgeAuthorized": true,
+            "notificationSoundAuthorized": true,
+            "phoneCalendarAuthorized": true,
+            "deviceOrientation": "portrait",
+            "appName": "weixin",
+            "devicePixelRatio": 3
+        }
+    },
+    "log_filename": "run.log",
+    "error_type": "MiniTimeoutError",
+    "error_value": "[5abee512-64f6-42bc-a0b5-025eb959f762][call App.callWxMethod] receive from remote timeout",
+    "error_extra_info": "",
+    "error_stages": [
+        "testMethod"
+    ],
+    "screen_info": [
+        {
+            "name": "setup",
+            "url": "/pages/index/index",
+            "path": "images/setup.png",
+            "ts": 1775789354,
+            "datetime": "2026-04-10 10:49:14",
+            "use_region": false
+        },
+        {
+            "name": "teardown",
+            "url": "/pages/index/index",
+            "path": "images/teardown.png",
+            "ts": 1775789414,
+            "datetime": "2026-04-10 10:50:14",
+            "use_region": false
+        }
+    ],
+    "step_info": [],
+    "check_list": [],
+    "assert_list": [],
+    "autofix_info": [],
+    "perf_data": "{\"startup\": 0, \"avg_cpu\": 0, \"max_cpu\": 0, \"cpu_data_list\": [], \"avg_mem\": 0, \"max_mem\": 0, \"mem_data_list\": [], \"avg_fps\": 0, \"min_fps_rt\": 0, \"fps_data_list\": [], \"fps_time_series_list\": [], \"cpu_time_series_list\": [], \"mem_time_series_list\": []}",
+    "weapp_log_path": "weapp.log",
+    "request_log_path": "request.log",
+    "stop_timestamp": 1775789414.761687,
+    "appId": "",
+    "appName": "",
+    "source": {
+        "code": [
+            "    def test_05_category_page_load(self):\n",
+            "        \"\"\"IX-02: \u5206\u7c7b\u9875\u52a0\u8f7d\"\"\"\n",
+            "        self._switch_tab('/pages/category/category', 5)\n",
+            "        page = CategoryPage(self.mini)\n",
+            "        page.refresh_page()\n",
+            "        time.sleep(3)\n",
+            "        cat_count = page.get_category_count()\n",
+            "        print(f'  \u5206\u7c7b\u6570\u91cf: {cat_count}')\n",
+            "        self.assertGreater(cat_count, 0, '\u5206\u7c7b\u5217\u8868\u4e3a\u7a7a')\n"
+        ],
+        "start": 77
+    },
+    "filename": "result.json"
+}

@@ -1,7 +1,7 @@
 page {
   min-height: 100%;
   width: 100%;
-  background: #f4f4f4;
+  background: #F7F8FA;
 }
 
 .container {
@@ -17,39 +17,55 @@ page {
 
 .address-list .item {
   background-color: white;
-  border-radius: 10rpx;
+  border-radius:16rpx;
   padding: 0 30rpx;
+  margin-top: 20rpx;
   height: 140rpx;
   align-items: center;
   display: flex;
-  border-bottom: 1rpx solid #dcd9d9;
+}
+
+.delete {
+  width: 32rpx;
+  height: 32rpx;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url('data:image/svg+xml,%3Csvg t="1775656042740" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5293" width="256" height="256"%3E%3Cpath d="M0 0h1024v1024H0z" fill="%23666666" opacity=".01" p-id="5294"%3E%3C/path%3E%3Cpath d="M343.074133 57.480533A34.133333 34.133333 0 0 1 375.466667 34.133333h273.066666a34.133333 34.133333 0 0 1 32.392534 23.3472L695.876267 102.4H887.466667a68.266667 68.266667 0 0 1 68.266666 68.266667v68.266666a68.266667 68.266667 0 0 1-68.266666 68.266667v512a170.666667 170.666667 0 0 1-170.666667 170.666667H307.2a170.666667 170.666667 0 0 1-170.666667-170.666667V307.2a68.266667 68.266667 0 0 1-68.266666-68.266667V170.666667a68.266667 68.266667 0 0 1 68.266666-68.266667h191.5904l14.9504-44.919467zM716.8 307.2H204.8v512a102.4 102.4 0 0 0 102.4 102.4h409.6a102.4 102.4 0 0 0 102.4-102.4V307.2h-102.4z m170.666667-68.266667V170.666667h-216.1664a34.133333 34.133333 0 0 1-32.392534-23.3472L623.9232 102.4h-223.8464l-14.984533 44.919467a34.133333 34.133333 0 0 1-32.392534 23.3472H136.533333v68.266666h750.933334z m-477.866667 204.8a34.133333 34.133333 0 1 0-68.266667 0v341.333334a34.133333 34.133333 0 1 0 68.266667 0V443.733333z m273.066667 0a34.133333 34.133333 0 1 0-68.266667 0v341.333334a34.133333 34.133333 0 1 0 68.266667 0V443.733333z" fill="%23666666" p-id="5295"%3E%3C/path%3E%3C/svg%3E');
+  margin-left: 8rpx;
 }
 
 .address-list .l {
-  width: 125rpx;
+  width: 100rpx;
   height: 80rpx;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .address-list .name {
   width: 125rpx;
   height: 43rpx;
-  font-size: 29rpx;
+  font-size: 30rpx;
   color: #333;
   margin-bottom: 5.2rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  text-align: center;
+  font-weight: bold;
 }
 
 .address-list .default {
   width: 62.5rpx;
-  height: 33rpx;
-  line-height: 28rpx;
+  height: 36rpx;
+  line-height: 36rpx;
   text-align: center;
-  font-size: 20rpx;
-  color: #FF8096;
-  border: 1rpx solid #FF8096;
+  font-size: 18rpx;
+  color: white;
+  background-color: #FF8096;
+  border-radius: 20rpx;
   visibility: visible;
 }
 
@@ -61,7 +77,7 @@ page {
 
 .address-list .mobile {
   height: 29rpx;
-  font-size: 29rpx;
+  font-size: 30rpx;
   line-height: 29rpx;
   overflow: hidden;
   color: #333;
@@ -70,7 +86,7 @@ page {
 
 .address-list .address {
   height: 37rpx;
-  font-size: 25rpx;
+  font-size: 28rpx;
   line-height: 37rpx;
   overflow: hidden;
   color: #666;

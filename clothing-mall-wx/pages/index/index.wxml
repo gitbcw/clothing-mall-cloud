@@ -46,21 +46,29 @@
         <view class="activity-item" wx:for="{{activityGoodsTop}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
           <image src="{{img.url(item.picUrl)}}" mode="aspectFill" class="activity-img" binderror="onHomeImageError" data-source="activityGoodsTop" data-index="{{index}}" />
           <view class="activity-info">
-            <text class="activity-name">{{item.name}}</text>
+            <text class="activity-name">【川着】{{item.name}}</text>
             <view class="activity-price-wrap" wx:if="{{item.specialPrice}}">
-              <text class="activity-price price-special">
-                <text class="rmb">¥</text>
-                <text class="num">{{item.specialPrice}}</text>
-              </text>
-              <text class="activity-original-price">
-                <text class="rmb">¥</text>
-                <text class="num">{{item.specialPrice}}</text>
-              </text>
+              <view class="price-center">
+                <text class="activity-price price-special">
+                  <text class="rmb">¥</text>
+                  <text class="num">{{item.specialPrice}}</text>
+                </text>
+                <text class="activity-original-price">
+                  <text class="rmb">¥</text>
+                  <text class="num">{{item.specialPrice}}</text>
+                </text>
+              </view>
+              <view class="cart-icon-small" catchtap="addToCart" data-id="{{item.id}}"></view>
             </view>
-            <text class="activity-price" wx:else>
-              <text class="rmb">¥</text>
-              <text class="num">{{item.retailPrice}}</text>
-            </text>
+            <view class="activity-price-line" wx:else>
+              <view class="price-center">
+                <text class="activity-price">
+                  <text class="rmb">¥</text>
+                  <text class="num">{{item.retailPrice}}</text>
+                </text>
+              </view>
+              <view class="cart-icon-small" catchtap="addToCart" data-id="{{item.id}}"></view>
+            </view>
           </view>
         </view>
       </scroll-view>
@@ -69,21 +77,29 @@
         <view class="activity-item-sub" wx:for="{{activityGoodsBottom}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
           <image src="{{img.url(item.picUrl)}}" mode="aspectFill" class="activity-img-sub" binderror="onHomeImageError" data-source="activityGoodsBottom" data-index="{{index}}" />
           <view class="activity-info">
-            <text class="activity-name">{{item.name}}</text>
+            <text class="activity-name">【川着】{{item.name}}</text>
             <view class="activity-price-wrap" wx:if="{{item.specialPrice}}">
-              <text class="activity-price price-special">
-                <text class="rmb">¥</text>
-                <text class="num">{{item.specialPrice}}</text>
-              </text>
-              <text class="activity-original-price">
-                <text class="rmb">¥</text>
-                <text class="num">{{item.specialPrice}}</text>
-              </text>
+              <view class="price-center">
+                <text class="activity-price price-special">
+                  <text class="rmb">¥</text>
+                  <text class="num">{{item.specialPrice}}</text>
+                </text>
+                <text class="activity-original-price">
+                  <text class="rmb">¥</text>
+                  <text class="num">{{item.specialPrice}}</text>
+                </text>
+              </view>
+              <view class="cart-icon-small" catchtap="addToCart" data-id="{{item.id}}"></view>
             </view>
-            <text class="activity-price" wx:else>
-              <text class="rmb">¥</text>
-              <text class="num">{{item.retailPrice}}</text>
-            </text>
+            <view class="activity-price-line" wx:else>
+              <view class="price-center">
+                <text class="activity-price">
+                  <text class="rmb">¥</text>
+                  <text class="num">{{item.retailPrice}}</text>
+                </text>
+              </view>
+              <view class="cart-icon-small" catchtap="addToCart" data-id="{{item.id}}"></view>
+            </view>
           </view>
         </view>
       </scroll-view>
@@ -104,7 +120,7 @@
           <view class="hot-item" wx:for="{{hotSalesScroll}}" wx:key="{{item.id}}_{{index}}" bindtap="goToDetail" data-id="{{item.id}}">
             <image class="hot-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onHomeImageError" data-source="hotSales" data-index="{{index % hotSales.length}}"></image>
             <view class="hot-info">
-              <view class="hot-title">{{item.name}}</view>
+              <view class="hot-title">【川着】{{item.name}}</view>
               <view class="hot-price-wrap">
                 <text class="price-symbol theme-color">￥</text>
                 <text class="price-num theme-color">{{item.retailPrice}}</text>

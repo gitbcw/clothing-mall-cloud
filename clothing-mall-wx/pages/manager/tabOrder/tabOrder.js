@@ -278,17 +278,20 @@ Page({
     const id = e.currentTarget.dataset.id;
     let that = this;
     util.request(api.ManagerShippers, {}, 'GET').then(function(res) {
-      if (res.errno === 0 && res.data.length > 0) {
+      if (res.errno === 0 && res.data && res.data.length > 0) {
+        var names = res.data.map(function(r) { return r.name; });
         wx.showActionSheet({
-          itemList: res.data,
+          itemList: names,
           success(res2) {
-            const channelName = res.data[res2.tapIndex];
-            that.inputShipSn(id, channelName);
+            var shipper = res.data[res2.tapIndex];
+            that.inputShipSn(id, shipper.name);
           }
         });
       } else {
         wx.showToast({ title: '请先配置快递公司', icon: 'none' });
       }
+    }).catch(function() {
+      wx.showToast({ title: '获取快递公司失败', icon: 'none' });
     });
   },
 

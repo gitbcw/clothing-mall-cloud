@@ -51,8 +51,8 @@
       </view>
     </view>
 
-    <!-- 底部按钮 -->
-    <view class="sku-footer" style="padding-bottom: calc(24rpx + env(safe-area-inset-bottom) + {{bottomOffset}}rpx)">
+    <!-- 底部按钮（预览模式隐藏） -->
+    <view class="sku-footer" wx:if="{{!preview}}" style="padding-bottom: calc(24rpx + env(safe-area-inset-bottom) + {{bottomOffset}}rpx)">
       <view class="sku-btn btn-cart" bindtap="onAddToCart">加入购物车</view>
       <view class="sku-btn btn-buy" bindtap="onBuyNow">立即购买</view>
     </view>

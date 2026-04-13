@@ -25,7 +25,7 @@
 
   <!-- 空购物车 -->
   <view class="empty-cart" wx:elif="{{cartGoods.length === 0}}">
-    <image class="empty-illustration" src="{{emptyImage}}" mode="aspectFit" binderror="onEmptyImageError"></image>
+    <view class="empty-cart-icon"></view>
     <text class="empty-title">购物车空空如也</text>
     <text class="empty-text">把喜欢的商品加入购物车，结算更方便</text>
     <view class="login-btn" bindtap="goBack">去逛逛</view>

@@ -3,11 +3,7 @@
 
   <!-- Empty State -->
   <view class="empty-state" wx:if="{{couponList.length <= 0 && !loading}}">
-    <view class="empty-circle">
-      <view class="empty-ticket">
-        <view class="empty-ticket-line"></view>
-      </view>
-    </view>
+    <view class="empty-circle"></view>
     <text class="empty-title">暂无可用优惠券</text>
   </view>
 

@@ -1,5 +1,14 @@
 .goods-form {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.goods-form-scroll {
+  flex: 1;
+  height: 0; /* 关键：配合 flex:1 使 scroll-view 填满剩余空间 */
   padding-bottom: 160rpx;
+  box-sizing: border-box;
 }
 
 .section {

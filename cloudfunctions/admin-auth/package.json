@@ -1,0 +1,9 @@
+{
+  "name": "admin-auth",
+  "version": "1.0.0",
+  "description": "Admin auth, admin CRUD, role management, profile settings",
+  "main": "index.js",
+  "dependencies": {
+    "bcryptjs": "^2.4.3"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "task-order",
+  "version": "1.0.0",
+  "description": "订单定时任务（超时取消 + 自动确认收货）",
+  "main": "index.js",
+  "dependencies": {}
+}

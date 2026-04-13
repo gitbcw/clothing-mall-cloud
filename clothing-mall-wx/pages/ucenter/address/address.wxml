@@ -11,7 +11,7 @@
         <view class="address">{{item.addressDetail}}</view>
       </view>
       <view class="r">
-        <van-icon catchtap="deleteAddress" data-address-id="{{item.id}}" class="del" name="delete"/>
+        <view class="delete" catchtap="deleteAddress" data-address-id="{{item.id}}"></view>
       </view>
     </view>
   </view>

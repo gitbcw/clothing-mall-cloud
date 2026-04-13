@@ -1,0 +1,7 @@
+{
+  "name": "admin-config",
+  "version": "1.0.0",
+  "description": "Admin system config management (mall/express/order/wx/promotion/homeActivity)",
+  "main": "index.js",
+  "dependencies": {}
+}

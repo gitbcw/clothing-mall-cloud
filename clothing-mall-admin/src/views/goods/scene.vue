@@ -49,8 +49,7 @@
         </el-form-item>
         <el-form-item label="海报图" prop="posterUrl">
           <el-upload
-            :headers="headers"
-            :action="uploadPath"
+            :http-request="cloudUpload"
             :show-file-list="false"
             :on-success="posterUploadSuccess"
             :on-error="posterUploadError"
@@ -226,14 +225,13 @@
 <script>
 import { listScene, createScene, updateScene, deleteScene, enableScene, listSceneGoods, updateSceneGoods } from '@/api/scene'
 import { listGoods } from '@/api/goods'
-import { uploadPath } from '@/api/storage'
-import { getToken } from '@/utils/auth'
+import { cloudUpload } from '@/utils/upload'
 
 export default {
   name: 'Scene',
   data() {
     return {
-      uploadPath,
+      cloudUpload,
       list: [],
       listLoading: true,
       dialogVisible: false,
@@ -260,11 +258,6 @@ export default {
     }
   },
   computed: {
-    headers() {
-      return {
-        'X-Litemall-Admin-Token': getToken()
-      }
-    },
     availableGoods() {
       const keyword = this.goodsSearchName.toLowerCase().trim()
       const boundIds = new Set(this.boundGoods.map(g => g.id))

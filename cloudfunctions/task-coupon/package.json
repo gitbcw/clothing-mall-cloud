@@ -1,0 +1,7 @@
+{
+  "name": "task-coupon",
+  "version": "1.0.0",
+  "description": "优惠券定时任务（过期处理 + 生日券发放）",
+  "main": "index.js",
+  "dependencies": {}
+}

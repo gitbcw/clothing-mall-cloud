@@ -1,5 +1,4 @@
 const util = require('../../utils/util.js');
-const api = require('../../config/api.js');
 
 Component({
   options: {
@@ -195,32 +194,20 @@ Component({
       var that = this;
       that.setData({ imageRecognizing: true });
 
-      wx.uploadFile({
-        url: api.AiRecognizeImage,
-        filePath: localFilePath,
-        name: 'file',
-        timeout: 60000,
-        header: {
-          'X-Litemall-Token': wx.getStorageSync('token')
-        },
-        success: function(uploadRes) {
-          that.setData({ imageRecognizing: false });
-          try {
-            var data = JSON.parse(uploadRes.data);
-            if (data.errno === 0 && data.data) {
-              that._applyImageRecognition(data.data);
-            } else {
-              wx.showToast({ title: data.errmsg || '识别失败', icon: 'none' });
-            }
-          } catch (e) {
-            wx.showToast({ title: '识别结果解析失败', icon: 'none' });
-          }
-        },
-        fail: function(err) {
-          that.setData({ imageRecognizing: false });
-          console.error('recognizeImage uploadFile fail:', JSON.stringify(err));
-          wx.showToast({ title: '识别请求失败: ' + (err.errMsg || ''), icon: 'none', duration: 3000 });
+      // 先上传到云存储，再调用 AI 云函数识别
+      util.uploadFile(localFilePath, 'ai').then(function(fileID) {
+        return util.request({ func: 'wx-ai', action: 'recognizeImage' }, { fileID: fileID }, 'POST');
+      }).then(function(res) {
+        that.setData({ imageRecognizing: false });
+        if (res.errno === 0 && res.data) {
+          that._applyImageRecognition(res.data);
+        } else {
+          wx.showToast({ title: res.errmsg || '识别失败', icon: 'none' });
         }
+      }).catch(function(err) {
+        that.setData({ imageRecognizing: false });
+        console.error('recognizeImage fail:', JSON.stringify(err));
+        wx.showToast({ title: '识别请求失败', icon: 'none', duration: 3000 });
       });
     },
 
@@ -329,44 +316,33 @@ Component({
           var tempPath = res.tempFilePaths[0];
           that.setData({ tagRecognizing: true });
 
-          wx.uploadFile({
-            url: api.AiRecognizeTag,
-            filePath: tempPath,
-            name: 'file',
-            header: {
-              'X-Litemall-Token': wx.getStorageSync('token')
-            },
-            success: function(uploadRes) {
-              that.setData({ tagRecognizing: false });
-              try {
-                var data = JSON.parse(uploadRes.data);
-                if (data.errno === 0 && data.data) {
-                  var updates = {};
-                  // 吊牌识别总是覆盖（吊牌信息更准确）
-                  if (data.data.name) {
-                    updates['_form.name'] = data.data.name;
-                  }
-                  if (data.data.price) {
-                    updates['_form.retailPrice'] = data.data.price;
-                  }
-                  if (Object.keys(updates).length > 0) {
-                    that.setData(updates);
-                    that._emitChange();
-                    wx.showToast({ title: '吊牌识别成功', icon: 'success' });
-                  } else {
-                    wx.showToast({ title: '未识别到有效信息', icon: 'none' });
-                  }
-                } else {
-                  wx.showToast({ title: data.errmsg || '识别失败', icon: 'none' });
-                }
-              } catch (e) {
-                wx.showToast({ title: '识别结果解析失败', icon: 'none' });
+          // 先上传到云存储，再调用 AI 云函数识别
+          util.uploadFile(tempPath, 'ai').then(function(fileID) {
+            return util.request({ func: 'wx-ai', action: 'recognizeTag' }, { fileID: fileID }, 'POST');
+          }).then(function(res) {
+            that.setData({ tagRecognizing: false });
+            if (res.errno === 0 && res.data) {
+              var updates = {};
+              // 吊牌识别总是覆盖（吊牌信息更准确）
+              if (res.data.name) {
+                updates['_form.name'] = res.data.name;
               }
-            },
-            fail: function() {
-              that.setData({ tagRecognizing: false });
-              wx.showToast({ title: '识别请求失败', icon: 'none' });
+              if (res.data.price) {
+                updates['_form.retailPrice'] = res.data.price;
+              }
+              if (Object.keys(updates).length > 0) {
+                that.setData(updates);
+                that._emitChange();
+                wx.showToast({ title: '吊牌识别成功', icon: 'success' });
+              } else {
+                wx.showToast({ title: '未识别到有效信息', icon: 'none' });
+              }
+            } else {
+              wx.showToast({ title: res.errmsg || '识别失败', icon: 'none' });
             }
+          }).catch(function() {
+            that.setData({ tagRecognizing: false });
+            wx.showToast({ title: '识别请求失败', icon: 'none' });
           });
         }
       });
@@ -442,9 +418,23 @@ Component({
     // ========== 分类选择 ==========
 
     onShowCategoryPicker: function() {
+      var categoryId = this.data._form.categoryId;
+      var categoryList = this.data.categoryList || [];
+      var pendingIndex = null;
+
+      // 找到当前选中分类对应的索引
+      if (categoryId) {
+        for (var i = 0; i < categoryList.length; i++) {
+          if (categoryList[i].id === categoryId) {
+            pendingIndex = i;
+            break;
+          }
+        }
+      }
+
       this.setData({
         showCategoryPicker: true,
-        _pendingCategoryIndex: null
+        _pendingCategoryIndex: pendingIndex
       });
     },
 

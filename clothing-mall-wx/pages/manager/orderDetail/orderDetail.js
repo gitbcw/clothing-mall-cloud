@@ -14,11 +14,8 @@ Page({
     shipChannel: '',
     shipSn: '',
     channelOptions: [],
+    channelCodes: [],
     channelIndex: 0,
-
-    // 核销弹窗
-    showVerifyDialog: false,
-    inputPickupCode: '',
 
     // 拒绝退款弹窗
     showRejectDialog: false,
@@ -70,8 +67,6 @@ Page({
         // 根据 action 自动弹出弹窗
         if (that.data.action === 'ship' && order.orderStatus === 201) {
           that.setData({ showShipDialog: true });
-        } else if (that.data.action === 'verify' && order.orderStatus === 501) {
-          that.setData({ showVerifyDialog: true });
         } else if (that.data.action === 'refundReject' && order.orderStatus === 202) {
           that.setData({ showRejectDialog: true });
         }
@@ -97,7 +92,7 @@ Page({
   onChannelChange(e) {
     this.setData({
       channelIndex: e.detail.value,
-      shipChannel: this.data.channelOptions[e.detail.value]
+      shipChannel: this.data.channelCodes[e.detail.value]
     });
   },
 
@@ -107,7 +102,7 @@ Page({
 
   confirmShip() {
     if (!this.data.shipChannel) {
-      this.setData({ shipChannel: this.data.channelOptions[0] });
+      this.setData({ shipChannel: this.data.channelCodes[0] });
     }
     if (!this.data.shipSn) {
       wx.showToast({ title: '请输入物流单号', icon: 'none' });
@@ -134,7 +129,11 @@ Page({
     let that = this;
     util.request(api.ManagerShippers, {}, 'GET').then(function(res) {
       if (res.errno === 0) {
-        that.setData({ channelOptions: res.data });
+        const shippers = res.data || [];
+        that.setData({
+          channelOptions: shippers.map(function(s) { return s.name; }),
+          channelCodes: shippers.map(function(s) { return s.code; }),
+        });
       }
     });
   },
@@ -164,34 +163,24 @@ Page({
   // ========== 核销（501→502） ==========
 
   handleVerify() {
-    this.setData({ showVerifyDialog: true });
-  },
-
-  closeVerifyDialog() {
-    this.setData({ showVerifyDialog: false });
-  },
-
-  onPickupCodeInput(e) {
-    this.setData({ inputPickupCode: e.detail.value });
-  },
-
-  confirmVerify() {
-    if (!this.data.inputPickupCode) {
-      wx.showToast({ title: '请输入取货码', icon: 'none' });
-      return;
-    }
-
     let that = this;
-    util.request(api.ManagerOrderVerify, {
-      orderId: this.data.orderId,
-      pickupCode: this.data.inputPickupCode
-    }, 'POST').then(function(res) {
-      if (res.errno === 0) {
-        wx.showToast({ title: '核销成功', icon: 'success' });
-        that.setData({ showVerifyDialog: false });
-        that.getOrderDetail();
-      } else {
-        wx.showToast({ title: res.errmsg || '核销失败', icon: 'none' });
+    wx.showModal({
+      title: '确认核销',
+      content: '确认该订单已核销？',
+      success(res) {
+        if (res.confirm) {
+          util.request(api.ManagerOrderVerify, {
+            orderId: that.data.orderId,
+            pickupCode: that.data.order.pickupCode
+          }, 'POST').then(function(res) {
+            if (res.errno === 0) {
+              wx.showToast({ title: '核销成功', icon: 'success' });
+              setTimeout(() => wx.navigateBack(), 1500);
+            } else {
+              wx.showToast({ title: res.errmsg || '核销失败', icon: 'none' });
+            }
+          });
+        }
       }
     });
   },

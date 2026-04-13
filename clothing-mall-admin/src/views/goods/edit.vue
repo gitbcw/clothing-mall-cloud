@@ -32,8 +32,7 @@
 
         <el-form-item :label="$t('goods_edit.form.pic_url')">
           <el-upload
-            :headers="headers"
-            :action="uploadPath"
+            :http-request="cloudUpload"
             :show-file-list="false"
             :auto-upload="false"
             :on-change="handlePicChange"
@@ -48,8 +47,7 @@
 
         <el-form-item :label="$t('goods_edit.form.gallery')">
           <el-upload
-            :action="uploadPath"
-            :headers="headers"
+            :http-request="cloudUpload"
             :limit="5"
             :file-list="galleryFileList"
             :on-exceed="uploadOverrun"
@@ -199,17 +197,16 @@
 <script>
 import { detailGoods, editGoods, listCatAndBrand } from '@/api/goods'
 import { listScene } from '@/api/scene'
-import { createStorage, uploadPath } from '@/api/storage'
+import { cloudUpload, cloudUploadFile } from '@/utils/upload'
 import Editor from '@tinymce/tinymce-vue'
 import { MessageBox } from 'element-ui'
-import { getToken } from '@/utils/auth'
 
 export default {
   name: 'GoodsEdit',
   components: { Editor },
   data() {
     return {
-      uploadPath,
+      cloudUpload,
       // 商品数据
       goods: { gallery: [] },
       picFile: null,
@@ -245,11 +242,11 @@ export default {
           'hr bullist numlist link image charmap preview anchor pagebreak insertdatetime media table emoticons forecolor backcolor fullscreen'
         ],
         images_upload_handler: function(blobInfo, success, failure) {
-          const formData = new FormData()
-          formData.append('file', blobInfo.blob())
-          createStorage(formData)
-            .then(res => {
-              success(res.data.data.url)
+          const file = blobInfo.blob()
+          file.name = blobInfo.filename()
+          cloudUploadFile(file)
+            .then(url => {
+              success(url)
             })
             .catch(() => {
               failure('上传失败，请重新上传')
@@ -259,11 +256,6 @@ export default {
     }
   },
   computed: {
-    headers() {
-      return {
-        'X-Litemall-Admin-Token': getToken()
-      }
-    },
     attributesData() {
       return this.attributes.filter(attr => !attr.deleted)
     }
@@ -375,12 +367,8 @@ export default {
         // 如果有待上传的商品图片，先上传
         if (this.picFile) {
           try {
-            const formData = new FormData()
-            formData.append('file', this.picFile)
-            const uploadRes = await createStorage(formData)
-            if (uploadRes.data.errno === 0) {
-              this.goods.picUrl = uploadRes.data.data.url
-            }
+            const url = await cloudUploadFile(this.picFile)
+            this.goods.picUrl = url
           } catch (e) {
             console.warn('图片上传失败:', e)
           }

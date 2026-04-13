@@ -1,0 +1,7 @@
+{
+  "name": "wx-manager-content",
+  "version": "1.0.0",
+  "description": "小程序管理端内容管理云函数",
+  "main": "index.js",
+  "dependencies": {}
+}

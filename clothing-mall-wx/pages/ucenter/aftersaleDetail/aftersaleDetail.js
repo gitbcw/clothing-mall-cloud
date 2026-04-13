@@ -7,8 +7,8 @@ Page({
     order: {},
     orderGoods: [],
     aftersale: {},
-    statusColumns: ['未申请', '已申请，待审核', '审核通过，待退款', '退款成功', '审核不通过，已拒绝'],
-    typeColumns: ['未收货退款', '不退货退款', '退货退款'],
+    statusColumns: ['可申请', '已申请，待审核', '审核通过，待补发', '换货已发货', '审核不通过，已拒绝', '已取消', '换货完成'],
+    typeColumns: ['同款换货', '换其他商品', '商品有瑕疵', '其他原因'],
     fileList: []
   },
   onLoad: function (options) {
@@ -19,35 +19,43 @@ Page({
     this.getAftersaleDetail();
   },
   getAftersaleDetail: function () {
-    wx.showLoading({
-      title: '加载中',
-    });
-
-    setTimeout(function () {
-      wx.hideLoading()
-    }, 2000);
-
     let that = this;
+    wx.showLoading({ title: '加载中' });
+
     util.request(api.AftersaleDetail, {
       orderId: that.data.orderId
     }).then(function (res) {
+      wx.hideLoading();
       if (res.errno === 0) {
-        let _fileList = []
-        res.data.aftersale.pictures.forEach(function (v) {
-          _fileList.push({
-            url: v
-          })
+        var pictures = res.data.aftersale.pictures || [];
+        var _fileList = pictures.map(function (v) {
+          return { url: v };
         });
+
+        var aftersale = res.data.aftersale;
+        if (aftersale.addTime) {
+          aftersale.addTime = util.formatTime(new Date(aftersale.addTime));
+        }
 
         that.setData({
           order: res.data.order,
           orderGoods: res.data.orderGoods,
-          aftersale: res.data.aftersale,
+          aftersale: aftersale,
           fileList: _fileList
         });
+      } else {
+        wx.showToast({ title: res.errmsg || '加载失败', icon: 'none' });
       }
-
+    }).catch(function () {
       wx.hideLoading();
+      wx.showToast({ title: '网络异常', icon: 'none' });
+    });
+  },
+  goLogistics: function () {
+    var a = this.data.aftersale;
+    if (!a || !a.shipSn) return;
+    wx.navigateTo({
+      url: '/pages/ucenter/logistics/logistics?shipChannel=' + encodeURIComponent(a.shipChannel) + '&shipSn=' + encodeURIComponent(a.shipSn)
     });
   },
   onReady: function () {

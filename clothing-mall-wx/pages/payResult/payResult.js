@@ -35,6 +35,12 @@ Page({
       orderId: that.data.orderId
     }, 'POST').then(function(res) {
       if (res.errno === 0) {
+        // 模拟支付：后端已标记已付
+        if (res.data && res.data.mockPay) {
+          that.setData({ status: true });
+          return;
+        }
+        // 真实微信支付
         const payParam = res.data;
         console.log("支付过程开始")
         wx.requestPayment({

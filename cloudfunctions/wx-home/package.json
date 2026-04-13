@@ -1,0 +1,7 @@
+{
+  "name": "wx-home",
+  "version": "1.0.0",
+  "description": "WX 商城端首页云函数：首页数据、专题、问题、消息",
+  "main": "index.js",
+  "dependencies": {}
+}

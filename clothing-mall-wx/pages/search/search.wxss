@@ -1,28 +1,28 @@
 page {
   min-height: 100%;
-  background-color: #f4f4f4;
+  background-color: #F7F8FA;
 }
 
 .container {
   min-height: 100%;
-  background-color: #f4f4f4;
+  background-color: #F7F8FA;
 }
 
 .search-header {
   position: fixed;
   top: 0;
-  width: 750rpx;
+  width: 100%;
+  box-sizing: border-box;
   height: 91rpx;
   display: flex;
-  background: #fff;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  background: #F7F8FA;
   padding: 0 31.25rpx;
   font-size: 29rpx;
   color: #333;
 }
 
 .search-header .van-icon-search {
-  line-height: 59rpx;
+  line-height: 80rpx;
 }
 
 .search-header .input-box {
@@ -31,10 +31,14 @@ page {
   float: left;
   width: 0;
   flex: 1;
-  height: 59rpx;
-  line-height: 59rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  line-height: 80rpx;
   padding: 0 20rpx;
-  background: #f4f4f4;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .search-header .icon {
@@ -47,10 +51,10 @@ page {
 
 .search-header .del {
   position: absolute;
-  top: 3rpx;
+  top: 0rpx;
   right: 10rpx;
   width: 53rpx;
-  height: 53rpx;
+  height: 80rpx;
   z-index: 10;
 }
 
@@ -58,18 +62,18 @@ page {
   position: absolute;
   top: 0;
   left: 40rpx;
-  width: 506rpx;
-  height: 59rpx;
+  width: calc(100% - 100rpx);
+  height: 80rpx;
   padding-left: 30rpx;
 }
 
 .search-header .right {
-  margin-top: 24rpx;
+  margin-top: 16rpx;
   margin-left: 31rpx;
   margin-right: 6rpx;
   width: 58rpx;
-  height: 43rpx;
-  line-height: 43rpx;
+  height: 80rpx;
+  line-height: 80rpx;
   float: right;
 }
 
@@ -80,7 +84,7 @@ page {
 }
 
 .search-keywords {
-  background: #fff;
+  background: #F7F8FA;
   width: 750rpx;
   height: auto;
   overflow: hidden;
@@ -94,6 +98,10 @@ page {
   width: 100%;
   color: #999;
   font-size: 29rpx;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .search-keywords .title {
@@ -103,16 +111,15 @@ page {
 }
 
 .search-keywords .icon {
-  margin-top: 19rpx;
-  float: right;
+  transform: translateY(-24rpx);
   display: block;
-  margin-left: 511rpx;
-  height: 55rpx;
-  width: 55rpx;
+  height: 32rpx;
+  width: 32rpx;
 }
 
 .search-keywords .b {
-  width: 750rpx;
+  width: 100%;
+  box-sizing: border-box;
   height: auto;
   overflow: hidden;
   padding-left: 31.25rpx;
@@ -122,17 +129,18 @@ page {
   display: inline-block;
   width: auto;
   height: 48rpx;
+  border-radius: 24rpx;
   line-height: 48rpx;
-  padding: 0 15rpx;
-  border: 1px solid #999;
+  padding: 2rpx 20rpx;
+  border: 1px solid #eeeeee;
   margin: 0 31.25rpx 31.25rpx 0;
   font-size: 24rpx;
-  color: #333;
+  color: #666;
 }
 
 .search-keywords .item.active {
   color: #FF8096;
-  border: 1px solid #FF8096;
+  border: 1px solid #FFEAE5;
 }
 
 .shelper-list {
@@ -221,8 +229,8 @@ page {
   height: 78rpx;
   overflow: hidden;
   padding: 0 30rpx;
+  box-sizing: border-box;
   display: flex;
-  border-bottom: 1px solid #d9d9d9;
 }
 
 .sort-box .item {
@@ -303,10 +311,13 @@ page {
 }
 
 .cate-item .b {
-  width: 750rpx;
-  padding: 0 6.25rpx;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 30rpx;
   height: auto;
   overflow: hidden;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .cate-item .list-filter {
@@ -319,30 +330,34 @@ page {
 .cate-item .b .item {
   float: left;
   background: #fff;
-  width: 365rpx;
-  margin-bottom: 6.25rpx;
+  box-sizing: border-box;
+  width: calc(50% - 20rpx);
+  margin-bottom: 30rpx;
   padding-bottom: 33.333rpx;
+  border-radius: 12rpx;
   height: auto;
   overflow: hidden;
   text-align: center;
 }
 
 .cate-item .b .item-b {
-  margin-left: 6.25rpx;
-}
+  margin-left: 40rpx;}
 
 .cate-item .item .img {
-  width: 302rpx;
+  width: 100%;
   height: 302rpx;
 }
 
 .cate-item .item .name {
   display: block;
-  width: 365.625rpx;
+  width: 100%;
   height: 35rpx;
+  box-sizing: border-box;
   margin: 11.5rpx 0 22rpx 0;
   text-align: center;
   overflow: hidden;
+  white-space: nowrap;    /* 强制不换行 */
+  text-overflow: ellipsis;/* 末尾显示… */
   padding: 0 20rpx;
   font-size: 30rpx;
   color: #333;
@@ -350,7 +365,8 @@ page {
 
 .cate-item .item .price {
   display: block;
-  width: 365.625rpx;
+  width: 100%;
+  box-sizing: border-box;
   height: 30rpx;
   text-align: center;
   font-size: 30rpx;
@@ -403,7 +419,8 @@ page {
 }
 
 .tag-scroll .b {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   padding: 0 31.25rpx 31.25rpx;
 }
 
@@ -411,9 +428,57 @@ page {
   display: inline-block;
   height: 48rpx;
   line-height: 48rpx;
-  padding: 0 15rpx;
-  border: 1px solid #999;
-  margin-right: 31.25rpx;
+  padding: 2rpx 20rpx;
+  border: 1px solid #eee;
+  border-radius: 24rpx;
+  margin-right: 20rpx;
+  margin-top: 16rpx;
   font-size: 24rpx;
-  color: #333;
+  color: #666;
+}
+/* ===== 导航栏 ===== */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-sizing: border-box;
+  background-color: #F7F8FA;
+  z-index: 100;
+}
+
+.back-btn {
+  width: 40px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.back-icon {
+  width: 10px;
+  height: 10px;
+  border-left: 1.5px solid #333333;
+  border-bottom: 1.5px solid #333333;
+  transform: rotate(45deg);
+  margin-left: 4px;
+}
+
+.nav-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #333333;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  letter-spacing: 0.5px;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  width: 40px;
 }

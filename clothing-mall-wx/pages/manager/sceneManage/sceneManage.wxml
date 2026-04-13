@@ -30,6 +30,7 @@
         <view class="scene-name">{{item.name}}</view>
         <view class="scene-desc" wx:if="{{item.description}}">{{item.description}}</view>
         <view class="scene-meta">
+          <text class="scene-goods-count">{{item.goodsCount || 0}}件商品</text>
           <text class="scene-sort">排序 {{item.sortOrder || 0}}</text>
           <view class="scene-status {{item.enabled ? 'status-on' : 'status-off'}}">
             {{item.enabled ? '已启用' : '已禁用'}}

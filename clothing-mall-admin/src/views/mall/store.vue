@@ -55,8 +55,7 @@
         </el-form-item>
         <el-form-item label="门店图片" prop="imageUrl">
           <el-upload
-            :headers="headers"
-            :action="uploadPath"
+            :http-request="cloudUpload"
             :show-file-list="false"
             :on-success="uploadSuccess"
             class="avatar-uploader"
@@ -107,8 +106,7 @@
 
 <script>
 import { listStore, createStore, updateStore, deleteStore } from '@/api/sku'
-import { uploadPath } from '@/api/storage'
-import { getToken } from '@/utils/auth'
+import { cloudUpload } from '@/utils/upload'
 import Pagination from '@/components/Pagination'
 
 export default {
@@ -116,7 +114,7 @@ export default {
   components: { Pagination },
   data() {
     return {
-      uploadPath,
+      cloudUpload,
       list: [],
       total: 0,
       listLoading: true,
@@ -144,13 +142,6 @@ export default {
       rules: {
         name: [{ required: true, message: '门店名称不能为空', trigger: 'blur' }],
         address: [{ required: true, message: '地址不能为空', trigger: 'blur' }]
-      }
-    }
-  },
-  computed: {
-    headers() {
-      return {
-        'X-Litemall-Admin-Token': getToken()
       }
     }
   },

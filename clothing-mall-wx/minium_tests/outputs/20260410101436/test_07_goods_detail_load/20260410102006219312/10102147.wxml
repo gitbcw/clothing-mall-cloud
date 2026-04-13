@@ -1,0 +1,940 @@
+
+<view class="container">
+  <view class="custom-nav" style="padding-top: 63px; height: 44px;">
+    <view class="nav-left"/>
+    <view class="nav-title">川着·Transmute</view>
+    <view class="nav-right"/>
+  </view>
+  <scroll-view class="page-scroll" scroll-y="" style="padding-top: 91px;" enable-back-to-top="">
+    <swiper autoplay="" circular="" class="banner-swiper" indicator-active-color="#ffffff" indicator-color="rgba(255,255,255,0.5)" indicator-dots="" role="listbox" current="5" current-item-id="">
+      <swiper-item data-scene-id="1" style="position: absolute; width: 100%; height: 100%; transform: translate(600%, 0px) translateZ(0px);">
+        <view class="banner-slide">
+          <image class="banner-image" data-index="0" data-source="banner" mode="aspectFill" src="" role="img"/>
+          <view class="banner-watermark">日常通勤</view>
+          <view class="banner-text-overlay">
+            <view class="banner-info-block">
+              <text class="banner-scene-name"/>
+              <view class="banner-view-more">
+                <text class="banner-view-more-text"/>
+                <view class="banner-view-more-line"/>
+              </view>
+            </view>
+          </view>
+        </view>
+      </swiper-item>
+      <swiper-item data-scene-id="2" style="position: absolute; width: 100%; height: 100%; transform: translate(700%, 0px) translateZ(0px);">
+        <view class="banner-slide">
+          <image class="banner-image" data-index="1" data-source="banner" mode="aspectFill" src="" role="img"/>
+          <view class="banner-watermark">约会聚会</view>
+          <view class="banner-text-overlay">
+            <view class="banner-info-block">
+              <text class="banner-scene-name"/>
+              <view class="banner-view-more">
+                <text class="banner-view-more-text"/>
+                <view class="banner-view-more-line"/>
+              </view>
+            </view>
+          </view>
+        </view>
+      </swiper-item>
+      <swiper-item data-scene-id="3" style="position: absolute; width: 100%; height: 100%; transform: translate(800%, 0px) translateZ(0px);">
+        <view class="banner-slide">
+          <image class="banner-image" data-index="2" data-source="banner" mode="aspectFill" src="" role="img"/>
+          <view class="banner-watermark">商务正装</view>
+          <view class="banner-text-overlay">
+            <view class="banner-info-block">
+              <text class="banner-scene-name"/>
+              <view class="banner-view-more">
+                <text class="banner-view-more-text"/>
+                <view class="banner-view-more-line"/>
+              </view>
+            </view>
+          </view>
+        </view>
+      </swiper-item>
+      <swiper-item data-scene-id="4" style="position: absolute; width: 100%; height: 100%; transform: translate(900%, 0px) translateZ(0px);">
+        <view class="banner-slide">
+          <image class="banner-image" data-index="3" data-source="banner" mode="aspectFill" src="" role="img"/>
+          <view class="banner-watermark">休闲度假</view>
+          <view class="banner-text-overlay">
+            <view class="banner-info-block">
+              <text class="banner-scene-name"/>
+              <view class="banner-view-more">
+                <text class="banner-view-more-text"/>
+                <view class="banner-view-more-line"/>
+              </view>
+            </view>
+          </view>
+        </view>
+      </swiper-item>
+      <swiper-item data-scene-id="5" style="position: absolute; width: 100%; height: 100%; transform: translate(1000%, 0px) translateZ(0px);">
+        <view class="banner-slide">
+          <image class="banner-image" data-index="4" data-source="banner" mode="aspectFill" src="" role="img"/>
+          <view class="banner-watermark">运动健身</view>
+          <view class="banner-text-overlay">
+            <view class="banner-info-block">
+              <text class="banner-scene-name"/>
+              <view class="banner-view-more">
+                <text class="banner-view-more-text"/>
+                <view class="banner-view-more-line"/>
+              </view>
+            </view>
+          </view>
+        </view>
+      </swiper-item>
+      <swiper-item data-scene-id="6" style="position: absolute; width: 100%; height: 100%; transform: translate(500%, 0px) translateZ(0px);">
+        <view class="banner-slide">
+          <image class="banner-image" data-index="5" data-source="banner" mode="aspectFill" src="" role="img"/>
+          <view class="banner-watermark">户外旅行</view>
+          <view class="banner-text-overlay">
+            <view class="banner-info-block">
+              <text class="banner-scene-name"/>
+              <view class="banner-view-more">
+                <text class="banner-view-more-text"/>
+                <view class="banner-view-more-line"/>
+              </view>
+            </view>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+    <view class="activity-section">
+      <view class="section-header-weekly">
+        <text class="section-title-cn"/>
+        <text class="section-title-en"/>
+      </view>
+      <scroll-view enhanced="" scroll-x="" class="activity-scroll">
+        <view class="activity-item" data-id="1181730" style="scroll-snap-align: none;">
+          <image class="activity-img" data-index="0" data-source="activityGoodsTop" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/7e4f11tfcsv7dshxefcg.jpg" role="img"/>
+          <view class="activity-info">
+            <text class="activity-name"/>
+            <view class="activity-price-line">
+              <view class="price-center">
+                <text class="activity-price">
+                  <text class="rmb"/>
+                  <text class="num"/>
+                </text>
+              </view>
+              <view class="cart-icon-small" data-id="1181730"/>
+            </view>
+          </view>
+        </view>
+        <view class="activity-item" data-id="1181740" style="scroll-snap-align: none;">
+          <image class="activity-img" data-index="1" data-source="activityGoodsTop" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/gpa902tikna4jsjho050.jpg" role="img"/>
+          <view class="activity-info">
+            <text class="activity-name"/>
+            <view class="activity-price-line">
+              <view class="price-center">
+                <text class="activity-price">
+                  <text class="rmb"/>
+                  <text class="num"/>
+                </text>
+              </view>
+              <view class="cart-icon-small" data-id="1181740"/>
+            </view>
+          </view>
+        </view>
+        <view class="activity-item" data-id="1181741" style="scroll-snap-align: none;">
+          <image class="activity-img" data-index="2" data-source="activityGoodsTop" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/3x3flp6jishohp3mj0t0.jpg" role="img"/>
+          <view class="activity-info">
+            <text class="activity-name"/>
+            <view class="activity-price-line">
+              <view class="price-center">
+                <text class="activity-price">
+                  <text class="rmb"/>
+                  <text class="num"/>
+                </text>
+              </view>
+              <view class="cart-icon-small" data-id="1181741"/>
+            </view>
+          </view>
+        </view>
+        <view class="activity-item" data-id="1181739" style="scroll-snap-align: none;">
+          <image class="activity-img" data-index="3" data-source="activityGoodsTop" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/r9h65nmkqcfay3ls646r.jpg" role="img"/>
+          <view class="activity-info">
+            <text class="activity-name"/>
+            <view class="activity-price-line">
+              <view class="price-center">
+                <text class="activity-price">
+                  <text class="rmb"/>
+                  <text class="num"/>
+                </text>
+              </view>
+              <view class="cart-icon-small" data-id="1181739"/>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+      <scroll-view enhanced="" scroll-x="" class="activity-scroll-sub">
+        <view class="activity-item-sub" data-id="1181734" style="scroll-snap-align: none;">
+          <image class="activity-img-sub" data-index="0" data-source="activityGoodsBottom" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/vb0184gfc5kh8mxyk7ao.jpg" role="img"/>
+          <view class="activity-info">
+            <text class="activity-name"/>
+            <view class="activity-price-line">
+              <view class="price-center">
+                <text class="activity-price">
+                  <text class="rmb"/>
+                  <text class="num"/>
+                </text>
+              </view>
+              <view class="cart-icon-small" data-id="1181734"/>
+            </view>
+          </view>
+        </view>
+        <view class="activity-item-sub" data-id="1181735" style="scroll-snap-align: none;">
+          <image class="activity-img-sub" data-index="1" data-source="activityGoodsBottom" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/qfzgpdqk3xcc3p6rfkjm.jpg" role="img"/>
+          <view class="activity-info">
+            <text class="activity-name"/>
+            <view class="activity-price-line">
+              <view class="price-center">
+                <text class="activity-price">
+                  <text class="rmb"/>
+                  <text class="num"/>
+                </text>
+              </view>
+              <view class="cart-icon-small" data-id="1181735"/>
+            </view>
+          </view>
+        </view>
+        <view class="activity-item-sub" data-id="1181736" style="scroll-snap-align: none;">
+          <image class="activity-img-sub" data-index="2" data-source="activityGoodsBottom" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/94d486ncwop3xbdoag2b.jpg" role="img"/>
+          <view class="activity-info">
+            <text class="activity-name"/>
+            <view class="activity-price-line">
+              <view class="price-center">
+                <text class="activity-price">
+                  <text class="rmb"/>
+                  <text class="num"/>
+                </text>
+              </view>
+              <view class="cart-icon-small" data-id="1181736"/>
+            </view>
+          </view>
+        </view>
+        <view class="activity-item-sub" data-id="1181732" style="scroll-snap-align: none;">
+          <image class="activity-img-sub" data-index="3" data-source="activityGoodsBottom" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/zhtbrbqpmdhtv3l4nb3d.jpg" role="img"/>
+          <view class="activity-info">
+            <text class="activity-name"/>
+            <view class="activity-price-line">
+              <view class="price-center">
+                <text class="activity-price">
+                  <text class="rmb"/>
+                  <text class="num"/>
+                </text>
+              </view>
+              <view class="cart-icon-small" data-id="1181732"/>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+    <view class="hot-sale-section">
+      <view class="section-header">
+        <view class="title-wrap">
+          <text class="title"/>
+          <text class="subtitle"/>
+        </view>
+      </view>
+      <view class="hot-scroll-wrapper">
+        <view class="hot-scroll-inner" style="animation-duration: 156s; animation-play-state: running">
+          <view class="hot-item" data-id="1181741">
+            <image class="hot-img" data-index="0" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/3x3flp6jishohp3mj0t0.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】黑色露肩针织上衣白色阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181741">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181740">
+            <image class="hot-img" data-index="1" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/gpa902tikna4jsjho050.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白色系带收腰衬衫式长款连衣裙</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181740">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181739">
+            <image class="hot-img" data-index="2" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/r9h65nmkqcfay3ls646r.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】粉色提花马甲白衬衫阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181739">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181738">
+            <image class="hot-img" data-index="3" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/ezxg2ionhy9iq1uo2dad.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】黑色打底灰吊带杏色阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181738">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181737">
+            <image class="hot-img" data-index="4" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/47i75782xikehbz3xhy7.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米白色露肩长袖收腰压褶长款连衣裙</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181737">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181736">
+            <image class="hot-img" data-index="5" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/94d486ncwop3xbdoag2b.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】卡其色针织上衣白色网纱蛋糕裙套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181736">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181735">
+            <image class="hot-img" data-index="6" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/qfzgpdqk3xcc3p6rfkjm.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白色V领收腰衬衫阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181735">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181734">
+            <image class="hot-img" data-index="7" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/vb0184gfc5kh8mxyk7ao.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白色宽松衬衫棕色阔腿裤休闲套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181734">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181733">
+            <image class="hot-img" data-index="8" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/oy5xjrpvvjxlya0s7fh1.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】姜黄色短袖针织衫白色高腰阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181733">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181732">
+            <image class="hot-img" data-index="9" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/zhtbrbqpmdhtv3l4nb3d.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白打底绿针织吊带灰阔腿休闲套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181732">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181731">
+            <image class="hot-img" data-index="10" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/ntekibauty4wlz8oannq.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白色休闲工装外套阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181731">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181730">
+            <image class="hot-img" data-index="11" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/7e4f11tfcsv7dshxefcg.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米白色休闲西装阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181730">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181729">
+            <image class="hot-img" data-index="12" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/bxehqwwy87j7mvq8urt5.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白色棉麻中袖衬衫</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181729">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181728">
+            <image class="hot-img" data-index="13" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/6m23j55y3uuh3zx8ywi3.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】藏蓝色收腰翻领棉麻衬衫</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181728">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181727">
+            <image class="hot-img" data-index="14" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/6k517a710z8qyolo6wb4.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米白色纯棉衬衫阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181727">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181726">
+            <image class="hot-img" data-index="15" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/nzz46xscptqc16pgy2k9.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】深棕色收腰针织衫浅灰色中长半身裙套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181726">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181725">
+            <image class="hot-img" data-index="16" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/iixfsmv0j14wh6s86dcl.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米白色棉麻单排扣工装马甲</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181725">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181724">
+            <image class="hot-img" data-index="17" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/nzqo3b86v90ozboy82p0.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】姜黄色设计感半高领针织无袖上衣</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181724">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181723">
+            <image class="hot-img" data-index="18" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/u1v25wp7vwh7lme2nagj.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米白色新中式刺绣立领缎面马甲</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181723">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181720">
+            <image class="hot-img" data-index="19" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/rldbzgfjrpeygze6x91t.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米色百搭外套</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181720">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181719">
+            <image class="hot-img" data-index="20" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/vb7uquf4nujg4a3i78l9.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】春日纱裙</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181719">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181718">
+            <image class="hot-img" data-index="21" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/oetxbinxi9nv4t2pt4kd.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】卡其色户外徒步套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181718">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181717">
+            <image class="hot-img" data-index="22" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/isvlt1xka3653g5dzjcv.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】淡蓝色衬衣配格子裙套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181717">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181716">
+            <image class="hot-img" data-index="23" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/1q5wu28ccbkl5f9co1sq.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】鹅黄针织衫</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181716">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181715">
+            <image class="hot-img" data-index="24" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/mzz5abiftl3bgsqimd4i.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】鹅黄提花马甲</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181715">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181714">
+            <image class="hot-img" data-index="25" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/pjb17hv2fd057l5k4l83.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】飘带针织衫</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181714">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181741">
+            <image class="hot-img" data-index="0" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/3x3flp6jishohp3mj0t0.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】黑色露肩针织上衣白色阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181741">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181740">
+            <image class="hot-img" data-index="1" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/gpa902tikna4jsjho050.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白色系带收腰衬衫式长款连衣裙</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181740">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181739">
+            <image class="hot-img" data-index="2" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/r9h65nmkqcfay3ls646r.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】粉色提花马甲白衬衫阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181739">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181738">
+            <image class="hot-img" data-index="3" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/ezxg2ionhy9iq1uo2dad.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】黑色打底灰吊带杏色阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181738">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181737">
+            <image class="hot-img" data-index="4" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/47i75782xikehbz3xhy7.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米白色露肩长袖收腰压褶长款连衣裙</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181737">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181736">
+            <image class="hot-img" data-index="5" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/94d486ncwop3xbdoag2b.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】卡其色针织上衣白色网纱蛋糕裙套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181736">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181735">
+            <image class="hot-img" data-index="6" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/qfzgpdqk3xcc3p6rfkjm.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白色V领收腰衬衫阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181735">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181734">
+            <image class="hot-img" data-index="7" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/vb0184gfc5kh8mxyk7ao.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白色宽松衬衫棕色阔腿裤休闲套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181734">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181733">
+            <image class="hot-img" data-index="8" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/oy5xjrpvvjxlya0s7fh1.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】姜黄色短袖针织衫白色高腰阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181733">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181732">
+            <image class="hot-img" data-index="9" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/zhtbrbqpmdhtv3l4nb3d.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白打底绿针织吊带灰阔腿休闲套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181732">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181731">
+            <image class="hot-img" data-index="10" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/ntekibauty4wlz8oannq.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白色休闲工装外套阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181731">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181730">
+            <image class="hot-img" data-index="11" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/7e4f11tfcsv7dshxefcg.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米白色休闲西装阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181730">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181729">
+            <image class="hot-img" data-index="12" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/bxehqwwy87j7mvq8urt5.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】白色棉麻中袖衬衫</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181729">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181728">
+            <image class="hot-img" data-index="13" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/6m23j55y3uuh3zx8ywi3.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】藏蓝色收腰翻领棉麻衬衫</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181728">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181727">
+            <image class="hot-img" data-index="14" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/6k517a710z8qyolo6wb4.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米白色纯棉衬衫阔腿裤套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181727">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181726">
+            <image class="hot-img" data-index="15" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/nzz46xscptqc16pgy2k9.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】深棕色收腰针织衫浅灰色中长半身裙套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181726">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181725">
+            <image class="hot-img" data-index="16" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/iixfsmv0j14wh6s86dcl.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米白色棉麻单排扣工装马甲</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181725">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181724">
+            <image class="hot-img" data-index="17" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/nzqo3b86v90ozboy82p0.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】姜黄色设计感半高领针织无袖上衣</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181724">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181723">
+            <image class="hot-img" data-index="18" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/u1v25wp7vwh7lme2nagj.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米白色新中式刺绣立领缎面马甲</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181723">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181720">
+            <image class="hot-img" data-index="19" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/rldbzgfjrpeygze6x91t.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】米色百搭外套</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181720">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181719">
+            <image class="hot-img" data-index="20" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/vb7uquf4nujg4a3i78l9.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】春日纱裙</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181719">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181718">
+            <image class="hot-img" data-index="21" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/oetxbinxi9nv4t2pt4kd.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】卡其色户外徒步套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181718">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181717">
+            <image class="hot-img" data-index="22" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/isvlt1xka3653g5dzjcv.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】淡蓝色衬衣配格子裙套装</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181717">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181716">
+            <image class="hot-img" data-index="23" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/1q5wu28ccbkl5f9co1sq.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】鹅黄针织衫</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181716">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181715">
+            <image class="hot-img" data-index="24" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/mzz5abiftl3bgsqimd4i.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】鹅黄提花马甲</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181715">立即抢购</view>
+            </view>
+          </view>
+          <view class="hot-item" data-id="1181714">
+            <image class="hot-img" data-index="25" data-source="hotSales" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/pjb17hv2fd057l5k4l83.jpg" role="img"/>
+            <view class="hot-info">
+              <view class="hot-title">【川着】飘带针织衫</view>
+              <view class="hot-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+                <text class="original-price"/>
+              </view>
+              <view class="buy-btn" data-id="1181714">立即抢购</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="outfit-recommend-section">
+      <view class="section-header-weekly" style="text-align: center; margin-bottom: 16px;">
+        <view class="section-title-cn" style="font-style: normal; font-size: 18px; margin-bottom: 4px; display: block; color: #333;">搭配推荐</view>
+        <view class="section-title-en" style="font-size: 12px; color: #FF8096; margin: 0; letter-spacing: 1px; display: block; font-weight: normal;">SELECTION LIST</view>
+      </view>
+      <scroll-view enhanced="" scroll-x="" class="outfit-list-scroll">
+        <view class="outfit-item-wrap" style="scroll-snap-align: none;">
+          <image class="outfit-bg-img" data-index="0" data-source="matchRecommends" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/5yow901wluqexjlxsx1u.jpg" role="img"/>
+          <view class="outfit-brand-watermark outfit-brand--white outfit-brand-pos--top-right">
+            <text class="outfit-brand-main"/>
+            <text class="outfit-brand-sub"/>
+          </view>
+          <view class="outfit-float-panel float-pos--left">
+            <view class="outfit-float-title">Get同款</view>
+            <scroll-view enhanced="" scroll-y="" class="outfit-goods-scroll">
+              <view class="outfit-good-item" data-id="1181714" style="scroll-snap-align: none;">
+                <image class="outfit-good-img" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/pjb17hv2fd057l5k4l83.jpg" role="img"/>
+                <view class="outfit-good-price">¥399.00</view>
+              </view>
+            </scroll-view>
+          </view>
+        </view>
+        <view class="outfit-item-wrap" style="scroll-snap-align: none;">
+          <image class="outfit-bg-img" data-index="1" data-source="matchRecommends" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/q4orbfuyegulnydu1s9f.jpg" role="img"/>
+          <view class="outfit-brand-watermark outfit-brand--white outfit-brand-pos--top-right">
+            <text class="outfit-brand-main"/>
+            <text class="outfit-brand-sub"/>
+          </view>
+          <view class="outfit-float-panel float-pos--right">
+            <view class="outfit-float-title">Get同款</view>
+            <scroll-view enhanced="" scroll-y="" class="outfit-goods-scroll">
+              <view class="outfit-good-item" data-id="1181717" style="scroll-snap-align: none;">
+                <image class="outfit-good-img" mode="aspectFill" src="https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/isvlt1xka3653g5dzjcv.jpg" role="img"/>
+                <view class="outfit-good-price">¥599.00</view>
+              </view>
+            </scroll-view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+    <view class="grid-section">
+      <view class="section-title-center">
+        <view class="line"/>
+        <text class="title-text"/>
+        <view class="line"/>
+      </view>
+      <view class="grid-list">
+        <view class="grid-item" data-id="1181708">
+          <image class="grid-img other" data-index="0" data-source="accessories" mode="aspectFill" src="/static/images/fallback-image.svg" role="img"/>
+          <view class="grid-info">
+            <view class="grid-title">绿宝石耳环</view>
+            <view class="grid-bottom">
+              <view class="grid-price-wrap">
+                <text class="price-symbol theme-color"/>
+                <text class="price-num theme-color"/>
+              </view>
+              <view class="cart-icon-small" data-id="1181708"/>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="btn-more-center" data-url="/pages/category/category">查看更多</view>
+    </view>
+    <view class="bottom-placeholder"/>
+  </scroll-view>
+  <floating-cart is="components/floating-cart/floating-cart">
+    <view class="cart--floating-cart">
+      <van-icon is="lib/vant-weapp/icon/index">
+        <view class=" van-icon icon-index--van-icon van-icon-shopping-cart-o icon-index--van-icon-shopping-cart-o" style="color: #8B7355;font-size: 24px;"/>
+      </van-icon>
+    </view>
+  </floating-cart>
+  <sku-picker is="components/sku-picker/sku-picker"/>
+</view>

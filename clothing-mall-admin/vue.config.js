@@ -28,6 +28,7 @@ module.exports = {
   assetsDir: 'static',
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
+  transpileDependencies: ['@cloudbase/js-sdk', '@cloudbase/database', '@cloudbase/oauth'],
   devServer: {
     proxy: {
       '/admin': {
@@ -54,6 +55,7 @@ module.exports = {
       alias: {
         '@': resolve('src')
         , 'echarts/lib/CoordinateSystem': resolve('src/shims/CoordinateSystem')
+        , 'bson': resolve('src/shims/bson.js')
       }
     }
   },

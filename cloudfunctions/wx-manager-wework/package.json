@@ -1,0 +1,7 @@
+{
+  "name": "wx-manager-wework",
+  "version": "1.0.0",
+  "description": "小程序管理端企微推送云函数",
+  "main": "index.js",
+  "dependencies": {}
+}

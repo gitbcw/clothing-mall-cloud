@@ -11,7 +11,11 @@ Page({
     handleOption: {},
     pickupStore: null,
     defaultImage: '/static/images/fallback-image.svg',
-    latestTrace: ''
+    latestTrace: '',
+    aftersaleStatusText: '',
+    aftersaleStatusColor: '#FF8096',
+    aftersaleStatus: 0,
+    aftersaleStatusColumns: ['可申请', '已申请，待审核', '审核通过，待补发', '换货已发货', '审核不通过，已拒绝', '已取消', '换货完成']
   },
   onLoad: function(options) {
     // 页面初始化 options为页面跳转所带来的参数
@@ -53,18 +57,24 @@ Page({
       if (res.errno === 0) {
         console.log(res.data);
         const orderInfo = res.data.orderInfo;
-        const expressInfo = res.data.expressInfo || {};
+        const expressInfo = res.data.expressInfo || [];
 
         // 提取最新一条物流轨迹摘要
         var latestTrace = '';
-        if (expressInfo.Traces && expressInfo.Traces.length > 0) {
-          latestTrace = expressInfo.Traces[0].AcceptStation || '';
+        if (Array.isArray(expressInfo) && expressInfo.length > 0) {
+          latestTrace = expressInfo[0].AcceptStation || '';
         }
 
         // 如果是自提订单，获取门店信息
         if (orderInfo.deliveryType === 'pickup' && orderInfo.pickupStoreId) {
           that.getPickupStore(orderInfo.pickupStoreId);
         }
+
+        // 已发货订单自动查询物流
+        if (orderInfo.expNo && orderInfo.deliveryType !== 'pickup') {
+          that.queryExpress();
+        }
+
         that.setData({
           orderInfo: res.data.orderInfo,
           latestTrace: latestTrace,
@@ -82,6 +92,24 @@ Page({
           handleOption: res.data.orderInfo.handleOption,
           expressInfo: expressInfo
         });
+        // 设置售后状态文字和颜色
+        var aftersaleStatus = res.data.orderInfo.aftersaleStatus;
+        if (aftersaleStatus > 0) {
+          var columns = that.data.aftersaleStatusColumns;
+          var statusColorMap = {
+            1: '#FF8096',  // 已申请，待审核 - 品牌粉
+            2: '#FF9F43',  // 审核通过，待补发 - 橙色
+            3: '#54A9FF',  // 换货已发货 - 蓝色
+            4: '#FF5252',  // 审核不通过，已拒绝 - 红色
+            5: '#999999',  // 已取消 - 灰色
+            6: '#52C41A'  // 换货完成 - 绿色
+          };
+          that.setData({
+            aftersaleStatus: aftersaleStatus,
+            aftersaleStatusText: columns[aftersaleStatus] || '处理中',
+            aftersaleStatusColor: statusColorMap[aftersaleStatus] || '#FF8096'
+          });
+        }
       }
 
       wx.hideLoading();
@@ -94,6 +122,12 @@ Page({
       orderId: that.data.orderId
     }, 'POST').then(function(res) {
       if (res.errno === 0) {
+        // 模拟支付：后端已标记已付
+        if (res.data && res.data.mockPay) {
+          util.redirect('/pages/order/order');
+          return;
+        }
+        // 真实微信支付
         const payParam = res.data;
         console.log("支付过程开始");
         wx.requestPayment({
@@ -234,6 +268,10 @@ Page({
       util.redirect('/pages/ucenter/aftersaleDetail/aftersaleDetail?id=' + this.data.orderId);
     }
   },
+  // "查看售后详情"点击效果
+  goAftersaleDetail: function () {
+    util.redirect('/pages/ucenter/aftersaleDetail/aftersaleDetail?id=' + this.data.orderId);
+  },
   // "联系客服"点击效果 - 企业微信客服
   contactService: function() {
     // 企业微信客服链接（需后台配置或替换为实际链接）
@@ -254,6 +292,20 @@ Page({
         })
       }
     })
+  },
+  // 查询物流信息
+  queryExpress: function() {
+    var that = this;
+    util.request(api.ExpressQuery, { orderId: that.data.orderId }).then(function(res) {
+      if (res.errno === 0 && Array.isArray(res.data.expressInfo)) {
+        var traces = res.data.expressInfo;
+        var latestTrace = traces.length > 0 ? (traces[0].AcceptStation || '') : '';
+        that.setData({
+          expressInfo: traces,
+          latestTrace: latestTrace
+        });
+      }
+    }).catch(function() {});
   },
   // 商品图片加载失败
   onGoodsImageError: function(e) {

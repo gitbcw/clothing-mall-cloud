@@ -1,22 +1,28 @@
 <wxs src="../../../utils/image.wxs" module="img" />
 <view class="container">
   <custom-nav title="售后详情" />
-  <van-cell-group title="退款明细">
+  <van-cell-group title="换货明细">
     <van-cell value="{{ statusColumns[aftersale.status] }}" title="售后状态" required/>
     <van-cell value="{{ aftersale.addTime }}" title="申请时间" required/>
     <van-cell value="{{ aftersale.aftersaleSn }}" title="服务编号" required/>
-    <van-cell value="{{ typeColumns[aftersale.type] }}" title="退款类型" required/>
-    <van-cell value="{{ aftersale.reason }}" title="退款原因" required/>
-    <van-cell title="退款金额" value="￥{{ aftersale.amount }}元" label="即订单实付- 运费" required/>
-    <van-field label="退款说明" value="{{ aftersale.comment }}" type="textarea" autosize disabled/>
-    <van-cell title="上传凭证" >
+    <van-cell value="{{ typeColumns[aftersale.type] }}" title="换货类型" required/>
+    <van-cell value="{{ aftersale.reason }}" title="换货原因" required/>
+    <van-cell title="换货说明" value="{{ aftersale.comment || '无' }}" required/>
+    <van-cell title="上传凭证">
       <van-uploader file-list="{{ fileList }}" disabled deletable="{{false}}" max-count="0" preview-size="50px"/>
     </van-cell>
   </van-cell-group>
 
+  <!-- 物流信息（换货已发货时展示） -->
+  <van-cell-group title="换货物流" wx:if="{{aftersale.shipSn}}">
+    <van-cell title="快递公司" value="{{aftersale.shipChannel}}" />
+    <van-cell title="快递单号" value="{{aftersale.shipSn}}" />
+    <van-cell title="查看物流" is-link bind:click="goLogistics" />
+  </van-cell-group>
+
   <view class="order-goods">
     <view class="h">
-      退款商品
+      换货商品
     </view>
     <view class="goods">
       <view class="item" wx:for="{{orderGoods}}" wx:key="id">

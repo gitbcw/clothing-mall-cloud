@@ -82,6 +82,7 @@ CREATE TABLE `clothing_goods_scene` (
   `goods_id` int NOT NULL COMMENT '商品ID',
   `scene_id` int NOT NULL COMMENT '场景ID',
   `add_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `deleted` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_goods_scene` (`goods_id`,`scene_id`),
   KEY `idx_goods_id` (`goods_id`),

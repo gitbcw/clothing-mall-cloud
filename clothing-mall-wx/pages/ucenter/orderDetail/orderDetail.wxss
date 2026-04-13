@@ -629,3 +629,163 @@ page {
   font-size: 22rpx;
   color: #bbb;
 }
+
+/* ================================================================
+   售后追踪卡片
+   ================================================================ */
+.aftersale-tracker {
+  background: #fff;
+  margin: 20rpx 31.25rpx;
+  border-radius: 20rpx;
+  padding: 32rpx 36rpx 24rpx;
+  box-shadow: 0 2rpx 16rpx rgba(255, 128, 150, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.aftersale-tracker::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6rpx;
+  background: linear-gradient(90deg, #FF8096 0%, #FFB3C1 100%);
+}
+
+/* 顶部：类型 + 状态 */
+.tracker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32rpx;
+}
+
+.tracker-type-badge {
+  display: flex;
+  align-items: center;
+  background: #FFF5F7;
+  border-radius: 20rpx;
+  padding: 8rpx 18rpx;
+  border: 1rpx solid rgba(255, 128, 150, 0.2);
+}
+
+.tracker-type-text {
+  font-size: 24rpx;
+  color: #FF8096;
+  font-weight: 500;
+}
+
+.tracker-status-text {
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+/* 横向流程线 */
+.tracker-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.tracker-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.step-dot {
+  width: 18rpx;
+  height: 18rpx;
+  border-radius: 50%;
+  background: #E8E8E8;
+  border: 3rpx solid #E8E8E8;
+  margin-bottom: 10rpx;
+  transition: all 0.3s ease;
+}
+
+.step-label {
+  font-size: 20rpx;
+  color: #BBBBBB;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.step-line {
+  flex: 1;
+  height: 2rpx;
+  background: #E8E8E8;
+  margin: 0 4rpx;
+  margin-bottom: 28rpx;
+  transition: background 0.3s ease;
+}
+
+/* 已完成步骤 */
+.step-done .step-dot {
+  background: #FF8096;
+  border-color: #FF8096;
+}
+
+.step-done .step-label {
+  color: #666;
+}
+
+.line-done {
+  background: #FFB3C1;
+}
+
+/* 当前激活步骤 */
+.step-active .step-dot {
+  background: #fff;
+  border-color: #FF8096;
+  box-shadow: 0 0 0 4rpx rgba(255, 128, 150, 0.25);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.step-active .step-label {
+  color: #FF8096;
+  font-weight: 500;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 4rpx rgba(255, 128, 150, 0.25); }
+  50% { box-shadow: 0 0 0 8rpx rgba(255, 128, 150, 0.1); }
+}
+
+/* 拒绝/取消提示 */
+.tracker-reject-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFF5F5;
+  border-radius: 12rpx;
+  padding: 14rpx 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.reject-icon {
+  font-size: 24rpx;
+  margin-right: 10rpx;
+}
+
+.reject-text {
+  font-size: 24rpx;
+  color: #FF5252;
+}
+
+/* 底部操作 */
+.tracker-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #F5F5F5;
+}
+
+.tracker-action-hint {
+  font-size: 24rpx;
+  color: #FF8096;
+}

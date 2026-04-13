@@ -1,0 +1,7 @@
+{
+  "name": "task-push",
+  "version": "1.0.0",
+  "description": "企微定时推送任务",
+  "main": "index.js",
+  "dependencies": {}
+}

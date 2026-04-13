@@ -25,7 +25,8 @@ Page({
     categoryList: [],
     sceneList: [],
     sceneId: 0,
-    statusBarHeight: 20
+    statusBarHeight: 20,
+    navBarHeight: 44,
   },
   //事件处理函数
   closeSearch: function() {
@@ -313,5 +314,13 @@ Page({
       currentSortOrder: 'desc'
     });
     this.getGoodsList();
+  },
+    // 返回
+  goBack:function(){
+    wx.navigateBack({
+      fail: () => {
+        wx.switchTab({ url: '/pages/index/index' })
+      }
+    })
   }
 })

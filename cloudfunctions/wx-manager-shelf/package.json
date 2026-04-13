@@ -1,0 +1,7 @@
+{
+  "name": "wx-manager-shelf",
+  "version": "1.0.0",
+  "description": "小程序管理端商品上架云函数",
+  "main": "index.js",
+  "dependencies": {}
+}

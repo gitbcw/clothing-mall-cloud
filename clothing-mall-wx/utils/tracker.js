@@ -3,7 +3,6 @@
  * 用于记录用户行为数据
  */
 
-const api = require('../config/api.js')
 const util = require('./util.js')
 
 // 埋点事件类型
@@ -74,11 +73,10 @@ function getDeviceInfo() {
  * 获取用户信息
  */
 function getUserInfo() {
-  const token = wx.getStorageSync('token')
   const userInfo = wx.getStorageSync('userInfo')
   return {
     userId: userInfo ? userInfo.id : null,
-    hasLogin: !!token
+    hasLogin: !!userInfo
   }
 }
 
@@ -142,7 +140,7 @@ function report() {
   if (events.length === 0) return
 
   // 使用项目统一的 util.request 上报到服务器
-  util.request(api.TrackerReport, { events }, 'POST').then(res => {
+  util.request({ func: 'wx-tracker', action: 'report' }, { events }, 'POST').then(res => {
     if (res.errno === 0) {
       // 上报成功，清空缓存
       saveCachedEvents([])

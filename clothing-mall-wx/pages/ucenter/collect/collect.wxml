@@ -4,9 +4,7 @@
 
   <!-- Empty State -->
   <view class="empty-state" wx:if="{{collectList.length <= 0 && !loading}}">
-    <view class="empty-circle">
-      <view class="empty-plus"></view>
-    </view>
+    <view class="empty-circle"></view>
     <text class="empty-title">还没有收藏商品</text>
     <text class="empty-desc">浏览到心仪的好物，点个收藏吧</text>
   </view>

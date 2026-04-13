@@ -49,8 +49,7 @@
         </el-form-item>
         <el-form-item :label="$t('mall_brand.form.pic_url')" prop="picUrl">
           <el-upload
-            :headers="headers"
-            :action="uploadPath"
+            :http-request="cloudUpload"
             :show-file-list="false"
             :on-success="uploadPicUrl"
             class="avatar-uploader"
@@ -102,8 +101,7 @@
 
 <script>
 import { listBrand, createBrand, updateBrand, deleteBrand } from '@/api/brand'
-import { uploadPath } from '@/api/storage'
-import { getToken } from '@/utils/auth'
+import { cloudUpload } from '@/utils/upload'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { thumbnail, toPreview } from '@/utils/index'
 
@@ -114,7 +112,7 @@ export default {
     return {
       thumbnail,
       toPreview,
-      uploadPath,
+      cloudUpload,
       list: [],
       total: 0,
       listLoading: true,
@@ -145,13 +143,6 @@ export default {
         ]
       },
       downloadLoading: false
-    }
-  },
-  computed: {
-    headers() {
-      return {
-        'X-Litemall-Admin-Token': getToken()
-      }
     }
   },
   created() {

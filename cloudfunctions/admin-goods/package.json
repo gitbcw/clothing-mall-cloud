@@ -1,0 +1,7 @@
+{
+  "name": "admin-goods",
+  "version": "1.0.0",
+  "description": "Admin goods, brand, category, shipper management",
+  "main": "index.js",
+  "dependencies": {}
+}

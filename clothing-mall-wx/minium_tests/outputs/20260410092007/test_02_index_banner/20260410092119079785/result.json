@@ -1,0 +1,114 @@
+{
+    "case_name": "test_02_index_banner",
+    "run_time": "20260410 09:21:19",
+    "test_type": "SmokeTest",
+    "case_doc": "IX-01: \u9996\u9875\u8f6e\u64ad\u56fe",
+    "success": false,
+    "failures": "Traceback (most recent call last):\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/libs/unittest/case.py\", line 266, in testPartExecutor\n    yield\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/libs/unittest/case.py\", line 351, in run\n    self._callTestMethod(testMethod)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/minitest.py\", line 789, in _callTestMethod\n    method()\n  File \"/Users/combo/MyFile/projects/clothing-mall-cloud/clothing-mall-wx/minium_tests/round1_smoke/test_smoke.py\", line 52, in test_02_index_banner\n    self.assertTrue(has_banner, '\u9996\u9875\u65e0\u8f6e\u64ad\u56fe')\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/assertbase.py\", line 60, in hook_assert\n    return src(self, *args, **kwargs)\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/unittest/case.py\", line 682, in assertTrue\n    raise self.failureException(msg)\nAssertionError: False is not true : \u9996\u9875\u65e0\u8f6e\u64ad\u56fe\n",
+    "errors": "",
+    "start_timestamp": 1775784079.113259,
+    "is_failure": true,
+    "is_error": false,
+    "module": ".Users.combo.MyFile.projects.clothing-mall-cloud.clothing-mall-wx.minium_tests.round1_smoke.test_smoke",
+    "package": "round1_smoke",
+    "failed_line_num": 52,
+    "device": {
+        "system_info": {
+            "batteryLevel": 100,
+            "benchmarkLevel": -1,
+            "brand": "devtools",
+            "memorySize": 2048,
+            "model": "iPhone 12/13 (Pro)",
+            "system": "iOS 10.0.1",
+            "platform": "devtools",
+            "pixelRatio": 3,
+            "safeArea": {
+                "top": 47,
+                "left": 0,
+                "right": 390,
+                "bottom": 810,
+                "width": 390,
+                "height": 763
+            },
+            "screenWidth": 390,
+            "screenHeight": 844,
+            "screenTop": 0,
+            "windowWidth": 390,
+            "windowHeight": 844,
+            "statusBarHeight": 47,
+            "version": "8.0.5",
+            "language": "zh_CN",
+            "SDKVersion": "3.15.0",
+            "enableDebug": false,
+            "fontSizeScaleFactor": 0.91,
+            "fontSizeSetting": 16,
+            "mode": "default",
+            "host": {
+                "env": "WeChat"
+            },
+            "bluetoothEnabled": true,
+            "locationEnabled": true,
+            "wifiEnabled": true,
+            "locationReducedAccuracy": true,
+            "albumAuthorized": true,
+            "bluetoothAuthorized": true,
+            "cameraAuthorized": true,
+            "locationAuthorized": true,
+            "microphoneAuthorized": true,
+            "notificationAuthorized": true,
+            "notificationAlertAuthorized": true,
+            "notificationBadgeAuthorized": true,
+            "notificationSoundAuthorized": true,
+            "phoneCalendarAuthorized": true,
+            "deviceOrientation": "portrait",
+            "appName": "weixin",
+            "devicePixelRatio": 3
+        }
+    },
+    "log_filename": "run.log",
+    "error_type": "AssertionError",
+    "error_value": "False is not true : \u9996\u9875\u65e0\u8f6e\u64ad\u56fe",
+    "error_extra_info": "",
+    "error_stages": [
+        "testMethod"
+    ],
+    "screen_info": [
+        {
+            "name": "setup",
+            "url": "/pages/auth/login/login",
+            "path": "images/setup.png",
+            "ts": 1775784079,
+            "datetime": "2026-04-10 09:21:19",
+            "use_region": false
+        }
+    ],
+    "step_info": [],
+    "check_list": [],
+    "assert_list": [
+        {
+            "name": "assertTrue",
+            "ret": false,
+            "msg": "False is not true : \u9996\u9875\u65e0\u8f6e\u64ad\u56fe"
+        }
+    ],
+    "autofix_info": [],
+    "perf_data": "{\"startup\": 0, \"avg_cpu\": 0, \"max_cpu\": 0, \"cpu_data_list\": [], \"avg_mem\": 0, \"max_mem\": 0, \"mem_data_list\": [], \"avg_fps\": 0, \"min_fps_rt\": 0, \"fps_data_list\": [], \"fps_time_series_list\": [], \"cpu_time_series_list\": [], \"mem_time_series_list\": []}",
+    "weapp_log_path": "weapp.log",
+    "request_log_path": "request.log",
+    "stop_timestamp": 1775784174.857038,
+    "appId": "",
+    "appName": "",
+    "source": {
+        "code": [
+            "    def test_02_index_banner(self):\n",
+            "        \"\"\"IX-01: \u9996\u9875\u8f6e\u64ad\u56fe\"\"\"\n",
+            "        page = IndexPage(self.mini)\n",
+            "        page.refresh_page()\n",
+            "        has_banner = page.has_banners()\n",
+            "        self.assertTrue(has_banner, '\u9996\u9875\u65e0\u8f6e\u64ad\u56fe')\n",
+            "        print(f'  \u8f6e\u64ad\u56fe\u6b63\u5e38')\n"
+        ],
+        "start": 47
+    },
+    "filename": "result.json"
+}

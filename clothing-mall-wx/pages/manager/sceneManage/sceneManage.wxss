@@ -170,6 +170,11 @@
   gap: 16rpx;
 }
 
+.scene-goods-count {
+  font-size: 20rpx;
+  color: #FF8096;
+}
+
 .scene-sort {
   font-size: 20rpx;
   color: #BBB;

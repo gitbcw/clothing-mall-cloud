@@ -5,11 +5,11 @@
   <!-- Empty State -->
   <view class="empty-state" wx:if="{{footprintList.length <= 0 && !loading}}">
     <view class="empty-circle">
-      <view class="empty-eye">
+      <!-- <view class="empty-eye">
         <view class="eye-outer">
           <view class="eye-pupil"></view>
         </view>
-      </view>
+      </view> -->
     </view>
     <text class="empty-title">还没有浏览足迹</text>
     <text class="empty-desc">去看看有什么心仪的好物吧</text>

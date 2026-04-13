@@ -1,7 +1,15 @@
 <wxs src="../../utils/image.wxs" module="img" />
 <scroll-view class="container" style="height: 100%;">
   <view style="height: {{statusBarHeight}}px;"></view>
-  <view class="search-header" style="padding-top: {{statusBarHeight}}px;">
+  <!-- 沉浸式自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight+16}}px; height: {{navBarHeight}}px;">
+    <view class="back-btn" bindtap="goBack">
+      <view class="back-icon"></view>
+    </view>
+    <view class="nav-title">搜索</view>
+    <view class="nav-right"></view>
+  </view>
+  <view class="search-header" style="padding-top: {{statusBarHeight+navBarHeight}}px;">
     <view class="input-box">
       <van-icon name="search"/>
       <input name="input" class="keywrod" focus="true" value="{{keyword}}" confirm-type="search" bindinput="inputChange" bindfocus="inputFocus" bindconfirm="onKeywordConfirm" placeholder="{{defaultKeyword.keyword}}" />

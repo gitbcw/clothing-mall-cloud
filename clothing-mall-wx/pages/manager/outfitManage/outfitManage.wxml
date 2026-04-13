@@ -20,9 +20,6 @@
       <!-- 封面 -->
       <view class="outfit-cover" wx:if="{{item.coverPic}}">
         <image class="cover-img" src="{{img.url(item.coverPic)}}" mode="aspectFill" />
-        <view class="cover-goods-count" wx:if="{{item.goodsList.length > 0}}">
-          {{item.goodsList.length}}件单品
-        </view>
       </view>
       <view class="outfit-cover outfit-cover--empty" wx:else>
         <view class="cover-placeholder"></view>
@@ -32,17 +29,8 @@
       <view class="outfit-info">
         <view class="outfit-title">{{item.title}}</view>
         <view class="outfit-desc" wx:if="{{item.description}}">{{item.description}}</view>
-
-        <!-- 关联商品缩略图 -->
-        <view class="outfit-goods-row" wx:if="{{item.goodsList.length > 0}}">
-          <image class="goods-thumb" wx:for="{{item.goodsList}}" wx:for-item="goods" wx:key="id"
-                 wx:if="{{index < 4}}" src="{{img.url(goods.picUrl)}}" mode="aspectFill" />
-          <view class="goods-thumb goods-thumb-more" wx:if="{{item.goodsList.length > 4}}">
-            +{{item.goodsList.length - 4}}
-          </view>
-        </view>
-
         <view class="outfit-meta">
+          <text class="outfit-goods-count">{{item.goodsList.length}}件商品</text>
           <text class="outfit-sort">排序 {{item.sortOrder || 0}}</text>
           <view class="outfit-status {{item.status === 1 ? 'status-on' : 'status-off'}}">
             {{item.status === 1 ? '已启用' : '已禁用'}}

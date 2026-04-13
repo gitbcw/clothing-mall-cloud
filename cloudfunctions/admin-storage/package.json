@@ -1,0 +1,7 @@
+{
+  "name": "admin-storage",
+  "version": "1.0.0",
+  "description": "Admin file storage CRUD",
+  "main": "index.js",
+  "dependencies": {}
+}

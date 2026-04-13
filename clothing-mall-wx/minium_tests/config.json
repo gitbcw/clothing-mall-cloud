@@ -1,0 +1,12 @@
+{
+  "project_path": "/Users/combo/MyFile/projects/clothing-mall-cloud/clothing-mall-wx",
+  "dev_tool_path": "/Applications/wechatwebdevtools.app/Contents/MacOS/cli",
+  "debug_mode": "warn",
+  "close_ide": false,
+  "test_port": 30619,
+  "auto_login": false,
+  "auto_relaunch": true,
+  "check_mp_foreground": false,
+  "app_id": "wx5e8bdc1bc5a3e0d8",
+  "platform": "ide"
+}

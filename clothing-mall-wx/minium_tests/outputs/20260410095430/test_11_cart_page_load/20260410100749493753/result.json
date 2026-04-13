@@ -1,0 +1,118 @@
+{
+    "case_name": "test_11_cart_page_load",
+    "run_time": "20260410 10:07:49",
+    "test_type": "SmokeTest",
+    "case_doc": "CT-01: \u8d2d\u7269\u8f66\u9875\u9762",
+    "success": false,
+    "failures": "",
+    "errors": "Traceback (most recent call last):\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/libs/unittest/case.py\", line 266, in testPartExecutor\n    yield\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/libs/unittest/case.py\", line 351, in run\n    self._callTestMethod(testMethod)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/minitest.py\", line 789, in _callTestMethod\n    method()\n  File \"/Users/combo/MyFile/projects/clothing-mall-cloud/clothing-mall-wx/minium_tests/round1_smoke/test_smoke.py\", line 153, in test_11_cart_page_load\n    tab_count = order.get_tab_count()\n  File \"/Users/combo/MyFile/projects/clothing-mall-cloud/clothing-mall-wx/minium_tests/round1_smoke/test_smoke.py\", line 24, in _go\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/minium_log.py\", line 148, in wrapper\n    result = func(*args, **kwargs)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/utils/utils.py\", line 90, in wrapper\n    ret = func(*args, **kwargs)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/app.py\", line 951, in relaunch\n    page = self._change_route_async(\"reLaunch\", url, is_wait_url_change)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/app.py\", line 1165, in _change_route_async\n    cmd.get_open_result(wait_timeout)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/app.py\", line 133, in get_open_result\n    raise MiniTimeoutError(\nminium.framework.exception.MiniTimeoutError: [5f00df13-827b-49cb-bc95-e33b48e63e47][reLaunch] receive from remote timeout\n",
+    "start_timestamp": 1775786869.6043131,
+    "is_failure": false,
+    "is_error": true,
+    "module": ".Users.combo.MyFile.projects.clothing-mall-cloud.clothing-mall-wx.minium_tests.round1_smoke.test_smoke",
+    "package": "minium_tests",
+    "failed_line_num": 153,
+    "device": {
+        "system_info": {
+            "batteryLevel": 100,
+            "benchmarkLevel": -1,
+            "brand": "devtools",
+            "memorySize": 2048,
+            "model": "iPhone 12/13 (Pro)",
+            "system": "iOS 10.0.1",
+            "platform": "devtools",
+            "pixelRatio": 3,
+            "safeArea": {
+                "top": 47,
+                "left": 0,
+                "right": 390,
+                "bottom": 810,
+                "width": 390,
+                "height": 763
+            },
+            "screenWidth": 390,
+            "screenHeight": 844,
+            "screenTop": 0,
+            "windowWidth": 390,
+            "windowHeight": 844,
+            "statusBarHeight": 47,
+            "version": "8.0.5",
+            "language": "zh_CN",
+            "SDKVersion": "3.15.0",
+            "enableDebug": false,
+            "fontSizeScaleFactor": 0.91,
+            "fontSizeSetting": 16,
+            "mode": "default",
+            "host": {
+                "env": "WeChat"
+            },
+            "bluetoothEnabled": true,
+            "locationEnabled": true,
+            "wifiEnabled": true,
+            "locationReducedAccuracy": true,
+            "albumAuthorized": true,
+            "bluetoothAuthorized": true,
+            "cameraAuthorized": true,
+            "locationAuthorized": true,
+            "microphoneAuthorized": true,
+            "notificationAuthorized": true,
+            "notificationAlertAuthorized": true,
+            "notificationBadgeAuthorized": true,
+            "notificationSoundAuthorized": true,
+            "phoneCalendarAuthorized": true,
+            "deviceOrientation": "portrait",
+            "appName": "weixin",
+            "devicePixelRatio": 3
+        }
+    },
+    "log_filename": "run.log",
+    "error_type": "MiniTimeoutError",
+    "error_value": "[5f00df13-827b-49cb-bc95-e33b48e63e47][reLaunch] receive from remote timeout",
+    "error_extra_info": "",
+    "error_stages": [
+        "testMethod"
+    ],
+    "screen_info": [
+        {
+            "name": "setup",
+            "url": "/pages/index/index",
+            "path": "images/setup.png",
+            "ts": 1775786869,
+            "datetime": "2026-04-10 10:07:49",
+            "use_region": false
+        },
+        {
+            "name": "teardown",
+            "url": "/pages/index/index",
+            "path": "images/teardown.png",
+            "ts": 1775786929,
+            "datetime": "2026-04-10 10:08:49",
+            "use_region": false
+        }
+    ],
+    "step_info": [],
+    "check_list": [],
+    "assert_list": [],
+    "autofix_info": [],
+    "perf_data": "{\"startup\": 0, \"avg_cpu\": 0, \"max_cpu\": 0, \"cpu_data_list\": [], \"avg_mem\": 0, \"max_mem\": 0, \"mem_data_list\": [], \"avg_fps\": 0, \"min_fps_rt\": 0, \"fps_data_list\": [], \"fps_time_series_list\": [], \"cpu_time_series_list\": [], \"mem_time_series_list\": []}",
+    "weapp_log_path": "weapp.log",
+    "request_log_path": "request.log",
+    "stop_timestamp": 1775786929.794315,
+    "appId": "",
+    "appName": "",
+    "source": {
+        "code": [
+            "    def test_12_order_page_load(self):\n",
+            "        \"\"\"OL-02: \u8ba2\u5355\u5217\u8868\"\"\"\n",
+            "        self._nav('/pages/order/order', 3)\n",
+            "        order = OrderPage(self.mini)\n",
+            "        order.refresh_page()\n",
+            "        time.sleep(2)\n",
+            "        tab_count = order.get_tab_count()\n",
+            "        self.assertGreater(tab_count, 0, '\u8ba2\u5355 Tab \u4e3a\u7a7a')\n",
+            "        print(f'  Tab \u6570\u91cf: {tab_count}')\n"
+        ],
+        "start": 147
+    },
+    "filename": "result.json"
+}

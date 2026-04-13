@@ -28,7 +28,7 @@ Page({
     that.setData({ loading: true });
     util.request(api.ManagerSceneList, {}, 'GET').then(function(res) {
       that.setData({
-        sceneList: (res.data && res.data.list) || [],
+        sceneList: res.data || [],
         loading: false
       });
     }).catch(function() {

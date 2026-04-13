@@ -1,0 +1,7 @@
+{
+  "name": "wx-pay-callback",
+  "version": "1.0.0",
+  "description": "微信支付异步通知回调云函数",
+  "main": "index.js",
+  "dependencies": {}
+}

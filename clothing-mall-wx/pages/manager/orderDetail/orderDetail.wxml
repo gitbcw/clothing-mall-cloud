@@ -167,22 +167,6 @@
     </view>
   </view>
 
-  <!-- 核销弹窗 -->
-  <view class="dialog-mask" wx:if="{{showVerifyDialog}}" bindtap="closeVerifyDialog"></view>
-  <view class="dialog" wx:if="{{showVerifyDialog}}">
-    <view class="dialog-title">核销确认</view>
-    <view class="dialog-content">
-      <view class="form-item">
-        <text class="form-label">取货码</text>
-        <input class="form-input" placeholder="请输入取货码" value="{{inputPickupCode}}" bindinput="onPickupCodeInput" />
-      </view>
-    </view>
-    <view class="dialog-actions">
-      <view class="btn-cancel" bindtap="closeVerifyDialog">取消</view>
-      <view class="btn-confirm" bindtap="confirmVerify">确认核销</view>
-    </view>
-  </view>
-
   <!-- 拒绝退款弹窗 -->
   <view class="dialog-mask" wx:if="{{showRejectDialog}}" bindtap="closeRejectDialog"></view>
   <view class="dialog" wx:if="{{showRejectDialog}}">

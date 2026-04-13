@@ -211,33 +211,30 @@ page {
 
 /* 购物车小图标 */
 .cart-icon-small {
-  width: 45rpx;
-  height: 45rpx;
-  background-color: #ff8096;
+  width: 52rpx;
+  height: 52rpx;
+  background-color: #fff0f3;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='21' r='1'%3E%3C/circle%3E%3Ccircle cx='20' cy='21' r='1'%3E%3C/circle%3E%3Cpath d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'%3E%3C/path%3E%3C/svg%3E");
-  background-size: 25rpx;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff8096' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='21' r='1'%3E%3C/circle%3E%3Ccircle cx='20' cy='21' r='1'%3E%3C/circle%3E%3Cpath d='M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6'%3E%3C/path%3E%3C/svg%3E");
+  background-size: 26rpx;
   background-repeat: no-repeat;
   background-position: center center;
 }
 
 .price-symbol {
-  font-size: 28rpx;
+  font-size: 22rpx;
 }
 
 .price-num {
-  font-size: 40rpx;
+  font-size: 32rpx;
   /* font-weight: bold; */
 }
 
 .original-price {
-  font-size: 24rpx;
-  color: #cccccc;
-  text-decoration: line-through;
-  margin-left: 6rpx;
+  display: none;
 }
 
 /* 热销推荐 */
@@ -332,7 +329,7 @@ page {
 }
 
 .hot-title {
-  font-size: 32rpx;
+  font-size: 28rpx;
   line-height: 42rpx;
   color: #333333;
   margin-bottom: 8rpx;
@@ -597,7 +594,10 @@ page {
 
 .activity-section {
   padding: 30rpx 0;
-  background-image: linear-gradient(to bottom, #f0f0f4, #ffffff);
+  background-image: url('https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/500o8cp9db2mmi3kar4e.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   margin-bottom: 36rpx;
 }
 
@@ -657,7 +657,7 @@ page {
 }
 
 .activity-name {
-  font-size: 34rpx;
+  font-size: 30rpx;
   line-height: 48rpx;
   color: #333;
   display: block;
@@ -675,10 +675,10 @@ page {
   margin-top: 8rpx;
 }
 .activity-price .rmb {
-  font-size: 28rpx;
+  font-size: 22rpx;
 }
 .activity-price .num {
-  font-size: 40rpx;
+  font-size: 32rpx;
 }
 
 .activity-price-wrap {
@@ -686,11 +686,32 @@ page {
   align-items: baseline;
   gap: 8rpx;
   margin-top: 8rpx;
+  justify-content: space-between;
+}
+
+.activity-price-line {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 8rpx;
+  justify-content: space-between;
+}
+
+.activity-price-wrap .price-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.activity-price-line .price-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
 .activity-price.price-special {
   color: #e74c3c;
-  font-size: 32rpx;
+  font-size: 26rpx;
   font-weight: 600;
 }
 

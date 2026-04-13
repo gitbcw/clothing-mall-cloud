@@ -1,0 +1,7 @@
+{
+  "name": "admin-content",
+  "version": "1.0.0",
+  "description": "Admin ad, topic, notice, feedback, issue, keyword management",
+  "main": "index.js",
+  "dependencies": {}
+}

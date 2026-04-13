@@ -73,8 +73,8 @@
     </view>
   </view>
 
-  <!-- 服务与选择区块（预览模式隐藏） -->
-  <view class="service-section" wx:if="{{!isPreview}}">
+  <!-- 服务与选择区块 -->
+  <view class="service-section">
     <!-- 配送 -->
     <view class="service-item" bindtap="selectAddress">
       <text class="label">配送</text>
@@ -96,7 +96,7 @@
     </view>
     <!-- 选择规格 -->
     <view class="service-item no-border" bindtap="openSkuPicker">
-      <text class="label">选择</text>
+      <text class="label">规格</text>
       <view class="content">
         <view class="clothes-icon"></view>
         <text class="value" wx:if="{{selectedSize}}">已选：{{selectedSize}} x {{selectedQuantity}}</text>
@@ -226,6 +226,7 @@
     enable-size="{{enableSize}}"
     init-size="{{selectedSize}}"
     init-quantity="{{selectedQuantity}}"
+    preview="{{isPreview}}"
     bind:close="closeSkuPicker"
     bind:addcart="skuAddToCart"
     bind:buynow="skuBuyNow"

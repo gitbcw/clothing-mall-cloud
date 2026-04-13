@@ -78,7 +78,9 @@ Vue.mixin({
     imageUrl(key) {
       if (!key) return ''
       if (key.startsWith('http') || key.startsWith('//')) return key
-      return 'https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/' + key
+      // CloudBase fileID 在 Web 端无法直接展示，返回空避免拼出无效 OSS URL
+      if (key.startsWith('cloud://')) return ''
+      return 'https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/' + key.replace(/^\//, '')
     }
   }
 })

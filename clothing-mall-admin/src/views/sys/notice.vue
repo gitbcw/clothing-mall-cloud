@@ -73,8 +73,7 @@ import BackToTop from '@/components/BackToTop'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import _ from 'lodash'
 import Editor from '@tinymce/tinymce-vue'
-import { createStorage } from '@/api/storage'
-import { getToken } from '@/utils/auth'
+import { cloudUploadFile } from '@/utils/upload'
 
 export default {
   name: 'Notice',
@@ -118,23 +117,16 @@ export default {
         plugins: ['advlist anchor autolink autosave code codesample colorpicker colorpicker contextmenu directionality emoticons fullscreen hr image imagetools importcss insertdatetime link lists media nonbreaking noneditable pagebreak paste preview print save searchreplace spellchecker tabfocus table template textcolor textpattern visualblocks visualchars wordcount'],
         toolbar: ['searchreplace bold italic underline strikethrough alignleft aligncenter alignright outdent indent  blockquote undo redo removeformat subscript superscript code codesample', 'hr bullist numlist link image charmap preview anchor pagebreak insertdatetime media table emoticons forecolor backcolor fullscreen'],
         images_upload_handler: function(blobInfo, success, failure) {
-          const formData = new FormData()
-          formData.append('file', blobInfo.blob())
-          createStorage(formData).then(res => {
-            success(res.data.data.url)
+          const file = blobInfo.blob()
+          file.name = blobInfo.filename()
+          cloudUploadFile(file).then(url => {
+            success(url)
           }).catch(() => {
             failure('上传失败，请重新上传')
           })
         }
       },
       downloadLoading: false
-    }
-  },
-  computed: {
-    headers() {
-      return {
-        'X-Litemall-Admin-Token': getToken()
-      }
     }
   },
   created() {

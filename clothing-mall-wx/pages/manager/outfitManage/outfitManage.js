@@ -28,7 +28,7 @@ Page({
     that.setData({ loading: true });
     util.request(api.ManagerOutfitList, {}, 'GET').then(function(res) {
       that.setData({
-        outfitList: (res.data && res.data.list) || [],
+        outfitList: res.data || [],
         loading: false
       });
     }).catch(function() {

@@ -1,24 +1,27 @@
 page {
   height: 100%;
-  background: #f4f4f4;
+  background: #F7F8FA;
 }
 
 .add-address .add-form {
-  background: #f4f4f4;
-  width: 100%;
+  background: #FFFFFF;
   height: auto;
   overflow: hidden;
+  margin: 20rpx;
+  border-radius: 18rpx;
+  box-sizing: border-box;
 }
 
 .add-address .add-form .form-item {
-  background: #eeeeee;
-  border-radius: 30rpx;
-  margin: 15rpx 10rpx;
-  height: 116rpx;
+  background: #ffffff;
+  border-radius: 0rpx;
+  margin: 15rpx 24rpx;
+  height: 100rpx;
   padding-left: 31.25rpx;
   display: flex;
   align-items: center;
-  padding-right: 31.25rpx;
+  padding-right: 25rpx;
+  border-bottom:  #eee 1px solid;
 }
 
 .add-address .input {
@@ -27,14 +30,20 @@ page {
   line-height: 44rpx;
   overflow: hidden;
   padding-left: 10rpx;
+  font-size: 32rpx;
+  color: #333;
 }
 
 .add-address .form-default {
   height: 96rpx;
   background: #eeeeee;
-  padding-top: 28rpx;
-  font-size: 28rpx;
-  padding-left: 31.25rpx;
+  font-size: 32rpx;
+  padding-left: 25rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: UICTFontTextStyleBody;
+  border-bottom: none !important;
 }
 
 .add-address .form-default .van-checkbox .van-icon {
@@ -43,7 +52,7 @@ page {
 
 .add-address .btns {
   position: fixed;
-  bottom: 40rpx;
+  bottom: 60rpx;
   left: 0;
   overflow: hidden;
   display: flex;
@@ -51,6 +60,7 @@ page {
   width: 100%;
   padding: 0 30rpx;
   box-sizing: border-box;
+  box-shadow: none;
 }
 
 .add-address .cannel, .add-address .save {
@@ -58,15 +68,34 @@ page {
   height: 96rpx;
   text-align: center;
   line-height: 96rpx;
-  font-size: 28rpx;
+  font-size: 32rpx;
   color: #fff;
   border: none;
   border-radius: 48rpx;
   margin: 0 10rpx;
 }
 
+.arrow {
+  width: 32rpx;
+  height: 32rpx;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url('data:image/svg+xml,%3Csvg t="1775580481473" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="18596" width="256" height="256"%3E%3Cpath d="M273.322667 963.413333a62.805333 62.805333 0 0 1 0-86.613333L625.365333 512 273.322667 147.2a62.805333 62.805333 0 0 1 0-86.613333 57.6 57.6 0 0 1 83.541333 0l393.813333 408.149333c23.082667 23.893333 23.082667 62.634667 0 86.528l-393.813333 408.149333a57.6 57.6 0 0 1-83.541333 0z" fill="%23999999" p-id="18597"%3E%3C/path%3E%3C/svg%3E');
+  margin-left: 8rpx;
+}
+
+.phone {
+  width: 36rpx;
+  height: 36rpx;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url('data:image/svg+xml,%3Csvg t="1775655107951" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3377" width="256" height="256"%3E%3Cpath d="M695.68 85.333333C782.634667 85.333333 853.333333 153.984 853.333333 238.336v547.328C853.333333 870.016 782.634667 938.666667 695.68 938.666667h-367.36C241.365333 938.666667 170.666667 870.016 170.666667 785.664V238.336C170.666667 154.026667 241.365333 85.333333 328.32 85.333333h367.36z m-342.613333 60.928h-24.746667c-52.352 0-94.890667 41.301333-94.890667 92.074667v547.328c0 50.773333 42.538667 92.074667 94.890667 92.074667h367.36c52.352 0 94.890667-41.301333 94.890667-92.074667V238.336c0-50.773333-42.538667-92.074667-94.890667-92.074667h-24.746667a22.101333 22.101333 0 0 0-18.901333 10.666667l-51.541333 84.736a22.101333 22.101333 0 0 1-18.901334 10.666667h-139.178666a22.101333 22.101333 0 0 1-18.901334-10.666667L371.968 156.885333a22.101333 22.101333 0 0 0-18.901333-10.624zM640 736a32 32 0 1 1 0 64H384a32 32 0 1 1 0-64h256zM565.888 146.261333h-107.818667a11.093333 11.093333 0 0 0-9.429333 16.810667l13.952 22.954667a11.093333 11.093333 0 0 0 9.429333 5.333333h79.914667a11.093333 11.093333 0 0 0 9.472-5.333333l13.952-22.954667a11.093333 11.093333 0 0 0-9.472-16.810667z" fill="%23666666" p-id="3378"%3E%3C/path%3E%3C/svg%3E');
+  margin-left: 8rpx;
+}
 .add-address .cannel {
-  background: #999;
+  color: #666666;
+  background-color: #ffffff;
+  border: 1px solid #eeeeee;
 }
 
 .add-address .save {
@@ -86,7 +115,7 @@ page {
 .region-select .hd {
   height: 108rpx;
   width: 100%;
-  border-bottom: 1px solid #f4f4f4;
+  border-bottom: 1px solid #F7F8FA;
   padding: 46rpx 30rpx 0 30rpx;
 }
 

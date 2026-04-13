@@ -43,7 +43,7 @@ Page({
 
   loadOutfit: function(id) {
     var that = this;
-    util.request(api.ManagerOutfitRead + '?id=' + id, {}, 'GET').then(function(res) {
+    util.request(api.ManagerOutfitRead, { id: id }, 'GET').then(function(res) {
       var outfit = res.data;
       that.setData({
         form: {
@@ -175,7 +175,7 @@ Page({
       title: form.title.trim(),
       description: form.description || '',
       coverPic: form.coverPic,
-      goodsIds: JSON.stringify(goodsIds),
+      goodsIds: goodsIds,
       brandColor: form.brandColor || 'white',
       brandPosition: form.brandPosition || 'top-right',
       floatPosition: form.floatPosition || 'left',

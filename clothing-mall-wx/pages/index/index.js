@@ -74,6 +74,8 @@ Page({
     }
     // 页面浏览埋点
     tracker.trackPageView('首页')
+    // 刷新轮播图，确保场景修改后能及时更新
+    this.loadSceneBanners()
   },
 
   onPageScroll() {},

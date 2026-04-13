@@ -226,6 +226,15 @@ Page({
           orderId: orderId
         }, 'POST').then(function(prepayRes) {
           if (prepayRes.errno === 0) {
+            // 模拟支付：后端已标记已付，直接跳转成功页
+            if (prepayRes.data && prepayRes.data.mockPay) {
+              wx.hideLoading()
+              wx.redirectTo({
+                url: '/pages/payResult/payResult?status=1&orderId=' + orderId
+              })
+              return
+            }
+            // 真实微信支付
             const payParam = prepayRes.data
             wx.hideLoading()
             wx.requestPayment({

@@ -95,38 +95,33 @@
 }
 
 .outfit-card {
+  display: flex;
+  align-items: center;
   background: #FFFFFF;
   border-radius: 16rpx;
+  padding: 24rpx;
   margin-bottom: 20rpx;
-  overflow: hidden;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
-  display: flex;
-  position: relative;
+  transition: transform 0.15s ease;
 }
 
-/* ---- 封面 ---- */
+.outfit-card:active {
+  transform: scale(0.98);
+}
+
+/* ---- 封面缩略图 ---- */
 .outfit-cover {
-  width: 220rpx;
-  height: 220rpx;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
   flex-shrink: 0;
-  position: relative;
+  margin-right: 24rpx;
 }
 
 .cover-img {
   width: 100%;
   height: 100%;
-}
-
-.cover-goods-count {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 6rpx 0;
-  text-align: center;
-  font-size: 20rpx;
-  color: #fff;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
 }
 
 .outfit-cover--empty {
@@ -137,8 +132,8 @@
 }
 
 .cover-placeholder {
-  width: 48rpx;
-  height: 48rpx;
+  width: 36rpx;
+  height: 36rpx;
   border-radius: 50%;
   background: rgba(212, 168, 108, 0.2);
 }
@@ -146,85 +141,40 @@
 /* ---- 信息区 ---- */
 .outfit-info {
   flex: 1;
-  padding: 20rpx 24rpx 20rpx 20rpx;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   min-width: 0;
 }
 
 .outfit-title {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
   color: #333;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin-bottom: 6rpx;
 }
 
 .outfit-desc {
   font-size: 22rpx;
   color: #999;
-  margin-top: 8rpx;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ---- 关联商品缩略图 ---- */
-.outfit-goods-row {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  margin-top: 12rpx;
-}
-
-.goods-thumb {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 8rpx;
-  border: 2rpx solid #F0EBE6;
-}
-
-.goods-thumb-more {
-  width: 48rpx;
-  height: 48rpx;
-  background: rgba(212, 168, 108, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18rpx;
-  color: #D4A86C;
-  border: 2rpx dashed #D4A86C;
-}
-
-/* ---- 标签 ---- */
-.outfit-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8rpx;
-  margin-top: 10rpx;
-}
-
-.tag-item {
-  font-size: 18rpx;
-  color: #96745A;
-  background: rgba(150, 116, 90, 0.08);
-  padding: 2rpx 12rpx;
-  border-radius: 6rpx;
+  margin-bottom: 8rpx;
 }
 
 /* ---- 元信息 ---- */
 .outfit-meta {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 10rpx;
+  gap: 16rpx;
+}
+
+.outfit-goods-count {
+  font-size: 20rpx;
+  color: #FF8096;
 }
 
 .outfit-sort {
   font-size: 20rpx;
-  color: #999;
+  color: #BBB;
 }
 
 .outfit-status {
@@ -239,28 +189,31 @@
 }
 
 .status-off {
-  background: rgba(232, 73, 74, 0.08);
-  color: #E8494A;
+  background: rgba(153, 153, 153, 0.1);
+  color: #999;
 }
 
 /* ---- 操作按钮 ---- */
 .outfit-actions {
-  position: absolute;
-  top: 16rpx;
-  right: 16rpx;
   display: flex;
+  flex-direction: column;
   gap: 16rpx;
+  margin-left: 16rpx;
+  flex-shrink: 0;
 }
 
 .action-btn {
-  width: 52rpx;
-  height: 52rpx;
+  width: 56rpx;
+  height: 56rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  background: #F7F8FA;
+}
+
+.action-btn:active {
+  background: #EEEEEE;
 }
 
 .toggle-icon {

@@ -1,5 +1,6 @@
 <wxs src="../../utils/image.wxs" module="img" />
 <view class="goods-form">
+<scroll-view class="goods-form-scroll" scroll-y enhanced show-scrollbar="{{false}}" adjust-position="{{false}}">
   <!-- 商品图片 -->
   <view class="section">
     <view class="section-title">
@@ -87,7 +88,7 @@
   </view>
 
   <!-- 商品详细介绍 -->
-  <view class="section">
+  <view class="section" style="display: none;">
     <view class="section-title">商品详细介绍</view>
     <view class="editor-wrap">
       <view class="editor-toolbar">
@@ -117,7 +118,7 @@
   </view>
 
   <!-- 商品参数 -->
-  <view class="section">
+  <view class="section" style="display: none;">
     <view class="section-title">
       <text>商品参数</text>
       <view class="add-param-btn" bindtap="addParam">+ 添加参数</view>
@@ -135,6 +136,7 @@
   </view>
 
   <!-- 底部操作栏 -->
+</scroll-view>
   <view class="action-bar {{showTabBar ? 'action-bar--with-tabbar' : 'action-bar--bottom'}}">
     <!-- create 模式 -->
     <block wx:if="{{mode === 'create'}}">
@@ -145,7 +147,7 @@
     <!-- edit 模式 -->
     <block wx:else>
       <view class="action-btn btn-preview" bindtap="onPreview">预览</view>
-      <view class="action-btn btn-save" bindtap="onSaveDraft">暂存草稿</view>
+      <view class="action-btn btn-save" bindtap="onSaveDraft">保存</view>
       <view class="action-btn btn-publish" bindtap="onPublish" wx:if="{{goodsStatus !== 'published'}}">保存并上架</view>
       <view class="action-btn btn-unpublish" bindtap="onUnpublish" wx:if="{{goodsStatus === 'published' && isOnSale}}">下架</view>
     </block>

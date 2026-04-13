@@ -67,8 +67,7 @@
         </el-form-item>
         <el-form-item label="头像" prop="avatar">
           <el-upload
-            :headers="headers"
-            :action="uploadPath"
+            :http-request="cloudUpload"
             :show-file-list="false"
             :on-success="uploadSuccess"
             class="avatar-uploader"
@@ -132,8 +131,7 @@
 
 <script>
 import { listGuide, createGuide, updateGuide, deleteGuide } from '@/api/sku'
-import { uploadPath } from '@/api/storage'
-import { getToken } from '@/utils/auth'
+import { cloudUpload } from '@/utils/upload'
 import Pagination from '@/components/Pagination'
 
 export default {
@@ -141,7 +139,7 @@ export default {
   components: { Pagination },
   data() {
     return {
-      uploadPath,
+      cloudUpload,
       storeId: null,
       storeName: '',
       list: [],
@@ -169,13 +167,6 @@ export default {
       rules: {
         name: [{ required: true, message: '姓名不能为空', trigger: 'blur' }],
         phone: [{ required: true, message: '手机号不能为空', trigger: 'blur' }]
-      }
-    }
-  },
-  computed: {
-    headers() {
-      return {
-        'X-Litemall-Admin-Token': getToken()
       }
     }
   },

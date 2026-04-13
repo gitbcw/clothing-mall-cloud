@@ -1,0 +1,7 @@
+{
+  "name": "admin-marketing",
+  "version": "1.0.0",
+  "description": "管理后台营销管理云函数",
+  "main": "index.js",
+  "dependencies": {}
+}

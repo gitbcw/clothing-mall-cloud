@@ -1,0 +1,121 @@
+{
+    "case_name": "test_01_index_page_load",
+    "run_time": "20260410 09:13:41",
+    "test_type": "SmokeTest",
+    "case_doc": "IX-01: \u9996\u9875\u52a0\u8f7d \u2014 \u8f6e\u64ad\u56fe\u3001\u6d3b\u52a8\u4f4d\u3001\u70ed\u9500\u6b63\u5e38\u6e32\u67d3",
+    "success": false,
+    "failures": "",
+    "errors": "Traceback (most recent call last):\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/libs/unittest/case.py\", line 266, in testPartExecutor\n    yield\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/libs/unittest/case.py\", line 351, in run\n    self._callTestMethod(testMethod)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/minitest.py\", line 789, in _callTestMethod\n    method()\n  File \"/Users/combo/MyFile/projects/clothing-mall-cloud/clothing-mall-wx/minium_tests/round1_smoke/test_smoke.py\", line 27, in test_01_index_page_load\n    loaded = page.wait_loaded()\n  File \"/Users/combo/MyFile/projects/clothing-mall-cloud/clothing-mall-wx/minium_tests/pages/index_page.py\", line 22, in wait_loaded\n    return self.wait_for_data_loaded(timeout)\n  File \"/Users/combo/MyFile/projects/clothing-mall-cloud/clothing-mall-wx/minium_tests/base/base_page.py\", line 43, in wait_for_data_loaded\n    loading = self.page.get_data('loading')\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/app.py\", line 329, in __getattr__\n    is_property, attr = self.__get_page_attr(__name)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/app.py\", line 326, in __get_page_attr\n    return False, getattr(_current_page, __name)\nAttributeError: 'Page' object has no attribute 'get_data'\n",
+    "start_timestamp": 1775783621.520344,
+    "is_failure": false,
+    "is_error": true,
+    "module": ".Users.combo.MyFile.projects.clothing-mall-cloud.clothing-mall-wx.minium_tests.round1_smoke.test_smoke",
+    "package": "round1_smoke",
+    "failed_line_num": 27,
+    "device": {
+        "system_info": {
+            "batteryLevel": 100,
+            "benchmarkLevel": -1,
+            "brand": "devtools",
+            "memorySize": 2048,
+            "model": "iPhone 12/13 (Pro)",
+            "system": "iOS 10.0.1",
+            "platform": "devtools",
+            "pixelRatio": 3,
+            "safeArea": {
+                "top": 47,
+                "left": 0,
+                "right": 390,
+                "bottom": 810,
+                "width": 390,
+                "height": 763
+            },
+            "screenWidth": 390,
+            "screenHeight": 844,
+            "screenTop": 0,
+            "windowWidth": 390,
+            "windowHeight": 844,
+            "statusBarHeight": 47,
+            "version": "8.0.5",
+            "language": "zh_CN",
+            "SDKVersion": "3.15.0",
+            "enableDebug": false,
+            "fontSizeScaleFactor": 0.91,
+            "fontSizeSetting": 16,
+            "mode": "default",
+            "host": {
+                "env": "WeChat"
+            },
+            "bluetoothEnabled": true,
+            "locationEnabled": true,
+            "wifiEnabled": true,
+            "locationReducedAccuracy": true,
+            "albumAuthorized": true,
+            "bluetoothAuthorized": true,
+            "cameraAuthorized": true,
+            "locationAuthorized": true,
+            "microphoneAuthorized": true,
+            "notificationAuthorized": true,
+            "notificationAlertAuthorized": true,
+            "notificationBadgeAuthorized": true,
+            "notificationSoundAuthorized": true,
+            "phoneCalendarAuthorized": true,
+            "deviceOrientation": "portrait",
+            "appName": "weixin",
+            "devicePixelRatio": 3
+        }
+    },
+    "log_filename": "run.log",
+    "error_type": "AttributeError",
+    "error_value": "'Page' object has no attribute 'get_data'",
+    "error_extra_info": "",
+    "error_stages": [
+        "testMethod"
+    ],
+    "screen_info": [
+        {
+            "name": "setup",
+            "url": "/pages/auth/login/login",
+            "path": "images/setup.png",
+            "ts": 1775783621,
+            "datetime": "2026-04-10 09:13:41",
+            "use_region": false
+        },
+        {
+            "name": "teardown",
+            "url": "/pages/auth/login/login",
+            "path": "images/teardown.png",
+            "ts": 1775783621,
+            "datetime": "2026-04-10 09:13:41",
+            "use_region": false
+        }
+    ],
+    "step_info": [],
+    "check_list": [],
+    "assert_list": [],
+    "autofix_info": [],
+    "perf_data": "{\"startup\": 0, \"avg_cpu\": 0, \"max_cpu\": 0, \"cpu_data_list\": [], \"avg_mem\": 0, \"max_mem\": 0, \"mem_data_list\": [], \"avg_fps\": 0, \"min_fps_rt\": 0, \"fps_data_list\": [], \"fps_time_series_list\": [], \"cpu_time_series_list\": [], \"mem_time_series_list\": []}",
+    "weapp_log_path": "weapp.log",
+    "request_log_path": "request.log",
+    "stop_timestamp": 1775783621.574353,
+    "appId": "",
+    "appName": "",
+    "source": {
+        "code": [
+            "    def test_01_index_page_load(self):\n",
+            "        \"\"\"IX-01: \u9996\u9875\u52a0\u8f7d \u2014 \u8f6e\u64ad\u56fe\u3001\u6d3b\u52a8\u4f4d\u3001\u70ed\u9500\u6b63\u5e38\u6e32\u67d3\"\"\"\n",
+            "        page = IndexPage(self.mini)\n",
+            "        loaded = page.wait_loaded()\n",
+            "        self.assertTrue(loaded, '\u9996\u9875\u52a0\u8f7d\u8d85\u65f6')\n",
+            "        self._screenshot('01_index_loaded')\n",
+            "\n",
+            "        title = page.get_nav_title()\n",
+            "        self.assertIn('\u5ddd\u7740', title, f'\u5bfc\u822a\u6807\u9898\u5f02\u5e38: {title}')\n",
+            "\n",
+            "        has_banner = page.has_banners()\n",
+            "        self.assertTrue(has_banner, '\u9996\u9875\u65e0\u8f6e\u64ad\u56fe')\n"
+        ],
+        "start": 24
+    },
+    "filename": "result.json"
+}

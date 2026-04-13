@@ -112,8 +112,7 @@
         <el-form ref="dataForm" :rules="rules" :model="dataForm" label-position="top" class="outfit-form">
           <el-form-item label="封面图" prop="coverPic">
             <el-upload
-              :headers="headers"
-              :action="uploadPath"
+              :http-request="cloudUpload"
               :show-file-list="false"
               :on-success="posterUploadSuccess"
               :before-upload="checkFileSize"
@@ -253,10 +252,9 @@
 </template>
 
 <script>
-import { uploadPath } from '@/api/storage'
+import { cloudUpload } from '@/utils/upload'
 import { listGoods, listCatAndBrand } from '@/api/goods'
 import { listOutfit, createOutfit, updateOutfit, deleteOutfit } from '@/api/outfit'
-import { getToken } from '@/utils/auth'
 import Pagination from '@/components/Pagination'
 
 export default {
@@ -264,7 +262,7 @@ export default {
   components: { Pagination },
   data() {
     return {
-      uploadPath,
+      cloudUpload,
       list: [],
       total: 0,
       listLoading: true,
@@ -308,11 +306,6 @@ export default {
       categoryList: [],
       tempSelectedGoods: [],
       selectedGoodsList: []
-    }
-  },
-  computed: {
-    headers() {
-      return { 'X-Litemall-Admin-Token': getToken() }
     }
   },
   created() {

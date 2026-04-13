@@ -1,0 +1,118 @@
+{
+    "case_name": "test_12_order_page_load",
+    "run_time": "20260410 10:27:57",
+    "test_type": "SmokeTest",
+    "case_doc": "OL-02: \u8ba2\u5355\u5217\u8868",
+    "success": false,
+    "failures": "",
+    "errors": "Traceback (most recent call last):\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/libs/unittest/case.py\", line 266, in testPartExecutor\n    yield\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/libs/unittest/case.py\", line 351, in run\n    self._callTestMethod(testMethod)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/framework/minitest.py\", line 789, in _callTestMethod\n    method()\n  File \"/Users/combo/MyFile/projects/clothing-mall-cloud/clothing-mall-wx/minium_tests/round1_smoke/test_smoke.py\", line 164, in test_12_order_page_load\n    self._switch_tab('/pages/order/order', 3)\n  File \"/Users/combo/MyFile/projects/clothing-mall-cloud/clothing-mall-wx/minium_tests/round1_smoke/test_smoke.py\", line 38, in _switch_tab\n    self.mini.app.switch_tab(path)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/minium_log.py\", line 148, in wrapper\n    result = func(*args, **kwargs)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/utils/utils.py\", line 90, in wrapper\n    ret = func(*args, **kwargs)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/app.py\", line 991, in switch_tab\n    page = self._change_route_async(\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/app.py\", line 1165, in _change_route_async\n    cmd.get_open_result(wait_timeout)\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/app.py\", line 132, in get_open_result\n    return self._open_callback.get_result()\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/callback.py\", line 158, in get_result\n    return self._waiter.result()\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/miniprogram/base_driver/callback.py\", line 137, in wait_called\n    return self._loop.run_coroutine(\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/concurrent/futures/_base.py\", line 445, in result\n    return self.__get_result()\n  File \"/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/concurrent/futures/_base.py\", line 390, in __get_result\n    raise self._exception\n  File \"/Users/combo/Library/Python/3.9/lib/python/site-packages/minium/utils/utils.py\", line 417, in async_wait\n    return fut.result()\nminium.framework.exception.MiniCommandError: can not switch to no-tabBar page\n",
+    "start_timestamp": 1775788077.78086,
+    "is_failure": false,
+    "is_error": true,
+    "module": ".Users.combo.MyFile.projects.clothing-mall-cloud.clothing-mall-wx.minium_tests.round1_smoke.test_smoke",
+    "package": "minium_tests",
+    "failed_line_num": 164,
+    "device": {
+        "system_info": {
+            "batteryLevel": 100,
+            "benchmarkLevel": -1,
+            "brand": "devtools",
+            "memorySize": 2048,
+            "model": "iPhone 12/13 (Pro)",
+            "system": "iOS 10.0.1",
+            "platform": "devtools",
+            "pixelRatio": 3,
+            "safeArea": {
+                "top": 47,
+                "left": 0,
+                "right": 390,
+                "bottom": 810,
+                "width": 390,
+                "height": 763
+            },
+            "screenWidth": 390,
+            "screenHeight": 844,
+            "screenTop": 0,
+            "windowWidth": 390,
+            "windowHeight": 844,
+            "statusBarHeight": 47,
+            "version": "8.0.5",
+            "language": "zh_CN",
+            "SDKVersion": "3.15.0",
+            "enableDebug": false,
+            "fontSizeScaleFactor": 0.91,
+            "fontSizeSetting": 16,
+            "mode": "default",
+            "host": {
+                "env": "WeChat"
+            },
+            "bluetoothEnabled": true,
+            "locationEnabled": true,
+            "wifiEnabled": true,
+            "locationReducedAccuracy": true,
+            "albumAuthorized": true,
+            "bluetoothAuthorized": true,
+            "cameraAuthorized": true,
+            "locationAuthorized": true,
+            "microphoneAuthorized": true,
+            "notificationAuthorized": true,
+            "notificationAlertAuthorized": true,
+            "notificationBadgeAuthorized": true,
+            "notificationSoundAuthorized": true,
+            "phoneCalendarAuthorized": true,
+            "deviceOrientation": "portrait",
+            "appName": "weixin",
+            "devicePixelRatio": 3
+        }
+    },
+    "log_filename": "run.log",
+    "error_type": "MiniCommandError",
+    "error_value": "can not switch to no-tabBar page",
+    "error_extra_info": "",
+    "error_stages": [
+        "testMethod"
+    ],
+    "screen_info": [
+        {
+            "name": "setup",
+            "url": "/pages/index/index",
+            "path": "images/setup.png",
+            "ts": 1775788077,
+            "datetime": "2026-04-10 10:27:57",
+            "use_region": false
+        },
+        {
+            "name": "teardown",
+            "url": "/pages/index/index",
+            "path": "images/teardown.png",
+            "ts": 1775788077,
+            "datetime": "2026-04-10 10:27:57",
+            "use_region": false
+        }
+    ],
+    "step_info": [],
+    "check_list": [],
+    "assert_list": [],
+    "autofix_info": [],
+    "perf_data": "{\"startup\": 0, \"avg_cpu\": 0, \"max_cpu\": 0, \"cpu_data_list\": [], \"avg_mem\": 0, \"max_mem\": 0, \"mem_data_list\": [], \"avg_fps\": 0, \"min_fps_rt\": 0, \"fps_data_list\": [], \"fps_time_series_list\": [], \"cpu_time_series_list\": [], \"mem_time_series_list\": []}",
+    "weapp_log_path": "weapp.log",
+    "request_log_path": "request.log",
+    "stop_timestamp": 1775788077.882896,
+    "appId": "",
+    "appName": "",
+    "source": {
+        "code": [
+            "    def test_12_order_page_load(self):\n",
+            "        \"\"\"OL-02: \u8ba2\u5355\u5217\u8868\"\"\"\n",
+            "        self._switch_tab('/pages/order/order', 3)\n",
+            "        order = OrderPage(self.mini)\n",
+            "        order.refresh_page()\n",
+            "        time.sleep(2)\n",
+            "        tab_count = order.get_tab_count()\n",
+            "        self.assertGreater(tab_count, 0, '\u8ba2\u5355 Tab \u4e3a\u7a7a')\n",
+            "        print(f'  Tab \u6570\u91cf: {tab_count}')\n"
+        ],
+        "start": 162
+    },
+    "filename": "result.json"
+}

@@ -1,0 +1,31 @@
+
+<view class="container">
+  <custom-nav is="components/custom-nav/custom-nav">
+    <view class="nav--custom-nav" style="padding-top: 47px;">
+      <view class="nav--nav-inner">
+        <view class="nav--nav-left" hover-class="nav-left-hover" hover-stay-time="100">
+          <view class="nav--nav-arrow"/>
+        </view>
+        <view class="nav--nav-center">
+          <text class="nav--nav-title"/>
+        </view>
+        <view class="nav--nav-right"/>
+      </view>
+    </view>
+    <view style="height: 95px;"/>
+  </custom-nav>
+  <view class="login-box">
+    <view class="test-login-section">
+      <view class="test-login-tip">当前为测试环境，请使用测试账号登录</view>
+      <button class="test-login-btn" role="button" aria-disabled="false">一键登录（测试）</button>
+      <view class="test-login-hint">仅用于开发测试</view>
+    </view>
+  </view>
+  <birthday-popup is="components/birthday-popup/birthday-popup">
+    <van-popup is="lib/vant-weapp/popup/index">
+      <van-overlay is="lib/vant-weapp/overlay/index">
+        <van-transition is="lib/vant-weapp/transition/index"/>
+      </van-overlay>
+    </van-popup>
+  </birthday-popup>
+</view>

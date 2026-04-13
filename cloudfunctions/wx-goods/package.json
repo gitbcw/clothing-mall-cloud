@@ -1,0 +1,7 @@
+{
+  "name": "wx-goods",
+  "version": "1.0.0",
+  "description": "WX 商城端商品云函数：商品、分类、搜索、品牌",
+  "main": "index.js",
+  "dependencies": {}
+}
