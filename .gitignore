@@ -1,105 +1,77 @@
-### gradle ###
-.gradle
-/build/
-!gradle/wrapper/gradle-wrapper.jar
-
-### STS ###
-.settings/
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-
-
-### IntelliJ IDEA ###
-/.idea/
-/private/
-/storage/
-/litemall.iml
-.checkstyle
-.idea
-*.iws
-*.iml
-*.ipr
-rebel.xml
-### maven ###
-target/
-*.war
-*.ear
-*.zip
-*.tar
-*.tar.gz
-
-### logs ####
-/logs/
-*.log
-
-### temp ignore ###
-*.cache
-*.diff
-*.patch
-*.tmp
-*.java~
-*.properties~
-*.xml~
-
 ### system ignore ###
 .DS_Store
 Thumbs.db
-Servers
-.metadata
-upload
-gen_code
 
-### test ignore ###
-# 环境变量配置（包含敏感信息）
-.env
-.env.local
-.env.*.local
+### Java 旧模块（已迁移到云函数，仅作本地参考） ###
+clothing-mall-admin-api/
+clothing-mall-all/
+clothing-mall-all-war/
+clothing-mall-core/
+clothing-mall-db/
+clothing-mall-vue/
+clothing-mall-wx-api/
+
+### 旧项目文件（已废弃） ###
+backup/
+deploy/
+docm/
+wx-mini/
+scripts/
+tests/
+outputs/
+logs/
+.github/
+.trae/
+.workflow/
+.agents/
+.superpowers/
+skills/
+skills-lock.json
+.claude/
+
+### 旧项目根文件 ###
+pom.xml
+ARCHITECTURE.md
+CHANGELOG.md
+CONTRIBUTE.md
+DEPLOYMENT.md
+LICENSE
+SECURITY.md
+plan.md
+.env.test.example
 .env.test
-
-# 测试报告
-test_report/
-*.html
-!src/**/*.html
-
-# Playwright
-playwright-report/
-playwright/.cache/
-
-# pytest
-.pytest_cache/
-__pycache__/
-
-# Python
-*.pyc
-*.pyo
-venv/
-.venv/
-
-### temp data files ###
-# 根目录临时数据文件
-/init_goods.sql
-/init_specs.sql
-/local_data_dump.sql
-/ocr_raw_response.json
-/test_ocr.py
-/update_goods_images.sql
+.gitbook.yaml
+.mcp.json
+package.json
+pytest.ini
+replace_colors.js
+replace_colors_mini.js
+requirements-test.txt
+test-commit.skill
 
 ### Node.js ###
 node_modules/
 package-lock.json
 
+### 环境变量（含敏感信息） ###
+.env
+.env.local
+.env.*.local
+
+### 测试 ###
+test_report/
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
 ### Docker ###
 docker/db/data/
-docker/litemall/backup/
-docker/litemall/storage/
+docker/litemall/
 docker/admin-dist/
 docker/.env
-.claude/
-.superpowers/
-.agents/
-skills/
-skills-lock.json
+
+### 小程序备份 ###
+clothing-mall-wx.bak/
