@@ -15,7 +15,7 @@ Page({
     limit: 10,
     totalPages: 1,
     defaultImage: '/static/images/fallback-image.svg',
-    emptyOrderImage: '/static/images/fallback-image.svg',
+    emptyOrderImage: '/static/images/empty.svg',
     aftersaleStatusColumns: ['可申请', '已申请，待审核', '审核通过，待补发', '换货已发货', '审核不通过，已拒绝', '已取消', '换货完成']
   },
 

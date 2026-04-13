@@ -31,7 +31,10 @@
   "simulatorPluginLibVersion": {},
   "packOptions": {
     "ignore": [
-      { "type": "folder", "value": "minium_tests" }
+      {
+        "value": "minium_tests",
+        "type": "folder"
+      }
     ],
     "include": []
   },
