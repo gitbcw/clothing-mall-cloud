@@ -446,17 +446,6 @@ export const asyncRoutes = [
           noCache: true
         }
       },
-      // 对象存储
-      {
-        path: 'storage',
-        component: () => import('@/views/sys/os'),
-        name: 'systemStorage',
-        meta: {
-          perms: ['GET /admin/storage/list', 'POST /admin/storage/create', 'POST /admin/storage/update', 'POST /admin/storage/delete'],
-          title: 'app.menu.platform_storage',
-          noCache: true
-        }
-      },
       // 小程序设置（已拆分至 /platform/config 的客服设置和促销规则 Tab）
       // 隐藏的原商城配置（保留路由兼容）
       {
@@ -660,10 +649,6 @@ export const asyncRoutes = [
     hidden: true,
     children: [
       {
-        path: 'https://cloud.tencent.com/product/cos',
-        meta: { title: 'app.menu.external_link_tencent_cos', icon: 'link' }
-      },
-      {
         path: 'https://cloud.tencent.com/product/sms',
         meta: { title: 'app.menu.external_link_tencent_sms', icon: 'link' }
       },
@@ -674,14 +659,6 @@ export const asyncRoutes = [
       {
         path: 'https://mpkf.weixin.qq.com/',
         meta: { title: 'app.menu.external_link_weixin_mpkf', icon: 'link' }
-      },
-      {
-        path: 'https://www.alibabacloud.com/zh/product/oss',
-        meta: { title: 'app.menu.external_link_alibaba_oss', icon: 'link' }
-      },
-      {
-        path: 'https://www.qiniu.com/products/kodo',
-        meta: { title: 'app.menu.external_link_qiniu_kodo', icon: 'link' }
       },
       {
         path: 'http://www.kdniao.com/api-track',

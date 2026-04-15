@@ -41,7 +41,6 @@ export default {
       sys_notice: 'Notifications',
       sys_log: 'Logs',
       sys_role: 'Roles',
-      sys_os: 'Storage',
       operation_config: 'Operation Config',
       config: 'Configuration',
       mini_program_config: 'Mini Program Settings',
@@ -61,12 +60,9 @@ export default {
       stat_sales: 'Sales',
       stat_tracker: 'Behavior',
       external_link: 'External links',
-      external_link_tencent_cos: 'Tencent cloud storage',
       external_link_tencent_sms: 'Tencent cloud SMS',
       external_link_weixin_pay: 'WeChat Pay',
       external_link_weixin_mpkf: 'WeChat mini-program',
-      external_link_alibaba_oss: 'Ali cloud storage',
-      external_link_qiniu_kodo: 'Qiniu cloud storage',
       external_link_kdniao_api: 'Kdniao API',
       profile_password: 'Change password',
       profile_notice: 'Notifications'
@@ -836,31 +832,6 @@ export default {
     },
     placeholder: {
       filter_name: 'Name'
-    }
-  },
-  sys_os: {
-    table: {
-      key: 'Key',
-      name: 'Name',
-      type: 'Type',
-      size: 'size',
-      url: 'Picture',
-      url_link: 'Link',
-      actions: 'Actions'
-    },
-    dialog: {
-      create: 'Create',
-      update: 'Update'
-    },
-    form: {
-      name: 'Name'
-    },
-    placeholder: {
-      filter_key: 'Key',
-      filter_name: 'Name'
-    },
-    button: {
-      upload: 'Upload'
     }
   },
   config_mall: {

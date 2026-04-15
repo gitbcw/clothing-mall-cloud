@@ -11,7 +11,11 @@
     <el-table v-loading="listLoading" :data="list" :element-loading-text="$t('app.message.list_loading')" border fit highlight-current-row>
       <el-table-column align="center" :label="$t('sys_log.table.admin')" prop="admin" />
       <el-table-column align="center" :label="$t('sys_log.table.ip')" prop="ip" />
-      <el-table-column align="center" :label="$t('sys_log.table.add_time')" prop="addTime" />
+      <el-table-column align="center" :label="$t('sys_log.table.add_time')" prop="addTime">
+        <template slot-scope="scope">
+          {{ scope.row.addTime | parseTimeFilter }}
+        </template>
+      </el-table-column>
       <el-table-column align="center" :label="$t('sys_log.table.type')" prop="type">
         <template slot-scope="scope">
           <el-tag>{{ scope.row.type | typeFilter }}</el-tag>
@@ -35,6 +39,7 @@
 
 <script>
 import { listLog } from '@/api/log'
+import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination'
 
 const typeMap = {
@@ -50,6 +55,9 @@ export default {
   filters: {
     typeFilter(type) {
       return typeMap[type]
+    },
+    parseTimeFilter(time) {
+      return parseTime(time, '{y}-{m}-{d} {h}:{i}:{s}')
     }
   },
   data() {

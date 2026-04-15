@@ -143,7 +143,7 @@
 <script>
 import { listAdmin, createAdmin, updateAdmin, deleteAdmin } from '@/api/admin'
 import { listRole, createRole, updateRole, deleteRole, roleOptions, getPermission, updatePermission } from '@/api/role'
-import { uploadPath } from '@/api/storage'
+const uploadPath = process.env.VUE_APP_BASE_API + '/storage/create'
 import { getToken } from '@/utils/auth'
 import Pagination from '@/components/Pagination'
 
@@ -342,7 +342,7 @@ export default {
     // ========== 角色相关 ==========
     getRoleOptions() {
       roleOptions().then(response => {
-        this.roleOptions = response.data.data.list
+        this.roleOptions = response.data.data || []
       })
     },
     getRoleList() {

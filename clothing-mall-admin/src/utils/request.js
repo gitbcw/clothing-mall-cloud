@@ -143,13 +143,6 @@ const ROUTE_MAP = {
   'ad/update': ['admin-content', 'adUpdate'],
   'ad/delete': ['admin-content', 'adDelete'],
 
-  // ---- admin-storage ----
-  'storage/list': ['admin-storage', 'storageList'],
-  'storage/create': ['admin-storage', 'storageCreate'],
-  'storage/read': ['admin-storage', 'storageRead'],
-  'storage/update': ['admin-storage', 'storageUpdate'],
-  'storage/delete': ['admin-storage', 'storageDelete'],
-
   // ---- admin-marketing ----
   'coupon/list': ['admin-marketing', 'couponList'],
   'coupon/create': ['admin-marketing', 'couponCreate'],

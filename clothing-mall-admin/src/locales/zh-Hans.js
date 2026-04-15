@@ -62,7 +62,6 @@ export default {
       platform_notice: '通知管理',
       platform_log: '操作日志',
       platform_role: '角色管理',
-      platform_storage: '对象存储',
       platform_wx: '小程序设置',
       // 系统管理（保留旧 key 兼容）
       sys: '系统管理',
@@ -70,7 +69,6 @@ export default {
       sys_notice: '通知管理',
       sys_log: '操作日志',
       sys_role: '角色管理',
-      sys_os: '对象存储',
       operation_config: '运营配置',
       operation_manage: '运营管理',
       operation_message_push: '消息推送',
@@ -87,12 +85,9 @@ export default {
       config_wx: '小程序设置',
       config_promotion: '促销配置',
       external_link: '外链',
-      external_link_tencent_cos: '腾讯云存储',
       external_link_tencent_sms: '腾讯云短信',
       external_link_weixin_pay: '微信支付',
       external_link_weixin_mpkf: '小程序客服',
-      external_link_alibaba_oss: '阿里云存储',
-      external_link_qiniu_kodo: '七牛云存储',
       external_link_kdniao_api: '快递鸟',
       profile_password: '修改密码',
       profile_notice: '通知中心'
@@ -800,31 +795,6 @@ export default {
     },
     placeholder: {
       filter_name: '请输入角色名称'
-    }
-  },
-  sys_os: {
-    table: {
-      key: '对象KEY',
-      name: '对象名称',
-      type: '对象类型',
-      size: '对象大小',
-      url: '图片',
-      url_link: '图片链接',
-      actions: '操作'
-    },
-    dialog: {
-      create: '上传对象',
-      update: '修改对象名称'
-    },
-    form: {
-      name: '对象名称'
-    },
-    placeholder: {
-      filter_key: '请输入对象KEY',
-      filter_name: '请输入对象名称'
-    },
-    button: {
-      upload: '点击上传'
     }
   },
   config_mall: {

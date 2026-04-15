@@ -141,6 +141,16 @@ manageFunctions(action=updateFunctionCode, functionName=xxx, functionRootPath=cl
 4. 遇到不确定的地方：标注「待确认」，不要自行假设
 5. 修改云函数后立即部署，不需要确认
 
+## 云函数层（Layer）部署规范
+
+层内容解压到 `/opt/`，`require('模块名')` 查找 `/opt/node_modules/模块名/`。因此：
+
+- **层的 zip 根目录必须是 `node_modules/模块名/`**
+- 源码在 `cloudfunctions/layers/层名/nodejs/` 下，但打包时需要放到 `node_modules/层名/` 结构中
+- 正确做法：先构建临时目录 `node_modules/layer-xxx/`（从 `nodejs/` 复制），再用 `contentPath` 指向该临时目录创建层版本
+- `updateFunctionCode` 不会更新层，层需要单独 `createLayerVersion` + `updateFunctionLayers`
+- **不要修改 layer-base 共享层**（v4 稳定版），新功能用本地副本
+
 ## 已知技术债与注意事项
 
 - **AI 识别**：当前为 Mock 实现，需付费 API Key 才能接入真实服务
