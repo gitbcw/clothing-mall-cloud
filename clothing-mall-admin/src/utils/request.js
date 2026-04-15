@@ -52,6 +52,8 @@ const ROUTE_MAP = {
   'goods/publish': ['admin-goods', 'goodsPublish'],
   'goods/unpublish': ['admin-goods', 'goodsUnpublish'],
   'goods/unpublishAll': ['admin-goods', 'goodsUnpublishAll'],
+  'goods/recognizeImage': ['admin-goods', 'goodsRecognizeImage'],
+  'goods/recognizeTag': ['admin-goods', 'goodsRecognizeTag'],
   'category/list': ['admin-goods', 'categoryList'],
   'category/l1': ['admin-goods', 'categoryL1'],
   'category/create': ['admin-goods', 'categoryCreate'],

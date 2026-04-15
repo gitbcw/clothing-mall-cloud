@@ -53,6 +53,30 @@ const routes = {
 // 所有接口都需要登录
 const AUTH_REQUIRED = Object.keys(routes)
 
+// 操作失败时的用户提示
+const ACTION_ERRORS = {
+  addressList: '地址列表加载失败，请刷新重试',
+  addressDetail: '地址详情加载失败',
+  addressSave: '保存地址失败，请重试',
+  addressRemove: '删除地址失败，请重试',
+  collectList: '收藏列表加载失败，请刷新重试',
+  collectAddOrDelete: '收藏操作失败，请重试',
+  footprintList: '浏览足迹加载失败，请刷新重试',
+  footprintRemove: '删除足迹失败，请重试',
+  feedbackSubmit: '提交反馈失败，请重试',
+  userIndex: '用户信息加载失败，请刷新重试',
+  userInfo: '用户信息加载失败',
+  userProfile: '更新资料失败，请重试',
+  userRole: '获取角色信息失败',
+  userIsManager: '获取权限信息失败',
+  // 兼容短名路由
+  index: '用户信息加载失败，请刷新重试',
+  info: '用户信息加载失败',
+  profile: '更新资料失败，请重试',
+  role: '获取角色信息失败',
+  isManager: '获取权限信息失败',
+}
+
 exports.main = async (event, context) => {
   // CloudBase 将 OPENID 放在 event.userInfo.openId，注入到 context 供 layer-auth 使用
   const openId = (event.userInfo && event.userInfo.openId) || null
@@ -77,6 +101,6 @@ exports.main = async (event, context) => {
     return await handler(data || {}, context)
   } catch (err) {
     console.error(`[wx-user] action=${action} error:`, err)
-    return response.serious()
+    return response.fail(502, ACTION_ERRORS[action] || '操作失败，请稍后重试')
   }
 }

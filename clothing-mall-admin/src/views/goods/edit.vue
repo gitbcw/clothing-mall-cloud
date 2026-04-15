@@ -271,13 +271,15 @@ export default {
         this.brandList = response.data.data.brandList
       })
 
-      // 加载场景列表
+      // 加载场景列表后，如果有商品数据则回显场景
       listScene({ page: 1, limit: 100 }).then(response => {
         const list = response.data.data.list || response.data.data || []
         this.sceneList = list.map(item => ({
           value: item.id,
           label: item.name
         }))
+        // 场景列表加载完后，回显已有商品的场景标签
+        this.restoreSceneTags()
       }).catch(() => {
         console.warn('加载场景列表失败')
       })
@@ -285,6 +287,22 @@ export default {
       // 如果有 id 参数，直接加载商品详情
       if (this.$route.query.id) {
         this.loadGoodsById(this.$route.query.id)
+      }
+    },
+
+    // 回显场景标签
+    restoreSceneTags() {
+      if (!this.goods.sceneTags || this.selectedSceneIds.length > 0) return
+      try {
+        const tagNames = JSON.parse(this.goods.sceneTags)
+        if (Array.isArray(tagNames)) {
+          this.selectedSceneIds = tagNames.map(name => {
+            const scene = this.sceneList.find(s => s.label === name)
+            return scene ? scene.value : null
+          }).filter(Boolean)
+        }
+      } catch (e) {
+        console.warn('解析场景标签失败:', e)
       }
     },
 
@@ -318,20 +336,8 @@ export default {
           this.keywords = this.goods.keywords.split(',')
         }
 
-        // 回显场景标签：从 scene_tags JSON 字符串反查 ID
-        if (this.goods.sceneTags) {
-          try {
-            const tagNames = JSON.parse(this.goods.sceneTags)
-            if (Array.isArray(tagNames)) {
-              this.selectedSceneIds = tagNames.map(name => {
-                const scene = this.sceneList.find(s => s.label === name)
-                return scene ? scene.value : null
-              }).filter(Boolean)
-            }
-          } catch (e) {
-            console.warn('解析场景标签失败:', e)
-          }
-        }
+        // 尝试回显场景标签（场景列表可能已加载）
+        this.restoreSceneTags()
       })
     },
 

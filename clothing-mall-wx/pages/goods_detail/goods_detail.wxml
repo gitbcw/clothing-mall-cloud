@@ -8,10 +8,7 @@
   </view>
 
   <!-- 加载状态 -->
-  <view class="loading-state" wx:if="{{loading}}" style="margin-top: {{statusBarHeight + navBarHeight + 16}}px;">
-    <view class="loading-spinner"></view>
-    <view class="loading-text">加载中...</view>
-  </view>
+  <page-loading visible="{{loading}}" />
 
   <!-- 正常商品内容（下架或隐藏） -->
   <block wx:if="{{!isUnshelved && !loading}}">
@@ -20,12 +17,12 @@
     <view class="back-btn" bindtap="goBack">
       <view class="back-icon"></view>
     </view>
-    <view class="nav-title">商品详情</view>
+    <view class="nav-title">{{goods.name ? '【川着】' + goods.name : '商品详情'}}</view>
     <view class="nav-right"></view>
   </view>
 
   <!-- 顶部商品主图轮播 -->
-  <view class="swiper-wrap">
+  <view class="swiper-wrap" style="padding-top: {{statusBarHeight + navBarHeight + 16}}px;">
     <swiper class="goods-swiper" bindchange="onSwiperChange" autoplay="{{true}}" interval="3000" circular="{{true}}">
       <block wx:for="{{gallery}}" wx:key="*this">
         <swiper-item>
@@ -43,7 +40,7 @@
   <!-- 商品基础信息区 -->
   <view class="info-section">
     <view class="title-share-wrap">
-      <view class="goods-title">{{goods.name}}</view>
+      <view class="goods-title">【川着】{{goods.name}}</view>
       <view class="share-btn" bindtap="shareFriendOrCircle" wx:if="{{shareImage}}">
         <view class="share-icon"></view>
         <text>分享</text>

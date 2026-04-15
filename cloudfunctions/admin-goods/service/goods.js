@@ -25,7 +25,7 @@ async function list(data) {
   if (data.goodsId) { where.push('g.id = ?'); params.push(data.goodsId) }
   if (data.goodsSn) { where.push('g.goods_sn LIKE ?'); params.push(`%${data.goodsSn}%`) }
   if (data.name) { where.push('g.name LIKE ?'); params.push(`%${data.name}%`) }
-  if (data.status !== undefined && data.status !== '') { where.push('g.is_on_sale = ?'); params.push(data.status) }
+  if (data.status !== undefined && data.status !== '') { where.push('g.status = ?'); params.push(data.status) }
   where.push('g.deleted = 0')
   const whereClause = where.join(' AND ')
 
@@ -42,7 +42,25 @@ async function list(data) {
   )
   const listRows = await query(sql, params)
 
-  return response.okList(listRows, total, page, limit)
+  // 各状态 tab 计数
+  const [allCount, draftCount, pendingCount, publishedCount] = await Promise.all([
+    query('SELECT COUNT(*) AS total FROM litemall_goods WHERE deleted = 0'),
+    query("SELECT COUNT(*) AS total FROM litemall_goods WHERE deleted = 0 AND status = 'draft'"),
+    query("SELECT COUNT(*) AS total FROM litemall_goods WHERE deleted = 0 AND status = 'pending'"),
+    query("SELECT COUNT(*) AS total FROM litemall_goods WHERE deleted = 0 AND status = 'published'"),
+  ])
+
+  return response.ok({
+    list: listRows,
+    total,
+    page,
+    limit,
+    pages: Math.ceil(total / limit) || 1,
+    allCount: allCount[0].total,
+    draftCount: draftCount[0].total,
+    pendingCount: pendingCount[0].total,
+    publishedCount: publishedCount[0].total,
+  })
 }
 
 /**
@@ -67,10 +85,11 @@ async function detail(data) {
   const goods = await query('SELECT * FROM litemall_goods WHERE id = ? AND deleted = 0', [id])
   if (goods.length === 0) return response.badArgumentValue()
 
-  const [specifications, attributes, products] = await Promise.all([
+  const [specifications, attributes, products, skuList] = await Promise.all([
     query('SELECT * FROM litemall_goods_specification WHERE goods_id = ? AND deleted = 0', [id]),
     query('SELECT * FROM litemall_goods_attribute WHERE goods_id = ? AND deleted = 0', [id]),
     query('SELECT * FROM litemall_goods_product WHERE goods_id = ? AND deleted = 0', [id]),
+    query('SELECT * FROM clothing_goods_sku WHERE goods_id = ? AND deleted = 0', [id]),
   ])
 
   return response.ok({
@@ -78,6 +97,7 @@ async function detail(data) {
     specifications,
     attributes,
     products,
+    skuList,
   })
 }
 
@@ -101,14 +121,23 @@ async function create(data) {
   const { goods, specifications, attributes, products } = data
   if (!goods || !goods.name) return response.badArgument()
 
+  const status = goods.status || 'draft'
+  const retailPrice = goods.retail_price || 0
+  const counterPrice = goods.counter_price || (retailPrice > 0 ? Math.round(retailPrice * 1.3 * 100) / 100 : 0)
+
   const result = await execute(
-    'INSERT INTO litemall_goods (name, goods_sn, cat_id, brand_id, gallery, pic_url, detail, keywords, brief, is_on_sale, is_new, is_hot, sort_order, price, counter_price, retail_price, add_time, update_time, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 0)',
+    'INSERT INTO litemall_goods (name, goods_sn, cat_id, brand_id, gallery, pic_url, detail, keywords, brief, status, is_new, is_hot, sort_order, price, counter_price, retail_price, special_price, is_special_price, scene_tags, goods_params, add_time, update_time, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 0)',
     [
       goods.name, goods.goods_sn || '', goods.cat_id || 0, goods.brand_id || 0,
       JSON.stringify(goods.gallery || []), goods.pic_url || '', goods.detail || '',
       goods.keywords || '', goods.brief || '',
-      goods.is_on_sale !== false ? 1 : 0, goods.is_new ? 1 : 0, goods.is_hot ? 1 : 0,
-      goods.sort_order || 100, goods.price || 0, goods.counter_price || 0, goods.retail_price || 0,
+      status,
+      goods.is_new ? 1 : 0, goods.is_hot ? 1 : 0,
+      goods.sort_order || 100, goods.price || 0,
+      counterPrice, retailPrice,
+      goods.special_price || null, goods.special_price ? 1 : 0,
+      goods.scene_tags ? JSON.stringify(goods.scene_tags) : null,
+      goods.goods_params ? JSON.stringify(goods.goods_params) : null,
     ]
   )
 
@@ -138,6 +167,7 @@ async function update(data) {
   if (goods.detail !== undefined) { sets.push('detail = ?'); params.push(goods.detail) }
   if (goods.keywords !== undefined) { sets.push('keywords = ?'); params.push(goods.keywords) }
   if (goods.brief !== undefined) { sets.push('brief = ?'); params.push(goods.brief) }
+  if (goods.status !== undefined) { sets.push('status = ?'); params.push(goods.status) }
   if (goods.is_on_sale !== undefined) { sets.push('is_on_sale = ?'); params.push(goods.is_on_sale ? 1 : 0) }
   if (goods.is_new !== undefined) { sets.push('is_new = ?'); params.push(goods.is_new ? 1 : 0) }
   if (goods.is_hot !== undefined) { sets.push('is_hot = ?'); params.push(goods.is_hot ? 1 : 0) }
@@ -145,6 +175,10 @@ async function update(data) {
   if (goods.price !== undefined) { sets.push('price = ?'); params.push(goods.price) }
   if (goods.counter_price !== undefined) { sets.push('counter_price = ?'); params.push(goods.counter_price) }
   if (goods.retail_price !== undefined) { sets.push('retail_price = ?'); params.push(goods.retail_price) }
+  if (goods.special_price !== undefined) { sets.push('special_price = ?'); params.push(goods.special_price) }
+  if (goods.is_special_price !== undefined) { sets.push('is_special_price = ?'); params.push(goods.is_special_price ? 1 : 0) }
+  if (goods.scene_tags !== undefined) { sets.push('scene_tags = ?'); params.push(JSON.stringify(goods.scene_tags)) }
+  if (goods.goods_params !== undefined) { sets.push('goods_params = ?'); params.push(JSON.stringify(goods.goods_params)) }
   sets.push('update_time = NOW()')
 
   params.push(goods.id)
@@ -176,7 +210,7 @@ async function publish(data) {
   if (!Array.isArray(ids) || ids.length === 0) return response.badArgument()
 
   const placeholders = ids.map(() => '?').join(',')
-  await execute(`UPDATE litemall_goods SET is_on_sale = 1, update_time = NOW() WHERE id IN (${placeholders}) AND deleted = 0`, ids)
+  await execute(`UPDATE litemall_goods SET status = 'published', update_time = NOW() WHERE id IN (${placeholders}) AND deleted = 0`, ids)
   return response.ok()
 }
 
@@ -188,7 +222,7 @@ async function unpublish(data) {
   if (!Array.isArray(ids) || ids.length === 0) return response.badArgument()
 
   const placeholders = ids.map(() => '?').join(',')
-  await execute(`UPDATE litemall_goods SET is_on_sale = 0, update_time = NOW() WHERE id IN (${placeholders}) AND deleted = 0`, ids)
+  await execute(`UPDATE litemall_goods SET status = 'pending', update_time = NOW() WHERE id IN (${placeholders}) AND deleted = 0`, ids)
   return response.ok()
 }
 
@@ -196,7 +230,7 @@ async function unpublish(data) {
  * 一键下架
  */
 async function unpublishAll() {
-  await execute('UPDATE litemall_goods SET is_on_sale = 0, update_time = NOW() WHERE deleted = 0')
+  await execute("UPDATE litemall_goods SET status = 'pending', update_time = NOW() WHERE deleted = 0 AND status = 'published'")
   return response.ok()
 }
 

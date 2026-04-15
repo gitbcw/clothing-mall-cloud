@@ -38,6 +38,20 @@ const routes = {
 // 需要登录的接口
 const AUTH_REQUIRED = ['memberInfo', 'memberBindGuide']
 
+// 操作失败时的用户提示
+const ACTION_ERRORS = {
+  skuList: 'SKU列表加载失败',
+  skuSizes: '尺码信息加载失败',
+  skuDetail: 'SKU详情加载失败',
+  skuQuery: 'SKU查询失败',
+  skuCheckStock: '库存查询失败',
+  storeList: '门店列表加载失败',
+  storeDetail: '门店详情加载失败',
+  storeNearest: '附近门店加载失败',
+  memberInfo: '会员信息加载失败',
+  memberBindGuide: '绑定导购失败，请重试',
+}
+
 exports.main = async (event, context) => {
   // CloudBase 将 OPENID 放在 event.userInfo.openId，注入到 context 供 layer-auth 使用
   const openId = (event.userInfo && event.userInfo.openId) || null
@@ -63,6 +77,6 @@ exports.main = async (event, context) => {
     return await handler(data || {}, context)
   } catch (err) {
     console.error(`[wx-clothing] action=${action} error:`, err)
-    return response.serious()
+    return response.fail(502, ACTION_ERRORS[action] || '操作失败，请稍后重试')
   }
 }

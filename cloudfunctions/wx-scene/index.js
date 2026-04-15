@@ -11,6 +11,13 @@ const { list, banners, goods } = require('./service/scene')
 
 const routes = { list, banners, goods }
 
+// 操作失败时的用户提示
+const ACTION_ERRORS = {
+  list: '场景列表加载失败，请刷新重试',
+  banners: '场景轮播图加载失败',
+  goods: '场景商品加载失败',
+}
+
 exports.main = async (event, context) => {
   const { action, data } = event
 
@@ -23,6 +30,6 @@ exports.main = async (event, context) => {
     return await handler(data || {}, context)
   } catch (err) {
     console.error(`[wx-scene] action=${action} error:`, err)
-    return response.serious()
+    return response.fail(502, ACTION_ERRORS[action] || '操作失败，请稍后重试')
   }
 }

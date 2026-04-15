@@ -417,7 +417,7 @@ async function submit(data, context) {
   } catch (err) {
     await conn.rollback()
     console.error('[wx-order] submit transaction error:', err)
-    return response.fail(500, '下单失败：' + err.message)
+    return response.fail(500, '下单失败，请稍后重试')
   } finally {
     conn.release()
   }
@@ -473,7 +473,7 @@ async function cancel(data, context) {
   } catch (err) {
     await conn.rollback()
     console.error('[wx-order] cancel error:', err)
-    return response.serious()
+    return response.fail(502, '取消订单失败，请稍后重试')
   } finally {
     conn.release()
   }
@@ -629,7 +629,7 @@ async function prepay(data, context) {
     })
   } catch (err) {
     console.error('[wx-order] prepay unifiedOrder error:', err)
-    return response.fail(502, '微信支付调起失败: ' + (err.message || '未知错误'))
+    return response.fail(502, '支付调起失败，请重试')
   }
 }
 

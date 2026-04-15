@@ -1,6 +1,7 @@
 {
   "usingComponents": {
-    "sku-picker": "/components/sku-picker/sku-picker"
+    "sku-picker": "/components/sku-picker/sku-picker",
+    "page-loading": "/components/page-loading/page-loading"
   },
   "navigationStyle": "custom"
 }

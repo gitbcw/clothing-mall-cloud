@@ -35,6 +35,23 @@ const routes = {
 // 所有订单和售后接口都需要登录
 const AUTH_REQUIRED = Object.keys(routes)
 
+// 操作失败时的用户提示
+const ACTION_ERRORS = {
+  list: '订单列表加载失败，请稍后重试',
+  detail: '订单详情加载失败，请稍后重试',
+  submit: '下单失败，请稍后重试',
+  cancel: '取消订单失败，请稍后重试',
+  refund: '退款申请失败，请稍后重试',
+  confirm: '确认收货失败，请稍后重试',
+  deleteOrder: '删除订单失败，请稍后重试',
+  prepay: '支付调起失败，请重试',
+  h5pay: '支付调起失败，请重试',
+  aftersaleList: '售后列表加载失败，请稍后重试',
+  aftersaleDetail: '售后详情加载失败，请稍后重试',
+  aftersaleSubmit: '申请售后失败，请稍后重试',
+  aftersaleCancel: '取消售后失败，请稍后重试',
+}
+
 exports.main = async (event, context) => {
   // CloudBase 将 OPENID 放在 event.userInfo.openId，注入到 context 供 layer-auth 使用
   const openId = (event.userInfo && event.userInfo.openId) || null
@@ -59,6 +76,6 @@ exports.main = async (event, context) => {
     return await handler(data || {}, context)
   } catch (err) {
     console.error(`[wx-order] action=${action} error:`, err)
-    return response.serious()
+    return response.fail(502, ACTION_ERRORS[action] || '操作失败，请稍后重试')
   }
 }

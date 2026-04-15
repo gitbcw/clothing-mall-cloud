@@ -86,7 +86,7 @@ async function enable(data) {
 async function goods(data) {
   const { sceneId } = data
   if (!sceneId) return response.badArgument()
-  const rows = await query('SELECT goods_id FROM clothing_scene_goods WHERE scene_id = ? AND deleted = 0', [sceneId])
+  const rows = await query('SELECT goods_id FROM clothing_goods_scene WHERE scene_id = ? AND deleted = 0', [sceneId])
   return response.ok(rows.map(r => r.goods_id))
 }
 
@@ -94,11 +94,11 @@ async function goodsUpdate(data) {
   const { sceneId, goodsIds } = data
   if (!sceneId) return response.badArgument()
 
-  await execute('DELETE FROM clothing_scene_goods WHERE scene_id = ?', [sceneId])
+  await execute('DELETE FROM clothing_goods_scene WHERE scene_id = ?', [sceneId])
 
   if (Array.isArray(goodsIds) && goodsIds.length > 0) {
-    const values = goodsIds.map(gid => `(${sceneId}, ${gid})`).join(',')
-    await execute(`INSERT INTO clothing_scene_goods (scene_id, goods_id) VALUES ${values}`)
+    const values = goodsIds.map(gid => `(${gid}, ${sceneId})`).join(',')
+    await execute(`INSERT INTO clothing_goods_scene (goods_id, scene_id) VALUES ${values}`)
   }
 
   return response.ok()

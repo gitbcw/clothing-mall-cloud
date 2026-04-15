@@ -55,6 +55,19 @@ const routes = {
 // 需要可选登录的接口
 const AUTH_OPTIONAL = ['homeIndex', 'topicDetail']
 
+// 操作失败时的用户提示
+const ACTION_ERRORS = {
+  homeIndex: '首页加载失败，请刷新重试',
+  about: '商城信息加载失败',
+  cache: '缓存清除失败',
+  topicList: '专题列表加载失败',
+  topicDetail: '专题详情加载失败',
+  topicRelated: '相关专题加载失败',
+  issueList: '常见问题加载失败',
+  configGet: '消息配置加载失败',
+  configPost: '消息配置保存失败，请重试',
+}
+
 exports.main = async (event, context) => {
   // CloudBase 将 OPENID 放在 event.userInfo.openId，注入到 context 供 layer-auth 使用
   const openId = (event.userInfo && event.userInfo.openId) || null
@@ -84,6 +97,6 @@ exports.main = async (event, context) => {
     return await handler(data || {}, context)
   } catch (err) {
     console.error(`[wx-home] action=${action} error:`, err)
-    return response.serious()
+    return response.fail(502, ACTION_ERRORS[action] || '操作失败，请稍后重试')
   }
 }

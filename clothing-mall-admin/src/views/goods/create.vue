@@ -1,73 +1,92 @@
 <template>
-  <div class="app-container">
+  <div class="app-container goods-create-page">
 
-    <!-- 商品查询卡片 -->
+    <!-- 草稿恢复提示 -->
+    <el-alert
+      v-if="draftInfo.hasDraft"
+      type="info"
+      show-icon
+      :closable="false"
+      style="margin-bottom: 16px;"
+    >
+      <template slot="title">
+        有未完成的草稿（{{ draftInfo.savedAt }}）
+        <el-button type="text" size="mini" @click="restoreDraft">恢复草稿</el-button>
+        <el-button type="text" size="mini" style="color: #f56c6c;" @click="clearDraft">清除</el-button>
+      </template>
+    </el-alert>
+
+    <!-- 商品信息 -->
     <el-card class="box-card">
-      <h3>商品查询</h3>
-      <el-row :gutter="20" type="flex" align="middle">
-        <el-col :span="6">
-          <el-input v-model="searchGoodsSn" placeholder="输入商品款号" clearable @keyup.enter.native="handleSearch" />
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-col>
-      </el-row>
-      <el-alert v-if="searchMsg" :title="searchMsg" :type="searchType" show-icon style="margin-top:15px" />
-    </el-card>
-
-    <!-- 商品信息卡片（查询成功后显示） -->
-    <el-card v-if="goods.id" class="box-card">
       <h3>商品信息</h3>
-      <el-form ref="goods" :rules="rules" :model="goods" label-width="150px">
-        <el-form-item label="商品款号" prop="goodsSn">
-          <el-input v-model="goods.goodsSn" style="width: 300px" disabled />
+      <el-form ref="goodsForm" :rules="rules" :model="goods" label-width="150px">
+        <el-form-item label="商品名称" prop="name">
+          <el-input v-model="goods.name" style="width: 400px" placeholder="请输入商品名称" @change="autoSaveDraft" />
         </el-form-item>
-        <el-form-item :label="$t('goods_edit.form.name')" prop="name">
-          <el-input v-model="goods.name" style="width: 300px" />
-        </el-form-item>
+
         <el-form-item label="一口价" prop="retailPrice">
-          <el-input v-model="goods.retailPrice" placeholder="0.00" style="width: 300px">
-            <template slot="append">元</template>
-          </el-input>
-          <span class="form-tip">（实际售价，留空则自动取规格最低价）</span>
+          <el-input-number v-model="goods.retailPrice" :min="0" :precision="2" style="width: 300px" @change="autoSaveDraft" />
+          <span class="form-tip">元（实际售价）</span>
         </el-form-item>
+
         <!-- 特价设置 -->
         <el-form-item label="设置特价">
-          <el-switch v-model="goods.isSpecialPrice" active-text="特价" inactive-text="普通" />
+          <el-switch v-model="goods.isSpecialPrice" active-text="特价" inactive-text="普通" @change="autoSaveDraft" />
         </el-form-item>
         <el-form-item v-if="goods.isSpecialPrice" label="特价金额">
-          <el-input v-model="goods.specialPrice" placeholder="0.00" style="width: 300px">
-            <template slot="append">元</template>
-          </el-input>
+          <el-input-number v-model="goods.specialPrice" :min="0" :precision="2" style="width: 300px" @change="autoSaveDraft" />
+          <span class="form-tip">元</span>
         </el-form-item>
 
-        <el-form-item :label="$t('goods_edit.form.pic_url')">
+        <!-- 主图 -->
+        <el-form-item label="商品主图">
+          <div class="upload-area">
+            <el-upload
+              :http-request="cloudUpload"
+              :show-file-list="false"
+              :auto-upload="false"
+              :on-change="handlePicChange"
+              accept=".jpg,.jpeg,.png"
+              class="avatar-uploader"
+            >
+              <img v-if="goods.picUrl" :src="imageUrl(goods.picUrl)" class="avatar">
+              <i v-else class="el-icon-plus avatar-uploader-icon" />
+            </el-upload>
+            <el-button
+              v-if="goods.picUrl"
+              type="text"
+              icon="el-icon-camera"
+              :loading="aiLoading"
+              style="margin-left: 12px;"
+              @click="handleRecognizeImage"
+            >AI 识别主图</el-button>
+          </div>
+          <div v-if="aiLoading" class="ai-loading-tip">
+            <i class="el-icon-loading" /> AI 正在识别商品信息...
+          </div>
+        </el-form-item>
+
+        <!-- 吊牌识别 -->
+        <el-form-item label="吊牌识别">
           <el-upload
-            ref="picUpload"
-            :http-request="cloudUpload"
+            :http-request="handleTagUpload"
             :show-file-list="false"
-            :auto-upload="false"
-            :on-change="handlePicChange"
-            :on-success="uploadPicUrl"
-            :on-error="uploadError"
-            class="avatar-uploader"
-            accept=".jpg,.jpeg,.png,.gif"
+            accept=".jpg,.jpeg,.png"
           >
-            <img v-if="goods.picUrl" :src="imageUrl(goods.picUrl)" class="avatar">
-            <i v-else class="el-icon-plus avatar-uploader-icon" />
+            <el-button type="text" icon="el-icon-camera" :loading="tagLoading">拍摄/上传吊牌</el-button>
           </el-upload>
+          <span class="form-tip">识别吊牌上的名称和价格</span>
         </el-form-item>
 
-        <el-form-item :label="$t('goods_edit.form.gallery')">
+        <!-- 轮播图 -->
+        <el-form-item label="商品轮播图">
           <el-upload
             :http-request="cloudUpload"
-            :limit="5"
+            :limit="9"
+            :file-list="galleryFileList"
             :on-exceed="uploadOverrun"
             :on-success="handleGalleryUrl"
-            :on-error="uploadError"
             :on-remove="handleRemove"
-            :file-list="galleryFileList"
             multiple
             accept=".jpg,.jpeg,.png,.gif"
             list-type="picture-card"
@@ -76,28 +95,28 @@
           </el-upload>
         </el-form-item>
 
-        <el-form-item :label="$t('goods_edit.form.keywords')">
-          <el-tag v-for="tag in keywords" :key="tag" closable type="primary" @close="handleClose(tag)">
-            {{ tag }}
-          </el-tag>
-          <el-input
-            v-if="newKeywordVisible"
-            ref="newKeywordInput"
-            v-model="newKeyword"
-            class="input-new-keyword"
-            @keyup.enter.native="handleInputConfirm"
-            @blur="handleInputConfirm"
-          />
-          <el-button v-else class="button-new-keyword" type="primary" @click="showInput">{{ $t('app.button.add') }}</el-button>
-        </el-form-item>
-
-        <el-form-item :label="$t('goods_edit.form.category_id')">
-          <el-select v-model="goods.categoryId" clearable>
+        <!-- 分类 -->
+        <el-form-item label="商品分类">
+          <el-select v-model="goods.categoryId" clearable placeholder="请选择分类" style="width: 300px;" @change="autoSaveDraft">
             <el-option v-for="item in categoryList" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
 
-        <!-- 场景标签（多选） -->
+        <!-- 关键词 -->
+        <el-form-item label="搜索关键词">
+          <el-tag v-for="tag in keywords" :key="tag" closable type="primary" @close="removeKeyword(tag)">{{ tag }}</el-tag>
+          <el-input
+            v-if="keywordInputVisible"
+            ref="keywordInput"
+            v-model="keywordInput"
+            class="input-new-keyword"
+            @keyup.enter.native="addKeyword"
+            @blur="addKeyword"
+          />
+          <el-button v-else class="button-new-keyword" type="primary" @click="showKeywordInput">添加</el-button>
+        </el-form-item>
+
+        <!-- 场景标签 -->
         <el-form-item label="场景标签">
           <el-select
             v-model="selectedSceneIds"
@@ -105,374 +124,392 @@
             collapse-tags
             clearable
             placeholder="请选择场景（可多选）"
-            style="width: 300px;"
+            style="width: 400px;"
+            @change="autoSaveDraft"
           >
             <el-option v-for="item in sceneList" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
 
-        <el-form-item :label="$t('goods_edit.form.brief')">
-          <el-input v-model="goods.brief" />
+        <!-- 简介 -->
+        <el-form-item label="商品简介">
+          <el-input v-model="goods.brief" type="textarea" :rows="2" style="width: 400px;" @change="autoSaveDraft" />
         </el-form-item>
 
-        <el-form-item :label="$t('goods_edit.form.detail')">
+        <!-- 商品参数 -->
+        <el-form-item label="商品参数">
+          <div class="params-list">
+            <div v-for="(param, index) in goodsParams" :key="index" class="param-row">
+              <el-input v-model="param.key" placeholder="参数名" style="width: 150px;" @change="autoSaveDraft" />
+              <el-input v-model="param.value" placeholder="参数值" style="width: 200px; margin-left: 8px;" @change="autoSaveDraft" />
+              <el-button type="text" icon="el-icon-delete" style="color: #f56c6c; margin-left: 4px;" @click="removeParam(index)" />
+            </div>
+            <el-button type="text" icon="el-icon-plus" @click="addParam">添加参数</el-button>
+          </div>
+        </el-form-item>
+
+        <!-- 详情 -->
+        <el-form-item label="商品详情">
           <editor v-model="goods.detail" :init="editorInit" />
         </el-form-item>
       </el-form>
     </el-card>
 
-    <!-- 商品参数卡片 -->
-    <el-card v-if="goods.id" class="box-card">
-      <h3>{{ $t('goods_edit.section.attributes') }}</h3>
-      <el-button type="primary" @click="handleAttributeShow">{{ $t('app.button.create') }}</el-button>
-      <el-table :data="attributes">
-        <el-table-column property="attribute" :label="$t('goods_edit.table.attribute_name')" />
-        <el-table-column property="value" :label="$t('goods_edit.table.attribute_value')" />
-        <el-table-column align="center" :label="$t('goods_edit.table.attribute_actions')" width="100" class-name="small-padding fixed-width">
-          <template slot-scope="scope">
-            <el-button type="danger" size="mini" @click="handleAttributeDelete(scope.row)">{{ $t('app.button.delete') }}</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <el-dialog :visible.sync="attributeVisiable" :title="$t('goods_edit.dialog.create_attribute')">
-        <el-form
-          ref="attributeForm"
-          :model="attributeForm"
-          status-icon
-          label-position="left"
-          label-width="100px"
-          style="width: 400px; margin-left:50px;"
-        >
-          <el-form-item :label="$t('goods_edit.form.attribute_name')" prop="attribute">
-            <el-input v-model="attributeForm.attribute" />
-          </el-form-item>
-          <el-form-item :label="$t('goods_edit.form.attribute_value')" prop="value">
-            <el-input v-model="attributeForm.value" />
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="attributeVisiable = false">{{ $t('app.button.cancel') }}</el-button>
-          <el-button type="primary" @click="handleAttributeAdd">{{ $t('app.button.confirm') }}</el-button>
-        </div>
-      </el-dialog>
-    </el-card>
-
     <!-- 操作按钮 -->
-    <div v-if="goods.id" class="op-container">
-      <el-button @click="handleCancel">{{ $t('app.button.cancel') }}</el-button>
-      <el-button type="success" @click="handleSaveDraft">暂存草稿</el-button>
-      <el-button type="primary" @click="handlePublish">上架</el-button>
+    <div class="op-container">
+      <el-button @click="handleCancel">取消</el-button>
+      <el-button type="info" :loading="submitting" @click="handleSaveDraft">暂存草稿</el-button>
+      <el-button type="primary" :loading="submitting" @click="handlePublish">上架</el-button>
     </div>
 
   </div>
 </template>
 
-<style>
-  .el-card {
-    margin-bottom: 10px;
-  }
-
-  .el-tag + .el-tag {
-    margin-left: 10px;
-  }
-
-  .input-new-keyword {
-    width: 90px;
-    margin-left: 10px;
-    vertical-align: bottom;
-  }
-
-  .avatar-uploader .el-upload {
-    width: 145px;
-    height: 145px;
-    border: 1px dashed #d9d9d9;
-    border-radius: 6px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .avatar-uploader .el-upload:hover {
-    border-color: #20a0ff;
-  }
-
-  .avatar-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 120px;
-    height: 120px;
-    line-height: 120px;
-    text-align: center;
-  }
-
-  .avatar {
-    width: 145px;
-    height: 145px;
-    display: block;
-    object-fit: cover;
-  }
-
-  .form-tip {
-    margin-left: 12px;
-    color: #909399;
-    font-size: 12px;
-  }
+<style scoped>
+.goods-create-page { padding: 20px; }
+.box-card { margin-bottom: 12px; }
+.upload-area { display: flex; align-items: center; }
+.avatar-uploader .el-upload {
+  width: 145px; height: 145px;
+  border: 1px dashed #d9d9d9; border-radius: 6px;
+  cursor: pointer; overflow: hidden;
+}
+.avatar-uploader .el-upload:hover { border-color: #409eff; }
+.avatar-uploader-icon { font-size: 28px; color: #8c939d; width: 120px; height: 120px; line-height: 120px; text-align: center; }
+.avatar { width: 145px; height: 145px; display: block; object-fit: cover; }
+.form-tip { margin-left: 12px; color: #909399; font-size: 12px; }
+.ai-loading-tip { margin-top: 8px; color: #409eff; font-size: 12px; }
+.op-container { display: flex; justify-content: center; padding: 20px 0; }
+.el-tag + .el-tag { margin-left: 8px; }
+.input-new-keyword { width: 90px; margin-left: 8px; vertical-align: bottom; }
+.params-list { display: flex; flex-direction: column; gap: 8px; }
+.param-row { display: flex; align-items: center; }
 </style>
 
 <script>
-import { findByGoodsSn, editGoods, listCatAndBrand } from '@/api/goods'
+import { publishGoods, recognizeImage, recognizeTag, listCatAndBrand } from '@/api/goods'
 import { listScene } from '@/api/scene'
 import { cloudUpload, cloudUploadFile } from '@/utils/upload'
 import Editor from '@tinymce/tinymce-vue'
 import { MessageBox } from 'element-ui'
 
+const DRAFT_KEY = 'goodsCreateDraft'
+
 export default {
   name: 'GoodsCreate',
   components: { Editor },
-
   data() {
     return {
       cloudUpload,
-      // 查询相关
-      searchGoodsSn: '',
-      searchMsg: '',
-      searchType: 'info',
+      submitting: false,
+      aiLoading: false,
+      tagLoading: false,
       // 商品数据
-      goods: {},
+      goods: {
+        name: '',
+        retailPrice: null,
+        specialPrice: null,
+        isSpecialPrice: false,
+        picUrl: '',
+        gallery: [],
+        categoryId: null,
+        keywords: '',
+        brief: '',
+        detail: '',
+      },
       picFile: null,
       galleryFileList: [],
       keywords: [],
-      newKeywordVisible: false,
-      newKeyword: '',
-      // 场景标签相关
+      keywordInputVisible: false,
+      keywordInput: '',
+      // 场景
       sceneList: [],
       selectedSceneIds: [],
-      // 分类和品牌
+      // 分类
       categoryList: [],
-      brandList: [],
-      // 商品属性
-      attributes: [],
-      attributeVisiable: false,
-      attributeForm: { attribute: '', value: '' },
-      // 表单验证
+      // 商品参数
+      goodsParams: [],
+      // 草稿
+      draftInfo: { hasDraft: false, savedAt: '' },
+      // 验证
       rules: {
-        name: [{ required: true, message: '商品名称不能为空', trigger: 'blur' }]
+        name: [{ required: true, message: '商品名称不能为空', trigger: 'blur' }],
+        retailPrice: [{ required: true, message: '一口价不能为空', trigger: 'change' }],
       },
+      // 富文本
       editorInit: {
         language: 'zh_CN',
         height: 500,
         convert_urls: false,
-        plugins: ['advlist anchor autolink autosave code codesample colorpicker colorpicker contextmenu directionality emoticons fullscreen hr image imagetools importcss insertdatetime link lists media nonbreaking noneditable pagebreak paste preview print save searchreplace spellchecker tabfocus table template textcolor textpattern visualblocks visualchars wordcount'],
-        toolbar: ['searchreplace bold italic underline strikethrough alignleft aligncenter alignright outdent indent  blockquote undo redo removeformat subscript superscript code codesample', 'hr bullist numlist link image charmap preview anchor pagebreak insertdatetime media table emoticons forecolor backcolor fullscreen'],
+        plugins: ['advlist anchor autolink autosave code codesample colorpicker contextmenu directionality emoticons fullscreen hr image imagetools importcss insertdatetime link lists media nonbreaking pagebreak paste preview print save searchreplace table template textcolor textpattern visualblocks visualchars wordcount'],
+        toolbar: ['searchreplace bold italic underline strikethrough alignleft aligncenter alignright outdent indent blockquote undo redo removeformat subscript superscript code codesample', 'hr bullist numlist link image charmap preview anchor pagebreak insertdatetime media table emoticons forecolor backcolor fullscreen'],
         images_upload_handler: function(blobInfo, success, failure) {
           const file = blobInfo.blob()
           file.name = blobInfo.filename()
-          cloudUploadFile(file).then(url => {
-            success(url)
-          }).catch(() => {
-            failure('上传失败，请重新上传')
-          })
+          cloudUploadFile(file).then(url => success(url)).catch(() => failure('上传失败'))
         }
-      }
+      },
+      // 防抖定时器
+      _draftTimer: null,
     }
   },
   created() {
     this.init()
   },
-
   methods: {
-    init: function() {
+    init() {
       listCatAndBrand().then(response => {
         this.categoryList = response.data.data.categoryList
-        this.brandList = response.data.data.brandList
       })
-      // 加载场景列表
       listScene({ page: 1, limit: 100 }).then(response => {
         const list = response.data.data.list || response.data.data || []
-        this.sceneList = list.map(item => ({
-          value: item.id,
-          label: item.name
-        }))
-      }).catch(() => {
-        console.warn('加载场景列表失败')
-      })
+        this.sceneList = list.map(item => ({ value: item.id, label: item.name }))
+      }).catch(() => {})
+      this.checkDraft()
     },
 
-    // 查询商品
-    handleSearch() {
-      if (!this.searchGoodsSn.trim()) {
-        this.$message.warning('请输入商品款号')
+    // ==================== AI 识别 ====================
+
+    async handleRecognizeImage() {
+      if (!this.goods.picUrl) {
+        this.$message.warning('请先上传商品主图')
         return
       }
-
-      findByGoodsSn(this.searchGoodsSn.trim()).then(res => {
+      this.aiLoading = true
+      try {
+        const res = await recognizeImage({ fileID: this.goods.picUrl })
         const data = res.data.data
-        this.goods = data.goods
-        this.attributes = data.attributes || []
+        if (!data) { this.$message.info('AI 未能识别到信息'); return }
 
-        // 处理关键字
-        this.keywords = this.goods.keywords ? this.goods.keywords.split(',') : []
+        // 仅填充空字段，不覆盖已有内容
+        if (!this.goods.name && data.name) this.goods.name = data.name
+        if (!this.goods.retailPrice && data.price) this.goods.retailPrice = data.price
+        if (!this.goods.brief && data.brief) this.goods.brief = data.brief
+        if (data.category) {
+          const matched = this.categoryList.find(c => c.label === data.category || c.label.includes(data.category))
+          if (matched && !this.goods.categoryId) this.goods.categoryId = matched.value
+        }
+        if (data.scenes && Array.isArray(data.scenes) && this.selectedSceneIds.length === 0) {
+          const sceneIds = data.scenes.map(name => {
+            const s = this.sceneList.find(item => item.label === name || (name && item.label.includes(name)))
+            return s ? s.value : null
+          }).filter(Boolean)
+          if (sceneIds.length > 0) this.selectedSceneIds = sceneIds
+        }
+        this.$notify.success({ title: 'AI 识别完成', message: '已自动填充商品信息' })
+      } catch (e) {
+        console.warn('AI 识别失败:', e)
+        this.$message.warning('AI 识别失败，请手动填写')
+      } finally {
+        this.aiLoading = false
+      }
+    },
 
-        // 处理图片
+    async handleTagUpload(options) {
+      const file = options.file
+      this.tagLoading = true
+      try {
+        const cloudPath = await cloudUploadFile(file)
+        const res = await recognizeTag({ fileID: cloudPath })
+        const data = res.data.data
+        if (data) {
+          // 吊牌信息更准确，总是覆盖
+          if (data.name) this.goods.name = data.name
+          if (data.price) this.goods.retailPrice = data.price
+          this.$notify.success({ title: '吊牌识别完成', message: '已更新商品名称和价格' })
+        }
+      } catch (e) {
+        console.warn('吊牌识别失败:', e)
+        this.$message.warning('吊牌识别失败')
+      } finally {
+        this.tagLoading = false
+      }
+    },
+
+    // ==================== 图片上传 ====================
+
+    async handlePicChange(file) {
+      if (!file.raw) return
+      this.picFile = file.raw
+      // 先本地预览
+      this.goods.picUrl = URL.createObjectURL(file.raw)
+      // 上传到云存储
+      try {
+        const cloudPath = await cloudUploadFile(file.raw)
+        this.goods.picUrl = cloudPath
+        this.picFile = null
+        this.autoSaveDraft()
+        // 上传成功后自动触发 AI 识别
+        this.handleRecognizeImage()
+      } catch (e) {
+        console.warn('主图上传失败:', e)
+        this.$message.error('图片上传失败')
+      }
+    },
+
+    uploadOverrun() {
+      this.$message.error('最多上传9张轮播图')
+    },
+    handleGalleryUrl(response) {
+      if (response && response.errno === 0 && response.data && response.data.url) {
+        this.goods.gallery.push(response.data.url)
+        this.autoSaveDraft()
+      }
+    },
+    handleRemove(file) {
+      const url = file.response ? file.response.data.url : file.url
+      const idx = this.goods.gallery.indexOf(url)
+      if (idx > -1) this.goods.gallery.splice(idx, 1)
+      this.autoSaveDraft()
+    },
+
+    // ==================== 关键词 ====================
+
+    removeKeyword(tag) {
+      this.keywords.splice(this.keywords.indexOf(tag), 1)
+      this.goods.keywords = this.keywords.toString()
+      this.autoSaveDraft()
+    },
+    showKeywordInput() {
+      this.keywordInputVisible = true
+      this.$nextTick(() => this.$refs.keywordInput.$refs.input.focus())
+    },
+    addKeyword() {
+      if (this.keywordInput) {
+        this.keywords.push(this.keywordInput)
+        this.goods.keywords = this.keywords.toString()
+        this.autoSaveDraft()
+      }
+      this.keywordInputVisible = false
+      this.keywordInput = ''
+    },
+
+    // ==================== 商品参数 ====================
+
+    addParam() {
+      this.goodsParams.push({ key: '', value: '' })
+    },
+    removeParam(index) {
+      this.goodsParams.splice(index, 1)
+    },
+
+    // ==================== 草稿 ====================
+
+    autoSaveDraft() {
+      clearTimeout(this._draftTimer)
+      this._draftTimer = setTimeout(() => {
+        const draft = {
+          goods: { ...this.goods },
+          selectedSceneIds: [...this.selectedSceneIds],
+          keywords: [...this.keywords],
+          goodsParams: [...this.goodsParams],
+          savedAt: new Date().toLocaleString(),
+        }
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+        this.draftInfo = { hasDraft: true, savedAt: draft.savedAt }
+      }, 500)
+    },
+
+    checkDraft() {
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY)
+        if (!raw) return
+        const draft = JSON.parse(raw)
+        this.draftInfo = { hasDraft: true, savedAt: draft.savedAt }
+      } catch (e) { /* ignore */ }
+    },
+
+    restoreDraft() {
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY)
+        if (!raw) return
+        const draft = JSON.parse(raw)
+        this.goods = { ...this.goods, ...draft.goods }
+        this.selectedSceneIds = draft.selectedSceneIds || []
+        this.keywords = draft.keywords || []
+        this.goodsParams = draft.goodsParams || []
         this.galleryFileList = (this.goods.gallery || []).map(url => ({ url, name: url }))
-
-        // 显示状态
-        const statusText = { draft: '草稿', pending: '待上架', published: '已上架' }
-        this.searchMsg = `已找到：${this.goods.name} - ${statusText[this.goods.status] || '未知'}`
-        this.searchType = 'success'
-      }).catch(() => {
-        this.searchMsg = '未找到该款号的商品'
-        this.searchType = 'warning'
-        this.goods = {}
-      })
+        this.$message.success('已恢复草稿')
+      } catch (e) {
+        this.$message.error('草稿恢复失败')
+      }
     },
 
-    // 暂存草稿
-    async handleSaveDraft() {
-      await this.updateGoods('draft', '草稿保存成功')
+    clearDraft() {
+      localStorage.removeItem(DRAFT_KEY)
+      this.draftInfo = { hasDraft: false, savedAt: '' }
     },
 
-    // 上架
-    async handlePublish() {
-      await this.updateGoods('published', '上架成功')
-    },
+    // ==================== 提交 ====================
 
-    // 更新商品
-    async updateGoods(status, successMsg) {
-      // 特价未开启时清空特价金额
+    collectData(status) {
       if (!this.goods.isSpecialPrice) {
         this.goods.specialPrice = null
       }
 
-      // 如果有待上传的商品图片，先上传
-      if (this.picFile) {
-        try {
-          const url = await cloudUploadFile(this.picFile)
-          this.goods.picUrl = url
-        } catch (e) {
-          console.warn('图片上传失败:', e)
-        }
-      }
+      const sceneNames = this.selectedSceneIds.map(id => {
+        const s = this.sceneList.find(item => item.value === id)
+        return s ? s.label : null
+      }).filter(Boolean)
 
-      const data = {
+      const params = this.goodsParams.filter(p => p.key.trim())
+
+      return {
         goods: {
           ...this.goods,
-          status: status
+          status,
+          scene_tags: sceneNames,
+          goods_params: params,
+          cat_id: this.goods.categoryId || 0,
         },
         specifications: [],
         products: [],
-        attributes: this.attributes,
-        sceneIds: this.selectedSceneIds
+        attributes: [],
       }
+    },
 
-      editGoods(data).then(() => {
-        this.$notify.success({ title: '成功', message: successMsg })
-        this.$store.dispatch('tagsView/delView', this.$route)
-        this.$router.push('/goods/list')
-      }).catch(error => {
-        const errMsg = error?.response?.data?.errmsg || error?.message || '未知错误'
-        MessageBox.alert('操作失败：' + errMsg, '警告', {
-          confirmButtonText: '确定',
-          type: 'error'
-        })
+    async handleSaveDraft() {
+      this.$refs.goodsForm.validate(async(valid) => {
+        if (!valid) return
+        this.submitting = true
+        try {
+          await publishGoods(this.collectData('draft'))
+          this.$notify.success({ title: '成功', message: '草稿保存成功' })
+          this.clearDraft()
+          this.$store.dispatch('tagsView/delView', this.$route)
+          this.$router.push('/goods/list')
+        } catch (error) {
+          const errMsg = error?.response?.data?.errmsg || error?.data?.errmsg || error?.message || '未知错误'
+          MessageBox.alert('操作失败：' + errMsg, '警告', { confirmButtonText: '确定', type: 'error' })
+        } finally {
+          this.submitting = false
+        }
       })
     },
 
-    // 重置
-    handleReset() {
-      this.searchGoodsSn = ''
-      this.searchMsg = ''
-      this.goods = {}
-      this.galleryFileList = []
-      this.keywords = []
-      this.attributes = []
+    async handlePublish() {
+      this.$refs.goodsForm.validate(async(valid) => {
+        if (!valid) return
+        this.submitting = true
+        try {
+          await publishGoods(this.collectData('published'))
+          this.$notify.success({ title: '成功', message: '上架成功' })
+          this.clearDraft()
+          this.$store.dispatch('tagsView/delView', this.$route)
+          this.$router.push('/goods/list')
+        } catch (error) {
+          const errMsg = error?.response?.data?.errmsg || error?.data?.errmsg || error?.message || '未知错误'
+          MessageBox.alert('操作失败：' + errMsg, '警告', { confirmButtonText: '确定', type: 'error' })
+        } finally {
+          this.submitting = false
+        }
+      })
     },
 
-    handleCancel: function() {
+    handleCancel() {
       this.$store.dispatch('tagsView/delView', this.$route)
       this.$router.push({ path: '/goods/list' })
     },
-
-    handleClose(tag) {
-      this.keywords.splice(this.keywords.indexOf(tag), 1)
-      this.goods.keywords = this.keywords.toString()
-    },
-    showInput() {
-      this.newKeywordVisible = true
-      this.$nextTick(_ => {
-        this.$refs.newKeywordInput.$refs.input.focus()
-      })
-    },
-    handleInputConfirm() {
-      const newKeyword = this.newKeyword
-      if (newKeyword) {
-        this.keywords.push(newKeyword)
-        this.goods.keywords = this.keywords.toString()
-      }
-      this.newKeywordVisible = false
-      this.newKeyword = ''
-    },
-    handlePicChange: function(file) {
-      if (file.raw) {
-        this.picFile = file.raw
-        this.goods.picUrl = URL.createObjectURL(file.raw)
-      }
-    },
-    uploadPicUrl: function(response) {
-      if (response && response.errno === 0 && response.data && response.data.url) {
-        this.goods.picUrl = response.data.url
-      } else {
-        const msg = response && response.errmsg ? response.errmsg : '上传失败，请重新上传'
-        this.$message({ type: 'error', message: msg })
-      }
-    },
-    uploadOverrun: function() {
-      this.$message({
-        type: 'error',
-        message: '上传文件个数超出限制!最多上传5张图片!'
-      })
-    },
-    uploadError: function(err) {
-      this.$message({
-        type: 'error',
-        message: '上传失败: ' + (err?.message || '未知错误')
-      })
-    },
-    handleGalleryUrl(response, file, fileList) {
-      if (response && response.errno === 0 && response.data && response.data.url) {
-        this.goods.gallery.push(response.data.url)
-      } else {
-        const msg = response && response.errmsg ? response.errmsg : '上传失败，请重新上传'
-        this.$message({ type: 'error', message: msg })
-      }
-    },
-    handleRemove: function(file, fileList) {
-      for (var i = 0; i < this.goods.gallery.length; i++) {
-        var url
-        if (file.response === undefined) {
-          url = file.url
-        } else {
-          url = file.response.data.url
-        }
-
-        if (this.goods.gallery[i] === url) {
-          this.goods.gallery.splice(i, 1)
-        }
-      }
-    },
-    handleAttributeShow() {
-      this.attributeForm = { attribute: '', value: '' }
-      this.attributeVisiable = true
-    },
-    handleAttributeAdd() {
-      this.attributes.unshift(this.attributeForm)
-      this.attributeVisiable = false
-    },
-    handleAttributeDelete(row) {
-      const index = this.attributes.indexOf(row)
-      this.attributes.splice(index, 1)
-    }
   }
 }
 </script>

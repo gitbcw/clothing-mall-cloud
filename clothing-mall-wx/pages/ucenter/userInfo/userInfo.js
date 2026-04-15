@@ -73,25 +73,61 @@ Page({
 
   onGetPhoneNumber(e) {
     if (e.detail.errMsg !== 'getPhoneNumber:ok') {
+      // 用户拒绝授权
       if (e.detail.errMsg.indexOf('user deny') !== -1) {
         util.showErrorToast('已取消授权');
+        return;
       }
+      // 接口不可用（未认证等），降级到手动输入
+      this.showManualBindPhone();
       return;
     }
 
-    util.request({ func: 'wx-auth', action: 'bindPhone' }, {
-      encryptedData: e.detail.encryptedData,
-      iv: e.detail.iv
-    }, 'POST').then(res => {
-      if (res.errno === 0) {
-        wx.showToast({ title: '绑定成功', icon: 'success' });
-        this.setData({
-          'userInfo.mobile': res.data.mobile || ''
+    // 优先使用 cloudID（CloudBase 模式）
+    const cloudID = e.detail.cloudID
+    if (cloudID) {
+      util.request({ func: 'wx-auth', action: 'bindPhone' }, { cloudID }, 'POST').then(res => {
+        if (res.errno === 0) {
+          wx.showToast({ title: '绑定成功', icon: 'success' });
+          this.getUserInfo();
+        } else {
+          // cloudID 解密失败，降级手动输入
+          this.showManualBindPhone();
+        }
+      });
+      return;
+    }
+
+    // 没有 cloudID，直接降级手动输入
+    this.showManualBindPhone();
+  },
+
+  showManualBindPhone() {
+    wx.showModal({
+      title: '绑定手机号',
+      editable: true,
+      placeholderText: '请输入手机号',
+      success: (res) => {
+        if (!res.confirm) return;
+        const mobile = (res.content || '').trim();
+        if (!/^1[3-9]\d{9}$/.test(mobile)) {
+          util.showErrorToast('手机号格式不正确');
+          return;
+        }
+        util.request({ func: 'wx-auth', action: 'bindPhoneManual' }, { mobile }, 'POST').then(res => {
+          if (res.errno === 0) {
+            wx.showToast({ title: '绑定成功', icon: 'success' });
+            this.setData({ 'userInfo.mobile': mobile });
+          } else {
+            util.showErrorToast(res.errmsg || '绑定失败');
+          }
         });
-      } else {
-        util.showErrorToast(res.errmsg || '绑定失败');
       }
     });
+  },
+
+  onChangePhone() {
+    this.showManualBindPhone();
   },
 
   saveProfile() {

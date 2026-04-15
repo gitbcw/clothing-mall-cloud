@@ -25,6 +25,15 @@ const routes = {
 // list 是公开接口，其余需要登录
 const AUTH_REQUIRED = ['mylist', 'selectlist', 'receive', 'exchange']
 
+// 操作失败时的用户提示
+const ACTION_ERRORS = {
+  list: '优惠券列表加载失败，请刷新重试',
+  mylist: '我的优惠券加载失败，请刷新重试',
+  selectlist: '可用优惠券加载失败',
+  receive: '领取优惠券失败，请重试',
+  exchange: '兑换优惠券失败，请重试',
+}
+
 exports.main = async (event, context) => {
   // CloudBase 将 OPENID 放在 event.userInfo.openId，注入到 context 供 layer-auth 使用
   const openId = (event.userInfo && event.userInfo.openId) || null
@@ -51,6 +60,6 @@ exports.main = async (event, context) => {
     return await handler(data || {}, context)
   } catch (err) {
     console.error(`[wx-coupon] action=${action} error:`, err)
-    return response.serious()
+    return response.fail(502, ACTION_ERRORS[action] || '操作失败，请稍后重试')
   }
 }

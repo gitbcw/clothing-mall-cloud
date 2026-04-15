@@ -179,7 +179,7 @@ Page({
       }
 
       // 获取 sceneId（新建时从返回值取）
-      var sceneId = that.data.isEdit ? that.data.sceneId : res.data;
+      var sceneId = that.data.isEdit ? that.data.sceneId : res.data.id;
       var goodsIds = that.data.goodsList.map(function(g) { return g.id; });
 
       // 更新商品绑定

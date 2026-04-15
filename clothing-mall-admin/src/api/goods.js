@@ -85,3 +85,19 @@ export function unpublishAllGoods() {
     method: 'post'
   })
 }
+
+export function recognizeImage(data) {
+  return request({
+    url: '/goods/recognizeImage',
+    method: 'post',
+    data
+  })
+}
+
+export function recognizeTag(data) {
+  return request({
+    url: '/goods/recognizeTag',
+    method: 'post',
+    data
+  })
+}

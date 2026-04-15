@@ -57,7 +57,7 @@
         :class="['status-tabs__item', { 'is-active': activeTab === tab.key }]"
         @click="activeTab = tab.key; handleTabClick()"
       >
-        <span class="status-tabs__label">{{ tab.label }}</span>
+        <span class="status-tabs__label">{{ tab.label }} <span v-if="tab.count > 0" class="status-tabs__count">{{ tab.count }}</span></span>
       </div>
       <div class="status-tabs__extra">
         <el-button size="mini" type="danger" plain @click="handleUnpublishAll">一键下架全部</el-button>
@@ -312,6 +312,21 @@
 }
 .status-tabs__item:hover {
   color: #5a6178;
+}
+.status-tabs__count {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #909399;
+  background: #f0f2f5;
+  border-radius: 10px;
+  padding: 1px 7px;
+  margin-left: 4px;
+  line-height: 16px;
+}
+.status-tabs__item.is-active .status-tabs__count {
+  color: #409eff;
+  background: #ecf5ff;
 }
 .status-tabs__item.is-active {
   color: #2c3e50;
@@ -569,10 +584,10 @@ export default {
       batchDeleteArr: [],
       activeTab: 'all',
       statusTabs: [
-        { key: 'all', label: '全部' },
-        { key: 'draft', label: '草稿' },
-        { key: 'pending', label: '待上架' },
-        { key: 'published', label: '已上架' }
+        { key: 'all', label: '全部', count: 0 },
+        { key: 'draft', label: '草稿', count: 0 },
+        { key: 'pending', label: '待上架', count: 0 },
+        { key: 'published', label: '已上架', count: 0 }
       ],
       thumbnail,
       toPreview,
@@ -612,9 +627,18 @@ export default {
         query.status = this.activeTab
       }
       listGoods(query).then(response => {
-        this.list = response.data.data.list
-        this.total = response.data.data.total
+        const res = response.data.data
+        this.list = res.list
+        this.total = res.total
         this.listLoading = false
+
+        // 更新 tab 计数
+        if (res.allCount !== undefined) {
+          this.statusTabs[0].count = res.allCount
+          this.statusTabs[1].count = res.draftCount
+          this.statusTabs[2].count = res.pendingCount
+          this.statusTabs[3].count = res.publishedCount
+        }
       }).catch(() => {
         this.list = []
         this.total = 0

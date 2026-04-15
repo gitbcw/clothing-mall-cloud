@@ -64,6 +64,26 @@ const AUTH_OPTIONAL = ['detail', 'list', 'searchIndex', 'clearhistory']
 
 // ==================== 入口 ====================
 
+// 操作失败时的用户提示
+const ACTION_ERRORS = {
+  detail: '商品详情加载失败，请刷新重试',
+  category: '分类加载失败，请刷新重试',
+  categoryWithGoods: '商品列表加载失败，请刷新重试',
+  list: '商品列表加载失败，请刷新重试',
+  related: '推荐商品加载失败',
+  count: '获取商品数量失败',
+  getFirstCategory: '分类加载失败，请刷新重试',
+  getSecondCategory: '分类加载失败，请刷新重试',
+  catalogIndex: '分类加载失败，请刷新重试',
+  queryAll: '分类加载失败，请刷新重试',
+  current: '分类加载失败，请刷新重试',
+  searchIndex: '搜索页加载失败，请刷新重试',
+  helper: '搜索建议获取失败',
+  clearhistory: '清除历史记录失败，请重试',
+  brandList: '品牌列表加载失败',
+  brandDetail: '品牌详情加载失败',
+}
+
 exports.main = async (event, context) => {
   // CloudBase 将 OPENID 放在 event.userInfo.openId，注入到 context 供 layer-auth 使用
   const openId = (event.userInfo && event.userInfo.openId) || null
@@ -95,6 +115,6 @@ exports.main = async (event, context) => {
     return await handler(data || {}, context)
   } catch (err) {
     console.error(`[wx-goods] action=${action} error:`, err)
-    return response.serious()
+    return response.fail(502, ACTION_ERRORS[action] || '操作失败，请稍后重试')
   }
 }

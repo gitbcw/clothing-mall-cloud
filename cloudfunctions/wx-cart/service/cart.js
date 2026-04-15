@@ -6,6 +6,7 @@
  */
 
 const { db, response } = require('layer-base')
+const { calculateFreight } = require('../lib/freight')
 
 // ==================== 内部工具方法 ====================
 
@@ -508,7 +509,8 @@ async function checkout(data, context) {
   }
 
   // ---------- 5. 运费 ----------
-  const freightPrice = (deliveryType === 'pickup') ? 0 : 0
+  const totalPieceCount = checkedGoodsList.reduce((sum, c) => sum + c.number, 0)
+  const freightPrice = (deliveryType === 'pickup') ? 0 : calculateFreight(checkedGoodsPrice, totalPieceCount)
 
   // ---------- 6. 订单价格 ----------
   const orderTotalPrice = Math.max(0, checkedGoodsPrice + freightPrice - finalCouponPrice)

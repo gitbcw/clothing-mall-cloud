@@ -56,6 +56,9 @@ Page({
     // 预览模式
     isPreview: false,
 
+    // 加载状态
+    loading: true,
+
     // 商品已下架
     isUnshelved: false
   },
@@ -120,8 +123,8 @@ Page({
         gallery = data.gallery
       }
       this.setData({
+        loading: false,
         goods: {
-          id: 0,
           name: data.name || '',
           brief: data.brief || '',
           retailPrice: parseFloat(data.retailPrice) || 0,
@@ -155,7 +158,7 @@ Page({
     let that = this
     util.request(api.GoodsDetail, { id: this.data.id }).then(function(res) {
       if (res.errno === 710) {
-        that.setData({ isUnshelved: true })
+        that.setData({ loading: false, isUnshelved: true })
         return
       }
       if (res.errno === 0 && res.data && res.data.info) {
@@ -170,6 +173,7 @@ Page({
         }
 
         that.setData({
+          loading: false,
           goods: info,
           gallery: gallery,
           attribute: res.data.attribute || [],

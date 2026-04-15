@@ -3,6 +3,8 @@
  *
  * 迁移自 WxManagerSceneController
  * 接口：sceneList, sceneRead, sceneCreate, sceneUpdate, sceneDelete, sceneEnable, sceneGoods, sceneGoodsUpdate
+ *
+ * 删除策略：硬删除（启用/禁用控制展示，删除即彻底移除并释放名称）
  */
 
 const { db, response } = require('layer-base')
@@ -11,8 +13,8 @@ const { db, response } = require('layer-base')
 
 async function sceneList() {
   const rows = await db.query(
-    `SELECT s.*, (SELECT COUNT(*) FROM clothing_goods_scene gs WHERE gs.scene_id = s.id AND gs.deleted = 0) AS goods_count
-     FROM clothing_scene s WHERE s.deleted = 0 ORDER BY s.sort_order ASC`
+    `SELECT s.*, (SELECT COUNT(*) FROM clothing_goods_scene gs WHERE gs.scene_id = s.id) AS goods_count
+     FROM clothing_scene s ORDER BY s.sort_order ASC`
   )
   return response.ok(rows.map(r => ({
     id: r.id,
@@ -35,7 +37,7 @@ async function sceneRead(data) {
   if (!id) return response.badArgument()
 
   const rows = await db.query(
-    `SELECT * FROM clothing_scene WHERE id = ? AND deleted = 0 LIMIT 1`,
+    `SELECT * FROM clothing_scene WHERE id = ? LIMIT 1`,
     [id]
   )
   if (rows.length === 0) return response.badArgumentValue()
@@ -62,18 +64,22 @@ async function sceneCreate(data) {
 
   // 检查名称唯一
   const existRows = await db.query(
-    `SELECT id FROM clothing_scene WHERE name = ? AND deleted = 0 LIMIT 1`,
+    `SELECT id FROM clothing_scene WHERE name = ? LIMIT 1`,
     [name]
   )
   if (existRows.length > 0) return response.fail(401, '场景名称已存在')
 
-  const result = await db.query(
-    `INSERT INTO clothing_scene (name, description, icon, poster_url, sort_order, enabled, deleted, add_time, update_time)
-     VALUES (?, ?, ?, ?, ?, ?, 0, NOW(), NOW())`,
-    [name, data.description || '', data.posterUrl || '', data.sortOrder || 0, data.enabled !== false ? 1 : 0]
-  )
-
-  return response.ok({ id: result.insertId, ...data })
+  const conn = await db.getConnection()
+  try {
+    const [result] = await conn.query(
+      `INSERT INTO clothing_scene (name, description, icon, poster_url, sort_order, enabled, add_time, update_time)
+       VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [name, data.description || '', data.icon || '', data.posterUrl || '', data.sortOrder || 0, data.enabled !== false ? 1 : 0]
+    )
+    return response.ok({ id: result.insertId })
+  } finally {
+    conn.release()
+  }
 }
 
 // ==================== 更新场景 ====================
@@ -83,14 +89,14 @@ async function sceneUpdate(data) {
   if (!id) return response.badArgument()
 
   const existRows = await db.query(
-    `SELECT id FROM clothing_scene WHERE id = ? AND deleted = 0 LIMIT 1`,
+    `SELECT id FROM clothing_scene WHERE id = ? LIMIT 1`,
     [id]
   )
   if (existRows.length === 0) return response.badArgumentValue()
 
   if (name) {
     const nameRows = await db.query(
-      `SELECT id FROM clothing_scene WHERE name = ? AND deleted = 0 AND id != ? LIMIT 1`,
+      `SELECT id FROM clothing_scene WHERE name = ? AND id != ? LIMIT 1`,
       [name, id]
     )
     if (nameRows.length > 0) return response.fail(401, '场景名称已存在')
@@ -118,18 +124,28 @@ async function sceneUpdate(data) {
   return response.ok()
 }
 
-// ==================== 删除场景 ====================
+// ==================== 删除场景（硬删除） ====================
 
 async function sceneDelete(data) {
   const { id } = data
   if (!id) return response.badArgument()
 
-  await db.query(
-    `UPDATE clothing_scene SET deleted = 1 WHERE id = ?`,
-    [id]
-  )
-
-  return response.ok()
+  const conn = await db.getConnection()
+  try {
+    // 先删关联商品
+    await conn.query(
+      `DELETE FROM clothing_goods_scene WHERE scene_id = ?`,
+      [id]
+    )
+    // 再删场景
+    await conn.query(
+      `DELETE FROM clothing_scene WHERE id = ?`,
+      [id]
+    )
+    return response.ok()
+  } finally {
+    conn.release()
+  }
 }
 
 // ==================== 启用/禁用场景 ====================
@@ -139,7 +155,7 @@ async function sceneEnable(data) {
   if (!id || enabled === undefined) return response.badArgument()
 
   const rows = await db.query(
-    `SELECT id FROM clothing_scene WHERE id = ? AND deleted = 0 LIMIT 1`,
+    `SELECT id FROM clothing_scene WHERE id = ? LIMIT 1`,
     [id]
   )
   if (rows.length === 0) return response.badArgumentValue()
@@ -162,7 +178,7 @@ async function sceneGoods(data) {
     `SELECT g.id, g.name, g.pic_url, g.retail_price
      FROM clothing_goods_scene gs
      JOIN litemall_goods g ON g.id = gs.goods_id
-     WHERE gs.scene_id = ? AND gs.deleted = 0 AND g.deleted = 0
+     WHERE gs.scene_id = ? AND g.deleted = 0
      ORDER BY gs.add_time DESC`,
     [sceneId]
   )
@@ -185,9 +201,9 @@ async function sceneGoodsUpdate(data) {
   try {
     await conn.beginTransaction()
 
-    // 删除旧关联
+    // 硬删除旧关联
     await conn.query(
-      `UPDATE clothing_goods_scene SET deleted = 1 WHERE scene_id = ?`,
+      `DELETE FROM clothing_goods_scene WHERE scene_id = ?`,
       [sceneId]
     )
 
@@ -195,8 +211,8 @@ async function sceneGoodsUpdate(data) {
     if (goodsIds && Array.isArray(goodsIds) && goodsIds.length > 0) {
       for (const goodsId of goodsIds) {
         await conn.query(
-          `INSERT INTO clothing_goods_scene (scene_id, goods_id, deleted, add_time)
-           VALUES (?, ?, 0, NOW())`,
+          `INSERT INTO clothing_goods_scene (scene_id, goods_id, add_time)
+           VALUES (?, ?, NOW())`,
           [sceneId, goodsId]
         )
       }

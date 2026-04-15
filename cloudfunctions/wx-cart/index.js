@@ -25,6 +25,19 @@ const routes = {
 // 所有购物车接口都需要登录
 const AUTH_REQUIRED = Object.keys(routes)
 
+// 操作失败时的用户提示
+const ACTION_ERRORS = {
+  index: '购物车加载失败，请刷新重试',
+  add: '加入购物车失败，请重试',
+  fastadd: '添加失败，请重试',
+  update: '修改数量失败，请重试',
+  checked: '操作失败，请重试',
+  delete: '删除失败，请重试',
+  goodscount: '获取购物车数量失败',
+  clear: '清空购物车失败，请重试',
+  checkout: '结算信息加载失败，请刷新重试',
+}
+
 exports.main = async (event, context) => {
   // CloudBase 将 OPENID 放在 event.userInfo.openId，注入到 context 供 layer-auth 使用
   const openId = (event.userInfo && event.userInfo.openId) || null
@@ -49,6 +62,6 @@ exports.main = async (event, context) => {
     return await handler(data || {}, context)
   } catch (err) {
     console.error(`[wx-cart] action=${action} error:`, err)
-    return response.serious()
+    return response.fail(502, ACTION_ERRORS[action] || '操作失败，请稍后重试')
   }
 }

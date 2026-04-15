@@ -90,7 +90,7 @@ async function authenticate(event, context) {
   }
 
   const user = await ensureUser(openId)
-  if (!user) return response.serious()
+  if (!user) return response.fail(502, '用户信息获取失败，请重新登录')
 
   // 注入到 event 和 context
   event._userId = user.id
@@ -154,7 +154,7 @@ const routes = {
       return response.fail(605, '账号不存在')
     }
     if (rows.length > 1) {
-      return response.serious()
+      return response.fail(502, '账号异常，请联系客服')
     }
 
     const user = rows[0]
@@ -315,6 +315,6 @@ exports.main = async (event, context) => {
     return await handler(data || {}, context)
   } catch (err) {
     console.error(`[wx-auth] action=${action} error:`, err)
-    return response.serious()
+    return response.fail(502, '操作失败，请稍后重试')
   }
 }

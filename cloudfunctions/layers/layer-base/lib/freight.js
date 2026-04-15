@@ -2,10 +2,10 @@
  * 运费计算
  *
  * 迁移自 FreightService.java
- * 修复：配置 key 使用 litemall_express_freight_value（与数据库一致）
+ * 从 wx-order/lib/freight.js 提升到共享层
  */
 
-const { getConfig } = require('layer-base').systemConfig
+const { getConfig } = require('./system-config')
 
 /**
  * 计算运费

@@ -30,9 +30,10 @@
         <view class="row-arrow"></view>
       </view>
     </button>
-    <view wx:else class="form-row">
+    <view wx:else class="form-row" bindtap="onChangePhone">
       <text class="row-label">手机号</text>
       <text class="row-value">{{userInfo.mobile}}</text>
+      <view class="row-arrow"></view>
     </view>
     <view class="row-divider"></view>
     <!-- 生日 -->

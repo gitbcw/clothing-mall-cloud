@@ -1,7 +1,6 @@
 /**
- * 运费计算
+ * 运费计算（wx-cart 本地副本）
  *
- * 迁移自 FreightService.java
  * 修复：配置 key 使用 litemall_express_freight_value（与数据库一致）
  */
 
