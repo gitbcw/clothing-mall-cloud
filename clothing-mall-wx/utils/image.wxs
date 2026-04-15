@@ -1,8 +1,9 @@
-var BASE = 'https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/';
+var BASE = 'https://636c-clo-test-4g8ukdond34672de-1258700476.tcb.qcloud.la/';
 
 function url(key) {
   if (!key) return '';
-  if (key.indexOf('/') !== -1) return key;
+  if (key.indexOf('://') !== -1) return key;
+  if (key.indexOf('/') === 0) return key;
   return BASE + key;
 }
 

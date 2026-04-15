@@ -320,7 +320,7 @@
 <script>
 import CountTo from 'vue-count-to'
 import VeLine from 'v-charts/lib/line'
-import { statGrowth, statActiveUsers } from '@/api/stat'
+import { statGrowth, statActiveUsers, statDashboardSales, statDashboardConversion } from '@/api/stat'
 
 export default {
   components: {
@@ -481,14 +481,14 @@ export default {
       }).then(response => {
         const data = response.data.data
         this.growthData.totalUsers = data.totalUsers || 0
+        this.growthData.todayNewUsers = data.todayNewUsers || 0
+        this.growthData.weekNewUsers = data.weekNewUsers || 0
         this.newUsersChartData.rows = data.newUsers || []
         this.dauChartData.rows = data.dau || []
 
-        // 计算今日数据
+        // 今日日活：取 dau 趋势中今天的数据
         const today = formatDate(new Date())
-        const todayNew = (data.newUsers || []).find(item => item.day === today)
         const todayDauData = (data.dau || []).find(item => item.day === today)
-        this.growthData.todayNewUsers = todayNew ? Number(todayNew.newUsers) : 0
         this.growthData.todayDau = todayDauData ? Number(todayDauData.dau) : 0
 
         // 活跃率
@@ -496,13 +496,13 @@ export default {
           this.growthData.activeRate = Math.round((this.growthData.todayDau / this.growthData.totalUsers) * 100)
         }
       }).catch(() => {
-        // API 未就绪时使用模拟数据
-        this.growthData.totalUsers = 3580
-        this.growthData.todayNewUsers = 42
-        this.growthData.todayDau = 215
-        this.growthData.activeRate = 6
-        // 根据时间范围生成模拟数据
-        this.generateMockChartData()
+        // API 异常时清零，不使用模拟数据
+        this.growthData.totalUsers = 0
+        this.growthData.todayNewUsers = 0
+        this.growthData.todayDau = 0
+        this.growthData.activeRate = 0
+        this.newUsersChartData.rows = []
+        this.dauChartData.rows = []
       }).finally(() => {
         this.growthLoading = false
       })
@@ -513,104 +513,51 @@ export default {
         this.growthData.wau = data.wau || 0
         this.growthData.mau = data.mau || 0
       }).catch(() => {
-        // API 未就绪时使用模拟数据
-        this.growthData.wau = 856
-        this.growthData.mau = 1520
+        this.growthData.wau = 0
+        this.growthData.mau = 0
       })
     },
     fetchConversionData() {
-      // TODO: 对接真实转化率 API
-      // 目前使用模拟数据
-      this.conversionData = {
-        pushViewRate: 45.2,
-        sceneClickRate: 32.8,
-        favoriteCount: 567,
-        orderCount: 89
-      }
-      // 生成转化率趋势图数据
-      const now = new Date()
-      const formatDate = (date) => {
-        const m = String(date.getMonth() + 1).padStart(2, '0')
-        const d = String(date.getDate()).padStart(2, '0')
-        return `${m}-${d}`
-      }
-      const rows = []
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date(now)
-        date.setDate(date.getDate() - i)
-        rows.push({
-          day: formatDate(date),
-          rate: (Math.random() * 20 + 30).toFixed(1)
-        })
-      }
-      this.conversionChartData.rows = rows
-    },
-    generateMockChartData() {
-      // 计算实际的天数
-      let days
-      if (this.customDateRange && this.customDateRange.length === 2) {
-        const start = new Date(this.customDateRange[0])
-        const end = new Date(this.customDateRange[1])
-        days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1
-      } else {
-        days = this.growthDays || 7
-      }
-
-      const now = new Date()
-      const formatDate = (date) => {
-        const m = String(date.getMonth() + 1).padStart(2, '0')
-        const d = String(date.getDate()).padStart(2, '0')
-        return `${m}-${d}`
-      }
-
-      const newUsersRows = []
-      const dauRows = []
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(now)
-        date.setDate(date.getDate() - i)
-        const dayStr = formatDate(date)
-        newUsersRows.push({ day: dayStr, newUsers: Math.floor(Math.random() * 50) + 20 })
-        dauRows.push({ day: dayStr, dau: Math.floor(Math.random() * 100) + 150 })
-      }
-      this.newUsersChartData.rows = newUsersRows
-      this.dauChartData.rows = dauRows
+      statDashboardConversion().then(response => {
+        const data = response.data.data
+        this.conversionData = {
+          pushViewRate: data.pushViewRate || 0,
+          sceneClickRate: data.sceneClickRate || 0,
+          favoriteCount: data.favoriteCount || 0,
+          orderCount: data.orderCount || 0
+        }
+      }).catch(() => {
+        this.conversionData = {
+          pushViewRate: 0,
+          sceneClickRate: 0,
+          favoriteCount: 0,
+          orderCount: 0
+        }
+      })
     },
     fetchSalesData() {
-      // TODO: 对接真实销售统计 API
-      // 目前使用模拟数据
-      this.salesData = {
-        revenue: 1258000,
-        orders: 5400,
-        avgPrice: 233,
-        salesTop: [
-          { name: '春日优雅连衣裙', value: 856, percentage: 95, picUrl: '/images/goods/dress.png' },
-          { name: '法式雪纺衬衫', value: 623, percentage: 72, picUrl: '/images/goods/shirt.png' },
-          { name: '温柔针织开衫', value: 518, percentage: 60, picUrl: '/images/goods/knit.png' },
-          { name: '干练西装外套', value: 445, percentage: 52, picUrl: '/images/goods/suit.png' },
-          { name: '经典风衣外套', value: 389, percentage: 45, picUrl: '/images/goods/coat.png' }
-        ],
-        repurchaseTop: [
-          { name: '春日优雅连衣裙', value: '68%', percentage: 68, picUrl: '/images/goods/dress.png' },
-          { name: '法式雪纺衬衫', value: '52%', percentage: 52, picUrl: '/images/goods/shirt.png' },
-          { name: '温柔针织开衫', value: '45%', percentage: 45, picUrl: '/images/goods/knit.png' },
-          { name: 'A字半身裙', value: '38%', percentage: 38, picUrl: '/images/goods/skirt.png' },
-          { name: '高腰阔腿裤', value: '32%', percentage: 32, picUrl: '/images/goods/pants.png' }
-        ],
-        posterClickTop: [
-          { name: '川着transmute 春日系列', value: 2345, percentage: 95, color: '#f8b4c4', abbr: '春' },
-          { name: '职场穿搭精选', value: 1876, percentage: 76, color: '#7c9885', abbr: '职' },
-          { name: '温柔针织系列', value: 1523, percentage: 62, color: '#b8a99a', abbr: '针' },
-          { name: '经典风衣专场', value: 1234, percentage: 50, color: '#c4a77d', abbr: '风' },
-          { name: '基础款穿搭', value: 987, percentage: 40, color: '#9b8e8e', abbr: '基' }
-        ],
-        afterSalesTop: [
-          { name: '法式雪纺衬衫', value: 23, percentage: 45, picUrl: '/images/goods/shirt.png' },
-          { name: 'A字半身裙', value: 18, percentage: 35, picUrl: '/images/goods/skirt.png' },
-          { name: '高腰阔腿裤', value: 15, percentage: 30, picUrl: '/images/goods/pants.png' },
-          { name: '温柔针织开衫', value: 12, percentage: 24, picUrl: '/images/goods/knit.png' },
-          { name: '春日优雅连衣裙', value: 8, percentage: 16, picUrl: '/images/goods/dress.png' }
-        ]
-      }
+      statDashboardSales().then(response => {
+        const data = response.data.data
+        this.salesData = {
+          revenue: data.revenue || 0,
+          orders: data.orders || 0,
+          avgPrice: data.avgPrice || 0,
+          salesTop: data.salesTop || [],
+          repurchaseTop: data.repurchaseTop || [],
+          posterClickTop: [], // 海报点击需要埋点数据，暂为空
+          afterSalesTop: data.afterSalesTop || []
+        }
+      }).catch(() => {
+        this.salesData = {
+          revenue: 0,
+          orders: 0,
+          avgPrice: 0,
+          salesTop: [],
+          repurchaseTop: [],
+          posterClickTop: [],
+          afterSalesTop: []
+        }
+      })
     }
   }
 }

@@ -35,6 +35,14 @@ Page({
     skuGoods: {}
   },
 
+  // ========== 缓存层 ==========
+  // 商品缓存：{ categoryId: { list, pages, page } }
+  _goodsCache: {},
+  // navList 是否已加载（整个页面生命周期只加载一次）
+  _navLoaded: false,
+  // 预加载锁，防止重复预加载
+  _preloading: false,
+
   onLoad(options) {
     const { system } = wx.getDeviceInfo()
     const { statusBarHeight, windowHeight } = wx.getWindowInfo()
@@ -50,7 +58,9 @@ Page({
       this.setData({ activeCategoryId: parseInt(options.id) })
     }
 
-    this.getCategoryInfo()
+    this._goodsCache = {}
+    this._navLoaded = false
+    this.loadInitial()
   },
 
   onShow() {
@@ -59,66 +69,126 @@ Page({
     }
   },
 
-  // 获取分类信息
-  getCategoryInfo() {
+  // ========== 首次加载：用合并接口一次拿到分类 + 商品 ==========
+
+  loadInitial() {
     let that = this
     this.setData({ loading: true })
-    util.request(api.GoodsCategory, {
-      id: this.data.activeCategoryId
+
+    util.request(api.GoodsCategoryWithGoods, {
+      id: this.data.activeCategoryId,
+      page: 1,
+      limit: this.data.limit
     }).then(function(res) {
-      if (res.errno === 0) {
-        that.setData({
-          navList: res.data.brotherCategory || [],
-          currentCategory: res.data.currentCategory || {}
-        })
+      if (res.errno !== 0) return
+      const d = res.data
 
-        // 设置导航栏标题
-        if (res.data.parentCategory) {
-          wx.setNavigationBarTitle({
-            title: res.data.parentCategory.name
-          })
-        }
+      // 处理分类结构
+      that.setData({
+        navList: d.brotherCategory || [],
+        currentCategory: d.currentCategory || {}
+      })
 
-        // 当id是L1分类id时，需要重新设置成L1分类的一个子分类的id
-        if (res.data.parentCategory && res.data.parentCategory.id === that.data.activeCategoryId) {
-          that.setData({
-            activeCategoryId: res.data.currentCategory.id
-          })
-        }
-
-        // 默认选中第一个分类
-        var navList = that.data.navList
-        if ((!that.data.activeCategoryId || !navList.find(function(item) { return item.id === that.data.activeCategoryId })) && navList.length > 0) {
-          that.setData({
-            activeCategoryId: navList[0].id,
-            currentCategory: navList[0]
-          })
-        }
-
-        // 调整滚动位置
-        let currentIndex = 0
-        let navListCount = that.data.navList.length
-        for (let i = 0; i < navListCount; i++) {
-          currentIndex += 1
-          if (that.data.navList[i].id === that.data.activeCategoryId) {
-            break
-          }
-        }
-        if (currentIndex > navListCount / 2 && navListCount > 5) {
-          that.setData({
-            scrollLeft: currentIndex * 60
-          })
-        }
-
-        // 获取商品列表
-        that.data.page = 1
-        that.data.goodsList = []
-        that.getGoodsList()
+      if (d.parentCategory) {
+        wx.setNavigationBarTitle({ title: d.parentCategory.name })
       }
+
+      // L1 → L2 自动降级
+      if (d.parentCategory && d.parentCategory.id === that.data.activeCategoryId) {
+        that.setData({ activeCategoryId: d.currentCategory.id })
+      }
+
+      // 默认选中第一个
+      var navList = that.data.navList
+      if ((!that.data.activeCategoryId || !navList.find(function(item) { return item.id === that.data.activeCategoryId })) && navList.length > 0) {
+        that.setData({ activeCategoryId: navList[0].id, currentCategory: navList[0] })
+      }
+
+      that._navLoaded = true
+
+      // 处理商品数据
+      that._applyGoodsData(d.goods)
+
+      // 缓存当前分类的商品
+      that._cacheCurrentGoods()
+
+      // 预加载相邻分类
+      that._preloadAdjacent()
     })
   },
 
-  // 获取商品列表
+  // ========== 切换分类（走缓存优先） ==========
+
+  switchCate(e) {
+    let id = e.currentTarget.dataset.id
+    if (this.data.activeCategoryId === id) return
+
+    // 滚动位置调整
+    let clientX = e.detail && e.detail.x ? e.detail.x : 0
+    let currentTarget = e.currentTarget
+    if (clientX < 60) {
+      this.setData({ scrollLeft: currentTarget.offsetLeft - 60 })
+    } else if (clientX > 330) {
+      this.setData({ scrollLeft: currentTarget.offsetLeft })
+    }
+
+    this._switchTo(id)
+  },
+
+  // 通用切换逻辑
+  _switchTo(categoryId) {
+    const cached = this._goodsCache[categoryId]
+
+    // 切换 activeCategoryId
+    this.setData({
+      activeCategoryId: categoryId,
+      scrollTop: 0
+    })
+
+    if (cached) {
+      // 命中缓存：直接渲染，0 网络请求
+      const enableSizeMap = cached.enableSizeMap || {}
+      const list = (cached.list || []).map(function(item) {
+        item.enableSize = enableSizeMap[item.categoryId] !== false
+        return item
+      })
+      this.setData({
+        goodsList: list,
+        page: cached.page || 1,
+        pages: cached.pages || 1,
+        loading: false
+      })
+      this.updateWaterfall()
+    } else {
+      // 无缓存：请求合并接口
+      this.setData({
+        goodsList: [],
+        leftGoodsList: [],
+        rightGoodsList: [],
+        page: 1,
+        loading: true
+      })
+      this._fetchGoods(categoryId)
+    }
+  },
+
+  // 请求商品数据（navList 已有，只请求商品）
+  _fetchGoods(categoryId) {
+    let that = this
+    util.request(api.GoodsList, {
+      categoryId: categoryId,
+      page: 1,
+      limit: that.data.limit
+    }).then(function(res) {
+      if (res.errno !== 0) return
+      that._applyGoodsData(res.data)
+      that._cacheCurrentGoods()
+      that._preloadAdjacent()
+    })
+  },
+
+  // ========== 加载更多（分页） ==========
+
   getGoodsList() {
     let that = this
     util.request(api.GoodsList, {
@@ -127,24 +197,90 @@ Page({
       limit: that.data.limit
     }).then(function(res) {
       if (res.errno === 0) {
-        const enableSizeMap = res.data.enableSizeMap || {}
-        const newList = (res.data.list || []).map(function(item) {
-          item.enableSize = enableSizeMap[item.categoryId] !== false
-          return item
-        })
-        let goodsList = that.data.goodsList.concat(newList)
-        that.setData({
-          goodsList: goodsList,
-          pages: res.data.pages || 1,
-          loading: false
-        })
-        // 更新瀑布流
-        that.updateWaterfall()
+        that._applyGoodsData(res.data, true)
+        that._cacheCurrentGoods()
       }
     })
   },
 
-  // 更新瀑布流布局
+  // ========== 数据处理 ==========
+
+  _applyGoodsData(goodsData, append) {
+    if (!goodsData) return
+    const enableSizeMap = goodsData.enableSizeMap || {}
+    const newList = (goodsData.list || []).map(function(item) {
+      item.enableSize = enableSizeMap[item.categoryId] !== false
+      return item
+    })
+
+    let goodsList = append ? this.data.goodsList.concat(newList) : newList
+    this.setData({
+      goodsList: goodsList,
+      pages: goodsData.pages || 1,
+      loading: false
+    })
+    this.updateWaterfall()
+  },
+
+  _cacheCurrentGoods() {
+    const id = this.data.activeCategoryId
+    this._goodsCache[id] = {
+      list: this.data.goodsList.slice(),
+      pages: this.data.pages,
+      page: this.data.page,
+    }
+  },
+
+  // ========== 预加载相邻分类 ==========
+
+  _preloadAdjacent() {
+    if (this._preloading) return
+    const navList = this.data.navList
+    if (!navList.length) return
+
+    const currentId = this.data.activeCategoryId
+    const idx = navList.findIndex(item => item.id === currentId)
+
+    // 找到需要预加载的相邻分类（前后各 1 个，跳过已缓存的）
+    const toPreload = []
+    if (idx > 0 && !this._goodsCache[navList[idx - 1].id]) {
+      toPreload.push(navList[idx - 1].id)
+    }
+    if (idx < navList.length - 1 && !this._goodsCache[navList[idx + 1].id]) {
+      toPreload.push(navList[idx + 1].id)
+    }
+
+    if (toPreload.length === 0) return
+
+    this._preloading = true
+    const limit = this.data.limit
+
+    // 并发预加载
+    const that = this
+    Promise.all(toPreload.map(function(catId) {
+      return util.request(api.GoodsList, {
+        categoryId: catId,
+        page: 1,
+        limit: limit
+      }).then(function(res) {
+        if (res.errno === 0) {
+          that._goodsCache[catId] = {
+            list: (res.data.list || []).map(function(item) {
+              item.enableSize = (res.data.enableSizeMap || {})[item.categoryId] !== false
+              return item
+            }),
+            pages: res.data.pages || 1,
+            page: 1,
+          }
+        }
+      }).catch(function() {})
+    })).then(function() {
+      that._preloading = false
+    })
+  },
+
+  // ========== 瀑布流布局 ==========
+
   updateWaterfall() {
     const goodsList = this.data.goodsList
     const leftGoodsList = []
@@ -161,18 +297,17 @@ Page({
     this.setData({ leftGoodsList, rightGoodsList })
   },
 
-  // 记录滚动位置
+  // ========== 滚动与触摸 ==========
+
   onGoodsScroll(e) {
     this._scrollTop = e.detail.scrollTop
     this._scrollHeight = e.detail.scrollHeight
   },
 
-  // 触摸开始
   onTouchStart(e) {
     this._touchStartY = e.touches[0].clientY
   },
 
-  // 触摸结束，判断滑动方向 + 边界
   onTouchEnd(e) {
     if (this.data.loading) return
 
@@ -186,7 +321,6 @@ Page({
     const atBottom = scrollTop + viewHeight >= scrollHeight - 100
 
     if (deltaY < 0 && atBottom) {
-      // 上滑到底：有下一页就加载，没有就跳下一个分类
       if (this.data.page < this.data.pages) {
         this.setData({ page: this.data.page + 1 })
         this.getGoodsList()
@@ -194,12 +328,10 @@ Page({
         this.switchToNextCategory()
       }
     } else if (deltaY > 0 && atTop) {
-      // 下拉到顶：跳上一个分类
       this.switchToPrevCategory()
     }
   },
 
-  // 切换到上一个分类
   switchToPrevCategory() {
     const navList = this.data.navList
     const currentId = this.data.activeCategoryId
@@ -210,19 +342,9 @@ Page({
       return
     }
 
-    const prevCategory = navList[currentIndex - 1]
-    this.setData({
-      activeCategoryId: prevCategory.id,
-      page: 1,
-      goodsList: [],
-      leftGoodsList: [],
-      rightGoodsList: []
-    })
-
-    this.getCategoryInfo()
+    this._switchTo(navList[currentIndex - 1].id)
   },
 
-  // 自动切换到下一个分类
   switchToNextCategory() {
     const navList = this.data.navList
     const currentId = this.data.activeCategoryId
@@ -233,47 +355,11 @@ Page({
       return
     }
 
-    const nextCategory = navList[currentIndex + 1]
-    this.setData({
-      activeCategoryId: nextCategory.id,
-      page: 1,
-      goodsList: [],
-      leftGoodsList: [],
-      rightGoodsList: [],
-      scrollTop: 0
-    })
-
-    this.getCategoryInfo()
+    this._switchTo(navList[currentIndex + 1].id)
   },
 
-  // 切换分类
-  switchCate(e) {
-    let id = e.currentTarget.dataset.id
-    if (this.data.activeCategoryId === id) {
-      return
-    }
+  // ========== 尺码选择器 ==========
 
-    let clientX = e.detail && e.detail.x ? e.detail.x : 0
-    let currentTarget = e.currentTarget
-    if (clientX < 60) {
-      this.setData({ scrollLeft: currentTarget.offsetLeft - 60 })
-    } else if (clientX > 330) {
-      this.setData({ scrollLeft: currentTarget.offsetLeft })
-    }
-
-    this.setData({
-      activeCategoryId: id,
-      page: 1,
-      goodsList: [],
-      leftGoodsList: [],
-      rightGoodsList: [],
-      scrollTop: 0
-    })
-
-    this.getCategoryInfo()
-  },
-
-  // 打开尺码选择器
   addToCart(e) {
     const id = e.currentTarget.dataset.id
     const goods = this.data.goodsList.find(item => item.id === id)
@@ -323,7 +409,8 @@ Page({
     })
   },
 
-  // 跳转商品详情
+  // ========== 跳转 ==========
+
   goToDetail(e) {
     const id = e.currentTarget.dataset.id
     wx.navigateTo({
@@ -348,7 +435,6 @@ Page({
     }
   },
 
-  // 返回
   goBack() {
     wx.navigateBack({
       fail: () => {

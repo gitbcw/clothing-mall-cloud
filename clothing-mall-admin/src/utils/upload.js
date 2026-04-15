@@ -20,10 +20,8 @@ export async function cloudUpload(options) {
   const cloudPath = genCloudPath(file)
 
   try {
-    const res = await app.uploadFile({ cloudPath, filePath: file })
-    const url = res.fileID
-    // 回调 el-upload 的 onSuccess，保持与原 uploadPath 返回格式一致
-    options.onSuccess({ errno: 0, errmsg: '成功', data: { url } })
+    await app.uploadFile({ cloudPath, filePath: file })
+    options.onSuccess({ errno: 0, errmsg: '成功', data: { url: cloudPath } })
   } catch (err) {
     console.error('[upload] cloudUpload error:', err)
     options.onError(err)
@@ -31,10 +29,10 @@ export async function cloudUpload(options) {
 }
 
 /**
- * 编程式上传，返回 fileID
+ * 编程式上传，返回 cloudPath（如 uploads/xxx.jpg）
  */
 export async function cloudUploadFile(file) {
   const cloudPath = genCloudPath(file)
-  const res = await app.uploadFile({ cloudPath, filePath: file })
-  return res.fileID
+  await app.uploadFile({ cloudPath, filePath: file })
+  return cloudPath
 }

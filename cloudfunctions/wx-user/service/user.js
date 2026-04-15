@@ -102,8 +102,10 @@ async function profile(data, context) {
     params.push(avatar)
   }
   if (birthday != null) {
+    // 兼容 ISO 格式（如 1999-12-31T16:00:00.000Z）→ 取前 10 位即 YYYY-MM-DD
+    const dateStr = typeof birthday === 'string' ? birthday.substring(0, 10) : birthday
     fields.push('birthday = ?')
-    params.push(birthday)
+    params.push(dateStr)
   }
 
   if (fields.length === 0) return response.ok()

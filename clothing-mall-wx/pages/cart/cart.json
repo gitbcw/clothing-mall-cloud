@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "page-loading": "/components/page-loading/page-loading"
+  },
   "navigationStyle": "custom"
 }

@@ -182,7 +182,7 @@ page {
   line-height: 32rpx;
   padding: 0 10rpx;
   border-radius: 4rpx;
-  margin-right: 16rpx;
+  margin-left: 12rpx;
   flex-shrink: 0;
 }
 
@@ -206,13 +206,17 @@ page {
   background: #fff0f3;
 }
 
+.suggestion-tag-goods {
+  color: #1989fa;
+  background: #e8f4fd;
+}
+
 .suggestion-text {
   font-size: 26rpx;
   color: #333;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;
 }
 
 .sort {

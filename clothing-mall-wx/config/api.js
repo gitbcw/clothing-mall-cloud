@@ -30,6 +30,7 @@ module.exports = {
   GoodsCount: WxApiRoot + 'goods/count', //统计商品总数
   GoodsList: WxApiRoot + 'goods/list', //获得商品列表
   GoodsCategory: WxApiRoot + 'goods/category', //获得分类数据
+  GoodsCategoryWithGoods: WxApiRoot + 'goods/categoryWithGoods', //分类+商品列表（合并接口）
   GoodsDetail: WxApiRoot + 'goods/detail', //获得商品的详情
   GoodsRelated: WxApiRoot + 'goods/related', //商品详情页的关联商品（大家都在看）
 
@@ -178,4 +179,8 @@ module.exports = {
   ManagerWeWorkSendCard: WxApiRoot + 'manager/wework/sendCard', // 发送小程序卡片
   ManagerWeWorkSendMessage: WxApiRoot + 'manager/wework/sendMessage', // 发送消息
   ManagerWeWorkPushGroups: WxApiRoot + 'manager/wework/pushGroups', // 推送分组列表
+
+  // 管理端系统配置接口
+  ManagerSystemConfigList: WxApiRoot + 'manager/system/configList',
+  ManagerSystemConfigUpdate: WxApiRoot + 'manager/system/configUpdate',
 };

@@ -102,8 +102,7 @@
           </view>
           <view class="goods-price">
             <text class="retail-price">¥{{item.retailPrice}}</text>
-            <text class="counter-price" wx:if="{{item.counterPrice}}">¥{{item.counterPrice}}</text>
-            <text class="special-price" wx:if="{{item.specialPrice}}">特价 ¥{{item.specialPrice}}</text>
+                        <text class="special-price" wx:if="{{item.specialPrice}}">特价 ¥{{item.specialPrice}}</text>
           </view>
         </view>
         <view class="goods-actions">

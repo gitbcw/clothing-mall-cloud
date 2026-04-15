@@ -10,6 +10,7 @@ const {
   statTrackerOverview, statTrackerTrend, statTrackerPages,
   statRevenueOverview, statRevenueScene, statRevenueCategory,
   statRevenueSeasonOverview, statRevenueSeasonHotGoods,
+  statDashboardSales, statDashboardConversion,
 } = require('./service/stat')
 const { info: dashboardInfo } = require('./service/dashboard')
 const { list: historyList } = require('./service/history')
@@ -44,6 +45,8 @@ const routes = {
   statRevenueSeasonHotGoods: { handler: statRevenueSeasonHotGoods, permission: 'admin:stat:order' },
   dashboardInfo: { handler: dashboardInfo, permission: null },
   historyList: { handler: historyList, permission: 'admin:history:list' },
+  statDashboardSales: { handler: statDashboardSales, permission: 'admin:stat:order' },
+  statDashboardConversion: { handler: statDashboardConversion, permission: 'admin:stat:growth' },
 }
 
 exports.main = async (event, context) => {

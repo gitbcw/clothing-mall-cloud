@@ -17,7 +17,7 @@ const { wxAuth } = require('layer-auth')
 // ==================== 路由注册 ====================
 
 const {
-  detail, category, list, related, count,
+  detail, category, list, related, count, categoryWithGoods,
 } = require('./service/goods')
 
 const {
@@ -37,6 +37,7 @@ const routes = {
   // 商品
   detail,
   category,
+  categoryWithGoods,
   list,
   related,
   count,

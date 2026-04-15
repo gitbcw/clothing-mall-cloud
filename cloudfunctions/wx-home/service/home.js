@@ -6,11 +6,14 @@
  */
 
 const { db, response } = require('layer-base')
-const { getConfig } = require('layer-base').systemConfig
+const { getConfig, loadConfigs } = require('layer-base').systemConfig
 
 // ==================== 首页数据 ====================
 
 async function index(data, context) {
+  // 加载系统配置到内存（修复冷启动 getConfig 返回 null 的问题）
+  await loadConfigs()
+
   const ACTIVITY_LIMIT = 8
   const addedIds = new Set()
   let titleType = 'weekly'
@@ -154,6 +157,9 @@ async function index(data, context) {
     })),
     outfitList,
     homeActivity: { goods: activityGoods, titleType },
+    systemConfig: {
+      activityBgImage: getConfig('litemall_home_activity_bg_image') || '',
+    },
   })
 }
 

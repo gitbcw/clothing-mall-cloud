@@ -73,14 +73,14 @@ Object.keys(filters).forEach(key => {
 })
 
 // 全局图片 URL 拼接方法
+const COS_BASE = 'https://636c-clo-test-4g8ukdond34672de-1258700476.tcb.qcloud.la/'
+
 Vue.mixin({
   methods: {
     imageUrl(key) {
       if (!key) return ''
       if (key.startsWith('http') || key.startsWith('//')) return key
-      // CloudBase fileID 在 Web 端无法直接展示，返回空避免拼出无效 OSS URL
-      if (key.startsWith('cloud://')) return ''
-      return 'https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/' + key.replace(/^\//, '')
+      return COS_BASE + key.replace(/^\//, '')
     }
   }
 })

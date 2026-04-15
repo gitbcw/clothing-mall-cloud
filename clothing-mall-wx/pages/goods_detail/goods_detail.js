@@ -305,12 +305,11 @@ Page({
 
   previewGalleryImage(e) {
     const index = e.currentTarget.dataset.index
+    var COS_BASE = 'https://636c-clo-test-4g8ukdond34672de-1258700476.tcb.qcloud.la/'
     const urls = this.data.gallery.map(item => {
-      var url = item
-      if (typeof item === 'string' && item.indexOf('http') !== 0) {
-        url = 'https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/' + item
-      }
-      return url
+      if (!item) return ''
+      if (item.indexOf('://') !== -1) return item
+      return COS_BASE + item
     })
     wx.previewImage({
       current: urls[index],

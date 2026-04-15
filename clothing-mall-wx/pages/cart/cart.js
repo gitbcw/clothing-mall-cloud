@@ -20,6 +20,7 @@ Page({
     isManageMode: false,
     checkedAllStatus: true,
     hasLogin: false,
+    loading: true,
     defaultGoodsImage: '/static/images/fallback-image.svg',
     emptyImage: '/static/images/fallback-image.svg'
   },
@@ -45,6 +46,8 @@ Page({
 
     if (app.globalData.hasLogin) {
       this.getCartList()
+    } else {
+      this.setData({ loading: false })
     }
   },
 
@@ -55,12 +58,17 @@ Page({
       if (res.errno === 0) {
         that.setData({
           cartGoods: res.data.cartList || [],
-          cartTotal: res.data.cartTotal || {}
+          cartTotal: res.data.cartTotal || {},
+          loading: false
         })
         that.setData({
           checkedAllStatus: that.isCheckedAll()
         })
+      } else {
+        that.setData({ loading: false })
       }
+    }).catch(function() {
+      that.setData({ loading: false })
     })
   },
 

@@ -444,4 +444,40 @@ async function count() {
   return response.ok(rows[0].total)
 }
 
-module.exports = { detail, category, list, related, count }
+// ==================== 分类 + 商品列表（合并接口） ====================
+
+async function categoryWithGoods(data, context) {
+  const { id, page = 1, limit = 10 } = data
+
+  const safePage = Math.max(1, parseInt(page) || 1)
+  const safeLimit = Math.max(1, Math.min(100, parseInt(limit) || 10))
+
+  // 解析分类 ID
+  let categoryId = id
+  if (!categoryId) {
+    const first = await db.query(
+      `SELECT id FROM litemall_category WHERE level = 'L1' AND deleted = 0 ORDER BY sort_order LIMIT 1`
+    )
+    if (first.length === 0) return response.badArgument()
+    categoryId = first[0].id
+  }
+
+  // 并发查分类信息 + 商品列表
+  const catResult = await category({ id: categoryId })
+  if (catResult.errno !== 0) return catResult
+
+  const actualCategoryId = catResult.data.currentCategory.id
+
+  const goodsResult = await list({
+    categoryId: actualCategoryId,
+    page: safePage,
+    limit: safeLimit,
+  }, context)
+
+  return response.ok({
+    ...catResult.data,
+    goods: goodsResult.data,
+  })
+}
+
+module.exports = { detail, category, list, related, count, categoryWithGoods }

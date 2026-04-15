@@ -21,6 +21,7 @@ Page({
       {
         group: '系统',
         items: [
+          { key: 'systemConfig', label: '系统配置', icon: 'system', desc: '首页外观与常用设置' },
           { key: 'switchUser', label: '返回用户端', icon: 'switch', desc: '切换到买家视角' }
         ]
       }
@@ -58,6 +59,9 @@ Page({
         break;
       case 'scene':
         wx.navigateTo({ url: '/pages/manager/sceneManage/sceneManage' });
+        break;
+      case 'systemConfig':
+        wx.navigateTo({ url: '/pages/manager/systemConfig/systemConfig' });
         break;
       case 'switchUser':
         wx.switchTab({ url: '/pages/index/index' });

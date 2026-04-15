@@ -1,0 +1,11 @@
+<view class="page-loading-overlay" wx:if="{{visible}}">
+  <view class="loading-wrapper">
+    <view class="ring-container">
+      <view class="spinning-ring"></view>
+      <view class="ring-inner"></view>
+      <view class="logo-area">
+        <text class="logo-text">川着</text>
+      </view>
+    </view>
+  </view>
+</view>

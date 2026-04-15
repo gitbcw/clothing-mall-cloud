@@ -86,11 +86,12 @@ Page({
     var results = [];
     var seen = {};
 
-    // 历史记录
+    // 历史记录（兼容字符串数组和对象数组）
     (this.data.historyKeyword || []).forEach(function(item) {
-      if (item.keyword.indexOf(keyword) !== -1 && !seen[item.keyword]) {
-        seen[item.keyword] = true;
-        results.push({ type: 'history', text: item.keyword });
+      var text = typeof item === 'string' ? item : item.keyword;
+      if (text && text.indexOf(keyword) !== -1 && !seen[text]) {
+        seen[text] = true;
+        results.push({ type: 'history', text: text });
       }
     });
 
@@ -119,9 +120,8 @@ Page({
     var localTexts = {};
     local.forEach(function(s) { localTexts[s.text] = true; });
 
-    var backend = (this.data.helpKeyword || []).map(function(k) {
-      return { type: 'keyword', text: k };
-    }).filter(function(s) {
+    // 后端已返回结构化数据 [{ type, text, id? }]
+    var backend = (this.data.helpKeyword || []).filter(function(s) {
       return !localTexts[s.text];
     });
 
@@ -200,6 +200,9 @@ Page({
     if (!item) return;
 
     switch (item.type) {
+      case 'goods':
+        wx.navigateTo({ url: '/pages/goods_detail/goods_detail?id=' + item.id });
+        break;
       case 'history':
         this.getSearchResult(item.text);
         break;
@@ -209,13 +212,14 @@ Page({
       case 'scene':
         this.onSceneTap({ currentTarget: { dataset: { id: item.id } } });
         break;
+      case 'keyword':
       default:
         this.getSearchResult(item.text);
     }
   },
   getSearchResult(keyword) {
     if (keyword === '') {
-      keyword = this.data.defaultKeyword.keyword;
+      keyword = this.data.defaultKeyword || '';
     }
     this.setData({
       keyword: keyword,

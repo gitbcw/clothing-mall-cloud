@@ -81,13 +81,16 @@ async function outfitCreate(data) {
 
   const result = await db.query(
     `INSERT INTO litemall_outfit
-      (title, cover_pic, description, goods_ids, sort_order, status, deleted, add_time, update_time)
-     VALUES (?, ?, ?, ?, ?, ?, 0, NOW(), NOW())`,
+      (title, cover_pic, description, goods_ids, brand_color, brand_position, float_position, sort_order, status, deleted, add_time, update_time)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW())`,
     [
       title,
       coverPic,
       data.description || '',
       data.goodsIds ? JSON.stringify(data.goodsIds) : '[]',
+      data.brandColor || 'white',
+      data.brandPosition || 'top-right',
+      data.floatPosition || 'left',
       data.sortOrder || 0,
       data.status !== undefined ? data.status : 1,
     ]
@@ -114,11 +117,15 @@ async function outfitUpdate(data) {
   await db.query(
     `UPDATE litemall_outfit
      SET title = ?, cover_pic = ?, description = ?, goods_ids = ?,
+         brand_color = ?, brand_position = ?, float_position = ?,
          sort_order = ?, status = ?, update_time = NOW()
      WHERE id = ?`,
     [
       title, coverPic, data.description || '',
       data.goodsIds ? JSON.stringify(data.goodsIds) : '[]',
+      data.brandColor || 'white',
+      data.brandPosition || 'top-right',
+      data.floatPosition || 'left',
       data.sortOrder || 0, data.status !== undefined ? data.status : 1,
       id,
     ]
@@ -166,10 +173,17 @@ async function outfitStatus(data) {
 async function buildGoodsList(goodsIdsJson) {
   if (!goodsIdsJson) return []
 
+  // mysql2 驱动已将 JSON 列自动反序列化为 JS 对象
   let goodsIds
-  try {
-    goodsIds = JSON.parse(goodsIdsJson)
-  } catch (e) {
+  if (Array.isArray(goodsIdsJson)) {
+    goodsIds = goodsIdsJson
+  } else if (typeof goodsIdsJson === 'string') {
+    try {
+      goodsIds = JSON.parse(goodsIdsJson)
+    } catch (e) {
+      return []
+    }
+  } else {
     return []
   }
   if (!Array.isArray(goodsIds) || goodsIds.length === 0) return []

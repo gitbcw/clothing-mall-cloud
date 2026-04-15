@@ -105,6 +105,8 @@ const ROUTE_MAP = {
   'stat/revenue/category': ['admin-stat', 'statRevenueCategory'],
   'stat/revenue/season/overview': ['admin-stat', 'statRevenueSeasonOverview'],
   'stat/revenue/season/hot-goods': ['admin-stat', 'statRevenueSeasonHotGoods'],
+  'stat/dashboard/sales': ['admin-stat', 'statDashboardSales'],
+  'stat/dashboard/conversion': ['admin-stat', 'statDashboardConversion'],
   'dashboard': ['admin-stat', 'dashboardInfo'],
 
   // ---- admin-config (GET=list, POST=update) ----

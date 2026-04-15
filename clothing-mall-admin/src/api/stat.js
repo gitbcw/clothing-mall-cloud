@@ -123,3 +123,19 @@ export function statRevenueSeasonHotGoods(query) {
     params: query
   })
 }
+
+// 仪表盘销售统计
+export function statDashboardSales() {
+  return request({
+    url: '/stat/dashboard/sales',
+    method: 'get'
+  })
+}
+
+// 仪表盘转化率统计
+export function statDashboardConversion() {
+  return request({
+    url: '/stat/dashboard/conversion',
+    method: 'get'
+  })
+}

@@ -26,6 +26,7 @@ Page({
     activityGoodsBottom: [],
     activityTitle: '每周上新',
     activityTitleEn: 'NEW IN',
+    activityBgImage: '',
 
     // 饰饰如意
     accessories: [],
@@ -117,6 +118,14 @@ Page({
         // 穿搭推荐（替换原来的搭配推荐数据源）
         const outfitList = res.data.outfitList || []
         this.setData({ matchRecommends: outfitList, loading: false })
+
+        // 系统配置 - 活动位背景图
+        const systemConfig = res.data.systemConfig || {}
+        let bgUrl = systemConfig.activityBgImage || ''
+        if (bgUrl && bgUrl.indexOf('://') === -1 && bgUrl.indexOf('/') !== 0) {
+          bgUrl = 'https://636c-clo-test-4g8ukdond34672de-1258700476.tcb.qcloud.la/' + bgUrl
+        }
+        this.setData({ activityBgImage: bgUrl })
       }
     }).catch(() => {
         this.setData({ loading: false })

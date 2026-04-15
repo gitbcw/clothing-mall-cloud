@@ -56,14 +56,11 @@
       <text class="price-symbol">￥</text>
       <text class="price-num">{{goods.specialPrice}}</text>
       <view class="price-tag">特价</view>
-      <text class="original-price">￥{{goods.retailPrice}}</text>
-    </view>
+          </view>
     <!-- 普通价格 -->
     <view class="price-wrap" wx:else>
       <text class="price-symbol">￥</text>
       <text class="price-num">{{goods.retailPrice}}</text>
-      <view class="price-tag" wx:if="{{goods.counterPrice > goods.retailPrice}}">特卖价</view>
-      <text class="original-price" wx:if="{{goods.counterPrice > goods.retailPrice}}">原价 ￥{{goods.counterPrice}}</text>
     </view>
 
     <view class="tags-wrap">

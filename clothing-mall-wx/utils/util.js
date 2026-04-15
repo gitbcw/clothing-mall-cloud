@@ -21,6 +21,7 @@ const ROUTE_MAP = {
   'goods/count':                   ['wx-goods', 'count'],
   'goods/list':                    ['wx-goods', 'list'],
   'goods/category':                ['wx-goods', 'category'],
+  'goods/categoryWithGoods':       ['wx-goods', 'categoryWithGoods'],
   'goods/detail':                  ['wx-goods', 'detail'],
   'goods/related':                 ['wx-goods', 'related'],
   'brand/list':                    ['wx-goods', 'brandList'],
@@ -176,6 +177,10 @@ const ROUTE_MAP = {
   'manager/wework/sendCard':         ['wx-manager-wework', 'sendCard'],
   'manager/wework/sendMessage':      ['wx-manager-wework', 'sendMessage'],
   'manager/wework/pushGroups':       ['wx-manager-wework', 'pushGroups'],
+
+  // wx-manager-system
+  'manager/system/configList':       ['wx-manager-system', 'systemConfigList'],
+  'manager/system/configUpdate':     ['wx-manager-system', 'systemConfigUpdate'],
 }
 
 /**
@@ -279,7 +284,7 @@ function callCloudFunction(funcName, action, data, retryCount) {
  * 上传文件到云存储
  * @param {string} filePath 本地临时文件路径
  * @param {string} dir 云存储目录，默认 'uploads'
- * @returns {Promise<string>} 返回 fileID
+ * @returns {Promise<string>} 返回 cloudPath（如 uploads/xxx.jpg）
  */
 function uploadFile(filePath, dir) {
   return new Promise(function(resolve, reject) {
@@ -297,16 +302,16 @@ function uploadFile(filePath, dir) {
       success: function(res) {
         // 调用 storage 云函数记录元数据
         callCloudFunction('wx-storage', 'upload', {
-          key: res.fileID,
+          key: cloudPath,
           name: fileName,
           type: ext,
           size: 0,
-          url: res.fileID,
+          url: cloudPath,
         }).then(function() {
-          resolve(res.fileID)
+          resolve(cloudPath)
         }).catch(function() {
           // 元数据记录失败不影响上传结果
-          resolve(res.fileID)
+          resolve(cloudPath)
         })
       },
       fail: function(err) {

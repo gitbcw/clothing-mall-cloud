@@ -8,10 +8,7 @@
   </view>
 
   <!-- 加载状态 -->
-  <view class="page-loading" wx:if="{{loading}}" style="padding-top: {{statusBarHeight + navBarHeight}}px;">
-    <view class="loading-spinner-lg"></view>
-    <view class="loading-text-lg">正在为您加载...</view>
-  </view>
+  <page-loading visible="{{loading}}" />
 
   <scroll-view class="page-scroll" scroll-y="true" style="padding-top: {{statusBarHeight + navBarHeight}}px;" wx:if="{{!loading}}">
 
@@ -36,7 +33,7 @@
     </swiper>
 
     <!-- 活动位 -->
-    <view class="activity-section" wx:if="{{activityGoodsTop.length > 0 || activityGoodsBottom.length > 0}}">
+    <view class="activity-section" wx:if="{{activityGoodsTop.length > 0 || activityGoodsBottom.length > 0}}" style="{{activityBgImage ? 'background-image: url(' + activityBgImage + ')' : ''}}">
       <view class="section-header-weekly">
         <text class="section-title-cn">{{activityTitle}}</text>
         <text class="section-title-en">{{activityTitleEn}}</text>
@@ -50,10 +47,6 @@
             <view class="activity-price-wrap" wx:if="{{item.specialPrice}}">
               <view class="price-center">
                 <text class="activity-price price-special">
-                  <text class="rmb">¥</text>
-                  <text class="num">{{item.specialPrice}}</text>
-                </text>
-                <text class="activity-original-price">
                   <text class="rmb">¥</text>
                   <text class="num">{{item.specialPrice}}</text>
                 </text>
@@ -81,10 +74,6 @@
             <view class="activity-price-wrap" wx:if="{{item.specialPrice}}">
               <view class="price-center">
                 <text class="activity-price price-special">
-                  <text class="rmb">¥</text>
-                  <text class="num">{{item.specialPrice}}</text>
-                </text>
-                <text class="activity-original-price">
                   <text class="rmb">¥</text>
                   <text class="num">{{item.specialPrice}}</text>
                 </text>
@@ -124,7 +113,6 @@
               <view class="hot-price-wrap">
                 <text class="price-symbol theme-color">￥</text>
                 <text class="price-num theme-color">{{item.retailPrice}}</text>
-                <text class="original-price" wx:if="{{item.counterPrice > item.retailPrice}}">￥{{item.counterPrice}}</text>
               </view>
               <view class="buy-btn" catchtap="buyNow" data-id="{{item.id}}">立即抢购</view>
             </view>

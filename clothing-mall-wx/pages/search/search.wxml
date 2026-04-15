@@ -12,7 +12,7 @@
   <view class="search-header" style="padding-top: {{statusBarHeight+navBarHeight}}px;">
     <view class="input-box">
       <van-icon name="search"/>
-      <input name="input" class="keywrod" focus="true" value="{{keyword}}" confirm-type="search" bindinput="inputChange" bindfocus="inputFocus" bindconfirm="onKeywordConfirm" placeholder="{{defaultKeyword.keyword}}" />
+      <input name="input" class="keywrod" focus="true" value="{{keyword}}" confirm-type="search" bindinput="inputChange" bindfocus="inputFocus" bindconfirm="onKeywordConfirm" placeholder="{{defaultKeyword}}" />
       <van-icon class="del" wx:if="{{keyword}}" bindtap="clearKeyword" name="cross" />
     </view>
     <view class="right" bindtap="closeSearch">取消</view>
@@ -24,7 +24,7 @@
         <van-icon bindtap="clearHistory" name="delete" class="icon"/>
       </view>
       <view class="b">
-        <view class="item" bindtap="onKeywordTap" data-keyword="{{item.keyword}}" wx:for="{{historyKeyword}}" wx:key="keyword" hover-class="navigator-hover">{{item.keyword}}</view>
+        <view class="item" bindtap="onKeywordTap" data-keyword="{{item}}" wx:for="{{historyKeyword}}" wx:key="*this" hover-class="navigator-hover">{{item}}</view>
       </view>
     </view>
     <view class="search-keywords search-hot" wx:if="{{!keyword && hotKeyword.length}}">
@@ -32,7 +32,7 @@
         <text class="title">热门搜索</text>
       </view>
       <view class="b">
-        <view class="item active" hover-class="navigator-hover" bindtap="onKeywordTap" data-keyword="{{item.keyword}}" wx:for="{{hotKeyword}}" wx:key="keyword">{{item.keyword}}</view>
+        <view class="item active" hover-class="navigator-hover" bindtap="onKeywordTap" data-keyword="{{item}}" wx:for="{{hotKeyword}}" wx:key="*this">{{item}}</view>
       </view>
     </view>
     <view class="search-keywords search-category" wx:if="{{!keyword && categoryList.length}}">
@@ -57,8 +57,8 @@
     </view>
     <view class="suggestion-list" wx:if="{{keyword && suggestionList.length}}">
       <view class="suggestion-item" hover-class="navigator-hover" wx:for="{{suggestionList}}" wx:key="text" bindtap="onSuggestionTap" data-item="{{item}}">
-        <text class="suggestion-tag suggestion-tag-{{item.type}}">{{item.type === 'history' ? '历史' : item.type === 'category' ? '分类' : item.type === 'scene' ? '场景' : '搜索'}}</text>
         <text class="suggestion-text">{{item.text}}</text>
+        <text class="suggestion-tag suggestion-tag-{{item.type}}">{{item.type === 'goods' ? '商品' : item.type === 'keyword' ? '关键词' : item.type === 'history' ? '历史' : item.type === 'category' ? '分类' : item.type === 'scene' ? '场景' : '搜索'}}</text>
       </view>
     </view>
   </view>

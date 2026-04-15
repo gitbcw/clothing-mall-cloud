@@ -28,11 +28,23 @@ Page({
             nickName: res.data.nickname,
             avatarUrl: res.data.avatar,
             mobile: res.data.mobile || '',
-            birthday: res.data.birthday
+            birthday: this.formatBirthday(res.data.birthday)
           }
         });
       }
     });
+  },
+
+  formatBirthday(date) {
+    if (!date) return ''
+    if (date.indexOf('T') !== -1) {
+      var d = new Date(date)
+      var y = d.getFullYear()
+      var m = (d.getMonth() + 1).toString().padStart(2, '0')
+      var day = d.getDate().toString().padStart(2, '0')
+      return y + '-' + m + '-' + day
+    }
+    return date.substring(0, 10)
   },
 
   onChooseAvatar(e) {
@@ -55,7 +67,7 @@ Page({
 
   bindBirthdayChange(e) {
     this.setData({
-      'userInfo.birthday': e.detail.value
+      'userInfo.birthday': this.formatBirthday(e.detail.value)
     });
   },
 

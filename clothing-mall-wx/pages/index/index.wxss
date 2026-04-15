@@ -594,7 +594,7 @@ page {
 
 .activity-section {
   padding: 30rpx 0;
-  background-image: url('https://clothing-mall-2026.oss-cn-shenzhen.aliyuncs.com/500o8cp9db2mmi3kar4e.jpg');
+  /* background-image 通过 WXML inline style 动态设置 */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -873,29 +873,3 @@ page {
 }
 
 /* ===== 加载状态 ===== */
-.page-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-}
-
-.loading-spinner-lg {
-  width: 56rpx;
-  height: 56rpx;
-  border: 5rpx solid #EEEEEE;
-  border-top-color: #FF8096;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-bottom: 24rpx;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loading-text-lg {
-  font-size: 28rpx;
-  color: #BBBBBB;
-}

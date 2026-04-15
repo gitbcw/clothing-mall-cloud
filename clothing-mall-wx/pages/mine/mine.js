@@ -23,6 +23,7 @@ Page({
     },
     hasLogin: false,
     couponCount: 0,
+    loading: true,
     // 管理员相关
     isManager: false,
     userRole: 'user'
@@ -50,7 +51,8 @@ Page({
       this.setData({
         userInfo: userInfo || { nickName: '用户', avatarUrl: '/static/images/user.png' },
         hasLogin: true,
-        avatarLoadError: false
+        avatarLoadError: false,
+        loading: false
       })
 
       // 获取订单统计
@@ -65,6 +67,7 @@ Page({
         avatarLoadError: false,
         isManager: false,
         userRole: 'user',
+        loading: false,
         userInfo: {
           nickName: '点击登录',
           avatarUrl: '/static/images/user.png'

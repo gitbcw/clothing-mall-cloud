@@ -100,8 +100,17 @@ clothing-mall-cloud/
 cd clothing-mall-admin
 npm install
 npm run dev          # 开发模式 (端口 9527)
-npm run build        # 生产构建（构建后上传到云环境静态托管）
+NODE_OPTIONS=--openssl-legacy-provider npm run build  # 生产构建
 ```
+
+### 管理后台部署（构建产物 → 静态托管）
+使用 CloudBase CLI 部署，**禁止逐文件上传**：
+```bash
+cd clothing-mall-admin
+NODE_OPTIONS=--openssl-legacy-provider npm run build
+cloudbase hosting deploy dist/ -e clo-test-4g8ukdond34672de
+```
+注意：MCP `uploadFiles` 的根路径上传有 bug，不要依赖它部署前端。
 
 ### 小程序
 使用微信开发者工具打开 `clothing-mall-wx/` 目录，云函数在 `cloudfunctions/` 目录下。

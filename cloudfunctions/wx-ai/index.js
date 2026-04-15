@@ -12,17 +12,22 @@ const { recognizeTag, recognizeImage } = require('layer-wechat/lib/ai')
 
 // ==================== 云存储文件处理 ====================
 
+const COS_BASE = 'https://636c-clo-test-4g8ukdond34672de-1258700476.tcb.qcloud.la/'
+
 /**
- * 将云存储 fileID 转为可公开访问的临时 URL
+ * 将 cloudPath 或 fileID 转为 HTTP URL
  */
-async function getTempUrl(fileID) {
-  const tcb = require('@cloudbase/node-sdk')
-  const app = tcb.init()
-  const { fileList } = await app.getTempFileURL({ fileList: [fileID] })
-  if (!fileList || !fileList[0] || !fileList[0].tempFileURL) {
-    throw new Error('无法获取文件临时链接: ' + fileID)
+function getFileUrl(fileID) {
+  if (!fileID) throw new Error('文件路径为空')
+  // 已经是完整 URL
+  if (fileID.startsWith('http')) return fileID
+  // cloud:// fileID → 提取 cloudPath 拼接
+  if (fileID.startsWith('cloud://')) {
+    const match = fileID.match(/^cloud:\/\/[^/]+\/(.+)$/)
+    if (match) return COS_BASE + match[1]
   }
-  return fileList[0].tempFileURL
+  // cloudPath（如 ai/xxx.jpg）直接拼接
+  return COS_BASE + fileID
 }
 
 // ==================== AI 服务状态 ====================
@@ -48,7 +53,7 @@ async function recognizeTagHandler(data) {
   const { fileID } = data
   if (!fileID) return response.badArgument()
 
-  const imageUrl = await getTempUrl(fileID)
+  const imageUrl = getFileUrl(fileID)
   const result = await recognizeTag(imageUrl)
   return response.ok(result)
 }
@@ -72,7 +77,7 @@ async function recognizeImageHandler(data, context) {
   const categories = catRows.map(r => r.name)
   const scenes = sceneRows.map(r => r.name)
 
-  const imageUrl = await getTempUrl(fileID)
+  const imageUrl = getFileUrl(fileID)
   const result = await recognizeImage(imageUrl, categories, scenes)
   return response.ok(result)
 }

@@ -28,12 +28,6 @@
         <text class="price-symbol">¥</text>
         <text class="price-value">{{goods.retailPrice}}</text>
       </view>
-      <view class="goods-origin-price" wx:if="{{goods.specialPrice && goods.counterPrice}}">
-        ¥{{goods.counterPrice}}
-      </view>
-      <view class="goods-origin-price" wx:elif="{{showOriginPrice && goods.counterPrice > goods.retailPrice}}">
-        ¥{{goods.counterPrice}}
-      </view>
     </view>
     <view class="goods-sales" wx:if="{{showSales && goods.sales}}">
       已售 {{goods.sales}}

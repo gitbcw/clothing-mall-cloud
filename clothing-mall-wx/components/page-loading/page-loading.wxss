@@ -1,0 +1,75 @@
+.page-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffffff;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* 稍微偏上，给底部 tabbar 留视觉空间 */
+  margin-top: -120rpx;
+}
+
+.ring-container {
+  position: relative;
+  width: 200rpx;
+  height: 200rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 旋转环 */
+.spinning-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 5rpx solid rgba(255, 128, 150, 0.1);
+  border-top-color: #FF8096;
+  border-right-color: rgba(255, 128, 150, 0.45);
+  animation: page-loading-spin 0.9s linear infinite;
+}
+
+/* 内圆白色背景，形成环形效果 */
+.ring-inner {
+  position: absolute;
+  top: 14rpx;
+  left: 14rpx;
+  right: 14rpx;
+  bottom: 14rpx;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+
+/* Logo 区域 */
+.logo-area {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-text {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #333333;
+  letter-spacing: 8rpx;
+}
+
+@keyframes page-loading-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

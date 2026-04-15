@@ -40,7 +40,8 @@
     "pages/manager/issueManage/issueManage",
     "pages/manager/issueEdit/issueEdit",
     "pages/manager/pushSend/pushSend",
-    "pages/manager/verify/verify"
+    "pages/manager/verify/verify",
+    "pages/manager/systemConfig/systemConfig"
   ],
   "window": {
     "backgroundTextStyle": "light",

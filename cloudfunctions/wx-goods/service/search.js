@@ -39,10 +39,10 @@ async function index(data, context) {
        WHERE deleted = 0 AND add_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)
        GROUP BY keyword ORDER BY cnt DESC LIMIT 10`
     ),
-    // 一级分类
+    // 全部分类（L1+L2，用于搜索建议匹配）
     db.query(
       `SELECT id, name, icon_url, pic_url
-       FROM litemall_category WHERE level = 'L1' AND deleted = 0 ORDER BY sort_order`
+       FROM litemall_category WHERE deleted = 0 ORDER BY level, sort_order`
     ),
     // 启用的场景
     db.query(
@@ -69,7 +69,7 @@ async function index(data, context) {
     defaultKeyword,
     historyKeywordList,
     hotKeywordList: hotKeywordRows.map(r => r.keyword),
-    filterCategoryList: categoryRows.map(toCatCamel),
+    categoryList: categoryRows.map(toCatCamel),
     sceneList: sceneRows.map(toSceneCamel),
   })
 }
@@ -80,32 +80,41 @@ async function helper(data) {
   const keyword = data.keyword
   if (!keyword) return response.badArgument()
 
-  const page = data.page || 1
-  const limit = data.limit || 10
+  const limit = Math.max(1, Math.min(50, parseInt(data.limit) || 10))
+  const like = `%${keyword}%`
+  const lowerKeyword = keyword.toLowerCase()
 
+  // 同时匹配 keywords 和 name
   const rows = await db.query(
-    `SELECT DISTINCT keywords FROM litemall_goods
+    `SELECT id, name, keywords FROM litemall_goods
      WHERE deleted = 0 AND status = 'published'
-       AND keywords IS NOT NULL AND keywords != ''
-       AND keywords LIKE ?
-     LIMIT ?`,
-    [`%${keyword}%`, limit]
+       AND (keywords LIKE ? OR name LIKE ?)
+     LIMIT ${limit * 3}`,
+    [like, like]
   )
 
-  // 按逗号拆分 keywords 字段，去重
-  const keywordSet = new Set()
+  const suggestions = []
+  const seenTexts = new Set()
+
   for (const row of rows) {
+    // 商品名称匹配 → type: 'goods'（可直接跳详情）
+    if (row.name && row.name.toLowerCase().includes(lowerKeyword) && !seenTexts.has(row.name)) {
+      seenTexts.add(row.name)
+      suggestions.push({ type: 'goods', text: row.name, id: row.id })
+    }
+    // keywords 字段拆分匹配 → type: 'keyword'（按关键词搜索）
     if (row.keywords) {
       row.keywords.split(',').forEach(k => {
         k = k.trim()
-        if (k && k.toLowerCase().includes(keyword.toLowerCase())) {
-          keywordSet.add(k)
+        if (k && k.toLowerCase().includes(lowerKeyword) && !seenTexts.has(k)) {
+          seenTexts.add(k)
+          suggestions.push({ type: 'keyword', text: k })
         }
       })
     }
   }
 
-  return response.ok([...keywordSet].slice(0, limit))
+  return response.ok(suggestions.slice(0, limit))
 }
 
 // ==================== 清除搜索历史 ====================

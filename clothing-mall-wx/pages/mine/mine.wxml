@@ -1,5 +1,8 @@
 <wxs src="../../utils/image.wxs" module="img" />
 <view class="container">
+  <!-- 加载状态 -->
+  <page-loading visible="{{loading}}" />
+
   <!-- 顶部背景与个人信息 -->
   <view class="header-section">
     <image class="bg-img" src="{{headerBgImage}}" mode="aspectFill" binderror="onHeaderBgError"></image>
