@@ -508,6 +508,46 @@ page {
   padding: 0 30rpx;
 }
 
+/* 尺码对照表 */
+.size-chart-wrap {
+  margin-top: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.size-chart-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333333;
+  text-align: center;
+  margin-bottom: 20rpx;
+}
+
+.size-chart-wrap .table-container {
+  margin: 0 0 16rpx;
+  border-top: 1rpx solid #EEEEEE;
+  border-left: 1rpx solid #EEEEEE;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.size-chart-wrap .table-row.header .td {
+  background-color: #FFF5F7;
+  color: #333333;
+  font-weight: bold;
+}
+
+.size-chart-wrap .td:first-child {
+  color: #FF8096;
+  font-weight: 500;
+}
+
+.size-chart-note {
+  font-size: 20rpx;
+  color: #BBBBBB;
+  text-align: center;
+  margin-top: 12rpx;
+}
+
 /* 常见问题 */
 .issue-section {
   background-color: #FFFFFF;

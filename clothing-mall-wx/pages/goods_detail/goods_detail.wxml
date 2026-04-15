@@ -125,6 +125,21 @@
       <block wx:for="{{gallery}}" wx:key="*this">
         <image src="{{img.url(item)}}" mode="widthFix" class="detail-image" bindtap="previewGalleryImage" data-index="{{index}}" binderror="onImageError" data-src="{{item}}"></image>
       </block>
+
+      <!-- 尺码对照表 -->
+      <view class="size-chart-wrap">
+        <view class="size-chart-title">尺码对照表</view>
+        <view class="table-container">
+          <view class="table-row header">
+            <view class="td" wx:for="{{sizeChart.headers}}" wx:key="*this">{{item}}</view>
+          </view>
+          <view class="table-row" wx:for="{{sizeChart.rows}}" wx:key="index">
+            <view class="td" wx:for="{{item}}" wx:for-item="cell" wx:key="*this">{{cell}}</view>
+          </view>
+        </view>
+        <view class="size-chart-note">* 以上数据为参考值，具体因款式而异</view>
+      </view>
+
       <rich-text nodes="{{goods.detail}}" wx:if="{{goods.detail}}"></rich-text>
     </view>
   </view>
