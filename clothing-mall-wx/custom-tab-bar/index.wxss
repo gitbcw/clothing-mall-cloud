@@ -39,7 +39,7 @@
   height: 28rpx;
   line-height: 28rpx;
   padding: 0 8rpx;
-  background-color: #FF4D4F;
+  background-color: #FF8998;
   color: #FFFFFF;
   font-size: 18rpx;
   text-align: center;
