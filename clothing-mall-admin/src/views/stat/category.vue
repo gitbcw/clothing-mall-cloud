@@ -78,38 +78,11 @@
     <el-card class="section-card">
       <div slot="header" class="section-header">
         <span>活动效果分析</span>
-        <el-tag size="small" type="warning">模拟数据</el-tag>
       </div>
-      <el-table :data="activityData" border>
-        <el-table-column prop="name" label="活动名称" min-width="150" />
-        <el-table-column prop="type" label="活动类型" width="100">
-          <template slot-scope="scope">
-            <el-tag size="small" :type="getActivityTagType(scope.row.type)">
-              {{ scope.row.type }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="period" label="活动周期" width="180" />
-        <el-table-column prop="participants" label="参与人数" width="100" align="right" />
-        <el-table-column prop="orders" label="订单数" width="100" align="right" />
-        <el-table-column label="销售额" width="120" align="right">
-          <template slot-scope="scope">
-            {{ formatMoney(scope.row.amount) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="转化率" width="100" align="right">
-          <template slot-scope="scope">
-            {{ scope.row.conversion }}%
-          </template>
-        </el-table-column>
-        <el-table-column label="ROI" width="80" align="right">
-          <template slot-scope="scope">
-            <span :class="scope.row.roi >= 3 ? 'roi-good' : 'roi-normal'">
-              {{ scope.row.roi }}x
-            </span>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div class="empty-tip">
+        <i class="el-icon-info" />
+        <span>暂无数据，需建立活动跟踪体系后采集</span>
+      </div>
     </el-card>
   </div>
 </template>
@@ -144,9 +117,7 @@ export default {
       categorySettings: {
         labelMap: { amount: '销售额' }
       },
-      categoryTableData: [],
-      // 活动效果
-      activityData: []
+      categoryTableData: []
     }
   },
   created() {
@@ -212,7 +183,8 @@ export default {
           percent: item.percent || 0
         }))
       }).catch(() => {
-        this.loadMockSceneData()
+        this.sceneChartData.rows = []
+        this.sceneTableData = []
       })
 
       // 获取分类销售数据
@@ -229,100 +201,13 @@ export default {
           amount: item.amount || 0
         }))
       }).catch(() => {
-        this.loadMockCategoryData()
+        this.categoryChartData.rows = []
+        this.categoryTableData = []
       })
-
-      // 活动效果暂时使用模拟数据
-      this.loadMockActivityData()
-    },
-    loadMockSceneData() {
-      this.sceneChartData.rows = [
-        { name: '日常通勤', amount: 186000 },
-        { name: '约会聚会', amount: 145000 },
-        { name: '商务正装', amount: 128000 },
-        { name: '休闲度假', amount: 98000 },
-        { name: '运动健身', amount: 65000 }
-      ]
-      const totalScene = this.sceneChartData.rows.reduce((sum, item) => sum + item.amount, 0)
-      this.sceneTableData = this.sceneChartData.rows.map((item, index) => ({
-        name: item.name,
-        orders: [420, 350, 280, 210, 150][index],
-        amount: item.amount,
-        percent: ((item.amount / totalScene) * 100).toFixed(1)
-      }))
-    },
-    loadMockCategoryData() {
-      this.categoryChartData.rows = [
-        { name: '连衣裙', amount: 245000 },
-        { name: '衬衫', amount: 186000 },
-        { name: '外套', amount: 165000 },
-        { name: '半身裙', amount: 128000 },
-        { name: '裤装', amount: 98000 }
-      ]
-      this.categoryTableData = [
-        { name: '连衣裙', goodsCount: 156, orders: 520, amount: 245000 },
-        { name: '衬衫', goodsCount: 128, orders: 430, amount: 186000 },
-        { name: '外套', goodsCount: 98, orders: 380, amount: 165000 },
-        { name: '半身裙', goodsCount: 85, orders: 290, amount: 128000 },
-        { name: '裤装', goodsCount: 72, orders: 220, amount: 98000 }
-      ]
-    },
-    loadMockActivityData() {
-      this.activityData = [
-        {
-          name: '春季焕新季',
-          type: '满减',
-          period: '2026-03-01 ~ 2026-03-15',
-          participants: 1250,
-          orders: 380,
-          amount: 156000,
-          conversion: 30.4,
-          roi: 4.2
-        },
-        {
-          name: '女神节特惠',
-          type: '折扣',
-          period: '2026-03-06 ~ 2026-03-08',
-          participants: 890,
-          orders: 256,
-          amount: 98000,
-          conversion: 28.8,
-          roi: 3.5
-        },
-        {
-          name: '新人专享券',
-          type: '优惠券',
-          period: '2026-03-01 ~ 2026-03-31',
-          participants: 560,
-          orders: 125,
-          amount: 45000,
-          conversion: 22.3,
-          roi: 2.8
-        },
-        {
-          name: '限时特卖-春装',
-          type: '秒杀',
-          period: '2026-03-10 10:00 ~ 22:00',
-          participants: 420,
-          orders: 180,
-          amount: 72000,
-          conversion: 42.9,
-          roi: 5.1
-        }
-      ]
     },
     formatMoney(value) {
       if (!value) return '¥0'
       return '¥' + Number(value).toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-    },
-    getActivityTagType(type) {
-      const typeMap = {
-        '满减': 'danger',
-        '折扣': 'warning',
-        '优惠券': 'success',
-        '秒杀': ''
-      }
-      return typeMap[type] || 'info'
     }
   }
 }
@@ -348,12 +233,11 @@ export default {
   gap: 12px;
 }
 
-.roi-good {
-  color: #67C23A;
-  font-weight: 600;
-}
-
-.roi-normal {
-  color: #E6A23C;
+.empty-tip {
+  padding: 30px 20px;
+  text-align: center;
+  color: #909399;
+  font-size: 13px;
+  i { margin-right: 4px; }
 }
 </style>

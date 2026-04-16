@@ -1,7 +1,8 @@
 {
   "usingComponents": {
     "sku-picker": "/components/sku-picker/sku-picker",
-    "page-loading": "/components/page-loading/page-loading"
+    "page-loading": "/components/page-loading/page-loading",
+    "floating-cart": "/components/floating-cart/floating-cart"
   },
   "navigationStyle": "custom"
 }

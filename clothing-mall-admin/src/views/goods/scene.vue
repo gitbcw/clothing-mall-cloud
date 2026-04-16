@@ -17,6 +17,11 @@
       </el-table-column>
       <el-table-column align="center" label="场景名称" prop="name" />
       <el-table-column align="center" label="描述" prop="description" />
+      <el-table-column align="center" label="商品数" width="80">
+        <template slot-scope="scope">
+          <span>{{ scope.row.goodsCount || 0 }}</span>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="排序" prop="sortOrder" width="80" />
       <el-table-column align="center" label="状态" width="100">
         <template slot-scope="scope">
@@ -407,10 +412,10 @@ export default {
         listSceneGoods(row.id),
         listGoods({ limit: 1000, status: 'published' })
       ]).then(([boundRes, allRes]) => {
-        const boundIds = boundRes.data.data || []
+        const boundList = boundRes.data.data || []
         const allList = allRes.data.data.list || []
         this.allGoods = allList
-        this.boundGoods = allList.filter(g => boundIds.includes(g.id))
+        this.boundGoods = boundList
         this.goodsLoading = false
       }).catch(() => {
         this.allGoods = []

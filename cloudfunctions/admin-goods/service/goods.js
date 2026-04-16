@@ -7,6 +7,15 @@
 const { db, response, paginate } = require('layer-base')
 const { query, execute } = db
 
+const BIT_FIELDS = ['is_new', 'is_hot', 'is_on_sale', 'is_special_price', 'deleted']
+
+function normalizeBitFields(row) {
+  for (const key of BIT_FIELDS) {
+    if (row[key] != null) row[key] = !!row[key]
+  }
+  return row
+}
+
 const SORT_WHITELIST = ['id', 'name', 'add_time', 'update_time', 'sort_order', 'price']
 function safeSort(sort, order) {
   const s = SORT_WHITELIST.includes(sort) ? sort : 'add_time'
@@ -51,7 +60,7 @@ async function list(data) {
   ])
 
   return response.ok({
-    list: listRows,
+    list: listRows.map(normalizeBitFields),
     total,
     page,
     limit,
@@ -93,7 +102,7 @@ async function detail(data) {
   ])
 
   return response.ok({
-    goods: goods[0],
+    goods: normalizeBitFields(goods[0]),
     specifications,
     attributes,
     products,
@@ -111,7 +120,7 @@ async function findBySn(data) {
   const rows = await query('SELECT * FROM litemall_goods WHERE goods_sn = ? AND deleted = 0', [goodsSn])
   if (rows.length === 0) return response.badArgumentValue()
 
-  return response.ok(rows[0])
+  return response.ok(normalizeBitFields(rows[0]))
 }
 
 /**
@@ -123,10 +132,9 @@ async function create(data) {
 
   const status = goods.status || 'draft'
   const retailPrice = goods.retail_price || 0
-  const counterPrice = goods.counter_price || (retailPrice > 0 ? Math.round(retailPrice * 1.3 * 100) / 100 : 0)
 
   const result = await execute(
-    'INSERT INTO litemall_goods (name, goods_sn, cat_id, brand_id, gallery, pic_url, detail, keywords, brief, status, is_new, is_hot, sort_order, price, counter_price, retail_price, special_price, is_special_price, scene_tags, goods_params, add_time, update_time, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 0)',
+    'INSERT INTO litemall_goods (name, goods_sn, cat_id, brand_id, gallery, pic_url, detail, keywords, brief, status, is_new, is_hot, sort_order, price, retail_price, special_price, is_special_price, scene_tags, goods_params, add_time, update_time, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 0)',
     [
       goods.name, goods.goods_sn || '', goods.cat_id || 0, goods.brand_id || 0,
       JSON.stringify(goods.gallery || []), goods.pic_url || '', goods.detail || '',
@@ -134,7 +142,7 @@ async function create(data) {
       status,
       goods.is_new ? 1 : 0, goods.is_hot ? 1 : 0,
       goods.sort_order || 100, goods.price || 0,
-      counterPrice, retailPrice,
+      retailPrice,
       goods.special_price || null, goods.special_price ? 1 : 0,
       goods.scene_tags ? JSON.stringify(goods.scene_tags) : null,
       goods.goods_params ? JSON.stringify(goods.goods_params) : null,
@@ -173,12 +181,12 @@ async function update(data) {
   if (goods.is_hot !== undefined) { sets.push('is_hot = ?'); params.push(goods.is_hot ? 1 : 0) }
   if (goods.sort_order !== undefined) { sets.push('sort_order = ?'); params.push(goods.sort_order) }
   if (goods.price !== undefined) { sets.push('price = ?'); params.push(goods.price) }
-  if (goods.counter_price !== undefined) { sets.push('counter_price = ?'); params.push(goods.counter_price) }
   if (goods.retail_price !== undefined) { sets.push('retail_price = ?'); params.push(goods.retail_price) }
   if (goods.special_price !== undefined) { sets.push('special_price = ?'); params.push(goods.special_price) }
   if (goods.is_special_price !== undefined) { sets.push('is_special_price = ?'); params.push(goods.is_special_price ? 1 : 0) }
   if (goods.scene_tags !== undefined) { sets.push('scene_tags = ?'); params.push(JSON.stringify(goods.scene_tags)) }
   if (goods.goods_params !== undefined) { sets.push('goods_params = ?'); params.push(JSON.stringify(goods.goods_params)) }
+  if (goods.share_url !== undefined) { sets.push('share_url = ?'); params.push(goods.share_url) }
   sets.push('update_time = NOW()')
 
   params.push(goods.id)

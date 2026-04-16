@@ -1,5 +1,6 @@
 const util = require('../../utils/util.js')
 const api = require('../../config/api.js')
+const tracker = require('../../utils/tracker.js')
 
 Page({
   data: {
@@ -28,6 +29,10 @@ Page({
       this.getGoodsList()
       this.getSceneInfo()
     }
+  },
+
+  onShow() {
+    tracker.trackPageView('场景穿搭')
   },
 
   getSceneInfo() {

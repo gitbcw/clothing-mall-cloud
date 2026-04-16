@@ -19,7 +19,7 @@ const {
 const {
   list: outfitList, read: outfitRead,
   create: outfitCreate, update: outfitUpdate,
-  delete: outfitDelete,
+  delete: outfitDelete, status: outfitStatus,
 } = require('./service/outfit')
 
 async function checkPermission(admin, permission) {
@@ -49,6 +49,7 @@ const routes = {
   outfitCreate:  { handler: outfitCreate,  permission: 'admin:outfit:create' },
   outfitUpdate:  { handler: outfitUpdate,  permission: 'admin:outfit:update' },
   outfitDelete:  { handler: outfitDelete,  permission: 'admin:outfit:delete' },
+  outfitStatus:  { handler: outfitStatus,  permission: 'admin:outfit:update' },
 }
 
 exports.main = async (event, context) => {

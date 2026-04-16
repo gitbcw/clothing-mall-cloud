@@ -93,7 +93,7 @@
 </template>
 
 <script>
-import { statOrder } from '@/api/stat'
+import { statOrder, statSalesGoodsTop, statRevenueCategory } from '@/api/stat'
 import VeLine from 'v-charts/lib/line'
 import VePie from 'v-charts/lib/pie'
 
@@ -201,54 +201,58 @@ export default {
       return { startDate: formatDate(start), endDate: formatDate(end) }
     },
     fetchData() {
-      // 暂时使用模拟数据，后续对接真实API
-      this.loadMockData()
+      const params = this.getDateParams()
+      this.fetchOrderData(params)
+      this.fetchGoodsTop(params)
+      this.fetchCategoryData(params)
     },
-    loadMockData() {
-      // 核心指标
-      this.totalAmount = 125800
-      this.totalOrders = 856
-      this.totalCustomers = 623
-      this.avgPrice = 147
-
-      // 趋势数据
-      const days = this.quickDays || 7
-      const now = new Date()
-      const rows = []
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date(now)
-        date.setDate(date.getDate() - i)
-        const dayStr = `${date.getMonth() + 1}/${date.getDate()}`
-        rows.push({
-          day: dayStr,
-          amount: Math.floor(Math.random() * 10000) + 15000,
-          orders: Math.floor(Math.random() * 50) + 100
+    fetchOrderData(params) {
+      statOrder(params).then(response => {
+        const rows = response.data.data.rows || []
+        let totalAmount = 0
+        let totalOrders = 0
+        let totalCustomers = 0
+        const customerSet = new Set()
+        rows.forEach(item => {
+          totalAmount += parseFloat(item.amount) || 0
+          totalOrders += parseInt(item.orders) || 0
+          totalCustomers = Math.max(totalCustomers, parseInt(item.customers) || 0)
         })
-      }
-      this.trendChartData.rows = rows
-
-      // 商品榜单
-      this.goodsTopList = [
-        { name: '春日优雅连衣裙', sales: 156, amount: 46800 },
-        { name: '法式雪纺衬衫', sales: 123, amount: 24600 },
-        { name: '温柔针织开衫', sales: 98, amount: 19600 },
-        { name: '干练西装外套', sales: 87, amount: 26100 },
-        { name: '经典风衣外套', sales: 76, amount: 30400 },
-        { name: 'A字半身裙', sales: 65, amount: 9750 },
-        { name: '高腰阔腿裤', sales: 58, amount: 8700 },
-        { name: '休闲牛仔外套', sales: 45, amount: 9000 },
-        { name: '纯色T恤', sales: 42, amount: 2520 },
-        { name: '运动套装', sales: 38, amount: 7600 }
-      ]
-
-      // 品类分布
-      this.categoryData.rows = [
-        { category: '连衣裙', amount: 46800 },
-        { category: '衬衫', amount: 24600 },
-        { category: '外套', amount: 65500 },
-        { category: '半身裙', amount: 9750 },
-        { category: '裤装', amount: 8700 }
-      ]
+        this.totalAmount = Math.round(totalAmount)
+        this.totalOrders = totalOrders
+        this.avgPrice = totalOrders > 0 ? Math.round(totalAmount / totalOrders) : 0
+        this.trendChartData.rows = rows.map(item => ({
+          day: item.day,
+          amount: Math.round(parseFloat(item.amount) || 0),
+          orders: parseInt(item.orders) || 0
+        }))
+      }).catch(() => {
+        this.totalAmount = 0
+        this.totalOrders = 0
+        this.avgPrice = 0
+        this.trendChartData.rows = []
+      })
+    },
+    fetchGoodsTop(params) {
+      statSalesGoodsTop({ ...params, limit: 10 }).then(response => {
+        this.goodsTopList = (response.data.data || []).map(item => ({
+          name: item.name,
+          sales: parseInt(item.sales) || 0,
+          amount: Math.round(parseFloat(item.amount) || 0)
+        }))
+      }).catch(() => {
+        this.goodsTopList = []
+      })
+    },
+    fetchCategoryData(params) {
+      statRevenueCategory(params).then(response => {
+        this.categoryData.rows = (response.data.data || []).map(item => ({
+          category: item.category,
+          amount: Math.round(parseFloat(item.amount) || 0)
+        }))
+      }).catch(() => {
+        this.categoryData.rows = []
+      })
     }
   }
 }

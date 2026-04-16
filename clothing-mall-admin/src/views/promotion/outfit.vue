@@ -40,6 +40,9 @@
               <el-button type="text" class="overlay-btn" @click="handleUpdate(item)">
                 <i class="el-icon-edit-outline" /> 编辑
               </el-button>
+              <el-button type="text" class="overlay-btn" @click="handleStatus(item)">
+                <i :class="item.status === 1 ? 'el-icon-close' : 'el-icon-check'" /> {{ item.status === 1 ? '禁用' : '启用' }}
+              </el-button>
               <el-button type="text" class="overlay-btn danger" @click="handleDelete(item)">
                 <i class="el-icon-delete" /> 删除
               </el-button>
@@ -133,6 +136,10 @@
             <el-input v-model="dataForm.title" placeholder="例：春日通勤优雅穿搭" maxlength="30" show-word-limit />
           </el-form-item>
 
+          <el-form-item label="穿搭描述">
+            <el-input v-model="dataForm.description" type="textarea" :rows="2" placeholder="简短描述该穿搭的风格和亮点" maxlength="200" />
+          </el-form-item>
+
           <el-form-item label="关联商品" prop="goodsIds">
             <div class="selected-goods-area">
               <transition-group name="goods-tag" tag="div" class="selected-goods-tags">
@@ -147,6 +154,33 @@
               </el-button>
             </div>
           </el-form-item>
+
+          <div class="brand-settings">
+            <el-form-item label="品牌水印颜色">
+              <el-radio-group v-model="dataForm.brandColor" class="brand-radio-group">
+                <el-radio label="white">
+                  <span class="brand-color-dot" style="background:#fff;border:1px solid #ddd;" /> 白色
+                </el-radio>
+                <el-radio label="coffee">
+                  <span class="brand-color-dot" style="background:#8B6914;" /> 咖啡
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+            <div class="form-row">
+              <el-form-item label="水印位置" class="form-item-half">
+                <el-radio-group v-model="dataForm.brandPosition">
+                  <el-radio label="top-left">左上</el-radio>
+                  <el-radio label="top-right">右上</el-radio>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="商品栏位置" class="form-item-half">
+                <el-radio-group v-model="dataForm.floatPosition">
+                  <el-radio label="left">左侧</el-radio>
+                  <el-radio label="right">右侧</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </div>
+          </div>
 
           <div class="form-row">
             <el-form-item label="排序权重" prop="sortOrder" class="form-item-half">
@@ -254,7 +288,7 @@
 <script>
 import { cloudUpload } from '@/utils/upload'
 import { listGoods, listCatAndBrand } from '@/api/goods'
-import { listOutfit, createOutfit, updateOutfit, deleteOutfit } from '@/api/outfit'
+import { listOutfit, createOutfit, updateOutfit, deleteOutfit, statusOutfit } from '@/api/outfit'
 import Pagination from '@/components/Pagination'
 
 export default {
@@ -280,6 +314,9 @@ export default {
         title: '',
         description: '',
         goodsIds: [],
+        brandColor: 'white',
+        brandPosition: 'top-right',
+        floatPosition: 'left',
         tags: '',
         sortOrder: 0,
         status: 1
@@ -351,6 +388,9 @@ export default {
         coverPic: '',
         description: '',
         goodsIds: [],
+        brandColor: 'white',
+        brandPosition: 'top-right',
+        floatPosition: 'left',
         tags: '',
         sortOrder: 0,
         status: 1
@@ -378,7 +418,7 @@ export default {
     createData() {
       this.$refs['dataForm'].validate(valid => {
         if (valid) {
-          const submitData = { ...this.dataForm, goodsIds: JSON.stringify(this.dataForm.goodsIds) }
+          const submitData = { ...this.dataForm }
           createOutfit(submitData).then(() => {
             this.dialogFormVisible = false
             this.$notify.success({ title: '成功', message: '添加穿搭推荐成功' })
@@ -396,6 +436,9 @@ export default {
         title: row.title,
         description: row.description || '',
         goodsIds: row.goodsIds || [],
+        brandColor: row.brandColor || 'white',
+        brandPosition: row.brandPosition || 'top-right',
+        floatPosition: row.floatPosition || 'left',
         sortOrder: row.sortOrder,
         status: row.status
       }
@@ -409,7 +452,7 @@ export default {
     updateData() {
       this.$refs['dataForm'].validate(valid => {
         if (valid) {
-          const submitData = { ...this.dataForm, goodsIds: JSON.stringify(this.dataForm.goodsIds) }
+          const submitData = { ...this.dataForm }
           updateOutfit(submitData).then(() => {
             this.dialogFormVisible = false
             this.$notify.success({ title: '成功', message: '更新穿搭推荐成功' })
@@ -431,6 +474,22 @@ export default {
           this.getList()
         }).catch(response => {
           this.$notify.error({ title: '失败', message: response.data.errmsg || '删除失败' })
+        })
+      }).catch(() => {})
+    },
+    handleStatus(row) {
+      const newStatus = row.status === 1 ? 0 : 1
+      const action = newStatus === 1 ? '启用' : '禁用'
+      this.$confirm(`确定要${action}该穿搭推荐吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        statusOutfit({ id: row.id, status: newStatus }).then(() => {
+          this.$notify.success({ title: '成功', message: `${action}成功` })
+          this.getList()
+        }).catch(response => {
+          this.$notify.error({ title: '失败', message: response.data.errmsg || '操作失败' })
         })
       }).catch(() => {})
     },
@@ -961,6 +1020,27 @@ export default {
 .btn-add-goods:hover {
   border-color: #b8724e;
   color: #b8724e;
+}
+
+/* Brand Settings */
+.brand-settings {
+  border-top: 1px solid #e8e2dc;
+  padding-top: 16px;
+  margin-top: 8px;
+}
+.brand-settings .el-form-item {
+  margin-bottom: 12px;
+}
+.brand-radio-group .el-radio {
+  margin-right: 20px;
+}
+.brand-color-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 4px;
 }
 
 /* ========== Goods Selector Dialog ========== */

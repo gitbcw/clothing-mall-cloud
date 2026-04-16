@@ -1,0 +1,39 @@
+<view class="container">
+  <custom-nav title="联系客服" />
+
+  <view class="contact-card">
+    <!-- 顶部装饰 -->
+    <view class="card-header">
+      <view class="header-icon">
+        <van-icon name="service-o" size="36px" color="#8B7355" />
+      </view>
+      <view class="header-title">{{csTitle || '川着客服'}}</view>
+      <view class="header-desc">{{csSubtitle || '专属客服，为您服务'}}</view>
+    </view>
+
+    <!-- 二维码区域 -->
+    <view class="qr-section" wx:if="{{csQrCode}}">
+      <image class="qr-img" src="{{csQrCode}}" mode="aspectFit" show-menu-by-longpress="{{true}}" />
+      <view class="qr-tip">长按二维码保存，打开微信扫一扫添加</view>
+    </view>
+
+    <!-- 未配置提示 -->
+    <view class="qr-section qr-empty" wx:else>
+      <view class="empty-icon">
+        <van-icon name="service-o" size="48px" color="#ddd" />
+      </view>
+      <view class="empty-text">客服二维码配置中</view>
+    </view>
+
+    <!-- 文案说明 -->
+    <view class="desc-section" wx:if="{{csDesc}}">
+      <view class="desc-text">{{csDesc}}</view>
+    </view>
+  </view>
+
+  <!-- 底部工作时间为通用信息 -->
+  <view class="work-hours">
+    <view class="hours-title">服务时间</view>
+    <view class="hours-text">周一至周日 9:00 - 22:00</view>
+  </view>
+</view>

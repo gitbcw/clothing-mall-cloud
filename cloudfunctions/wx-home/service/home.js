@@ -22,7 +22,7 @@ async function index(data, context) {
   const [hotGoodsRows, outfitRows, holidayRows, specialPriceRows] = await Promise.all([
     // 热门商品（最新50个已发布商品）
     db.query(
-      `SELECT id, name, brief, pic_url, is_hot, is_new, counter_price, retail_price, category_id
+      `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price, category_id
        FROM litemall_goods
        WHERE status = 'published' AND deleted = 0
        ORDER BY add_time DESC LIMIT 50`
@@ -45,7 +45,7 @@ async function index(data, context) {
     ),
     // 特价商品
     db.query(
-      `SELECT id, name, brief, pic_url, is_hot, is_new, counter_price, retail_price,
+      `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price,
               special_price, category_id
        FROM litemall_goods
        WHERE is_special_price = 1 AND status = 'published' AND deleted = 0
@@ -94,7 +94,7 @@ async function index(data, context) {
   if (activityGoods.length === 0) {
     titleType = 'weekly'
     const allGoods = await db.query(
-      `SELECT id, name, brief, pic_url, is_hot, is_new, counter_price, retail_price, category_id
+      `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price, category_id
        FROM litemall_goods
        WHERE status = 'published' AND deleted = 0
        ORDER BY add_time DESC LIMIT ${ACTIVITY_LIMIT * 2}`
@@ -153,7 +153,7 @@ async function index(data, context) {
     hotGoodsList: hotGoodsRows.map(g => ({
       id: g.id, name: g.name, brief: g.brief, picUrl: g.pic_url,
       isHot: !!g.is_hot, isNew: !!g.is_new,
-      counterPrice: g.counter_price, retailPrice: g.retail_price, categoryId: g.category_id,
+      retailPrice: g.retail_price, categoryId: g.category_id,
     })),
     outfitList,
     homeActivity: { goods: activityGoods, titleType },
@@ -168,7 +168,7 @@ async function index(data, context) {
  */
 async function findPublishedGoods(id) {
   const rows = await db.query(
-    `SELECT id, name, brief, pic_url, is_hot, is_new, counter_price, retail_price,
+    `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price,
             special_price, category_id
      FROM litemall_goods WHERE id = ? AND status = 'published' AND deleted = 0 LIMIT 1`,
     [id]
@@ -185,7 +185,6 @@ function pickGoodsFields(goods) {
     name: goods.name,
     picUrl: goods.pic_url,
     retailPrice: goods.retail_price,
-    counterPrice: goods.counter_price,
     specialPrice: goods.special_price,
   }
 }

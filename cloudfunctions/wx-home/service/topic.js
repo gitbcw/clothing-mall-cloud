@@ -19,7 +19,7 @@ function toTopicCamel(r) {
 function toGoodsCamel(r) {
   return {
     id: r.id, name: r.name, brief: r.brief, picUrl: r.pic_url,
-    counterPrice: r.counter_price, retailPrice: r.retail_price,
+    retailPrice: r.retail_price,
     categoryId: r.category_id, isNew: !!r.is_new, isHot: !!r.is_hot,
   }
 }
@@ -78,7 +78,7 @@ async function detail(data, context) {
   const goods = []
   if (goodsIds.length > 0) {
     const goodsRows = await db.query(
-      `SELECT id, name, brief, pic_url, counter_price, retail_price
+      `SELECT id, name, brief, pic_url, retail_price
        FROM litemall_goods
        WHERE id IN (${goodsIds.map(() => '?').join(',')}) AND status = 'published' AND deleted = 0`,
       goodsIds

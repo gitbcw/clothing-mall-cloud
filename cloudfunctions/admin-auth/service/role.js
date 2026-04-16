@@ -27,6 +27,10 @@ async function list(data) {
     where.push('name LIKE ?')
     params.push(`%${data.name}%`)
   }
+  if (data.type) {
+    where.push('type = ?')
+    params.push(data.type)
+  }
   where.push('deleted = 0')
   const whereClause = where.join(' AND ')
 
@@ -86,12 +90,12 @@ async function read(data) {
  * 创建角色
  */
 async function create(data) {
-  const { name, desc, enabled } = data
+  const { name, desc, enabled, type } = data
   if (!name) return response.badArgument()
 
   const result = await execute(
-    'INSERT INTO litemall_role (name, `desc`, enabled, add_time, update_time, deleted) VALUES (?, ?, ?, NOW(), NOW(), 0)',
-    [name, desc || '', enabled !== false ? 1 : 0]
+    'INSERT INTO litemall_role (name, `desc`, enabled, type, add_time, update_time, deleted) VALUES (?, ?, ?, ?, NOW(), NOW(), 0)',
+    [name, desc || '', enabled !== false ? 1 : 0, type || 'admin']
   )
 
   return response.ok({ id: result.insertId })
@@ -132,21 +136,31 @@ async function update(data) {
 
 /**
  * 删除角色
- * 保护：如果有管理员正在使用该角色，则拒绝删除
+ * 保护：如果有用户正在使用该角色，则拒绝删除
  */
 async function deleteFn(data) {
   const { id } = data
   if (!id) return response.badArgument()
 
-  // 检查是否有管理员使用该角色
+  // 检查后台管理员是否使用该角色
   const admins = await query(
     'SELECT id, username FROM litemall_admin WHERE deleted = 0'
   )
-
   for (const admin of admins) {
     const roleIds = admin.role_ids ? JSON.parse(admin.role_ids) : []
     if (roleIds.includes(id)) {
       return response.fail(640, '当前角色存在管理员，不能删除')
+    }
+  }
+
+  // 检查小程序用户是否使用该角色
+  const users = await query(
+    'SELECT id, nickname FROM litemall_user WHERE deleted = 0 AND role_ids IS NOT NULL'
+  )
+  for (const user of users) {
+    const roleIds = user.role_ids ? JSON.parse(user.role_ids) : []
+    if (roleIds.includes(id)) {
+      return response.fail(640, '当前角色存在小程序用户，不能删除')
     }
   }
 

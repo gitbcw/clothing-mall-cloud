@@ -39,3 +39,11 @@ export function deleteOutfit(data) {
     data
   })
 }
+
+export function statusOutfit(data) {
+  return request({
+    url: '/outfit/status',
+    method: 'post',
+    data
+  })
+}

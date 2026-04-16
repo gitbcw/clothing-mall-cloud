@@ -19,7 +19,7 @@ function toGoodsCamel(row) {
     picUrl: row.pic_url, shareUrl: row.share_url,
     isNew: !!row.is_new, isHot: !!row.is_hot,
     isSpecialPrice: row.is_special_price,
-    retailPrice: row.retail_price, counterPrice: row.counter_price,
+    retailPrice: row.retail_price,
     specialPrice: row.special_price,
     unit: row.unit, addTime: row.add_time, updateTime: row.update_time,
   }
@@ -169,15 +169,6 @@ async function edit(data) {
     }
   }
 
-  // 专柜价自动计算
-  if (data.retailPrice !== undefined && data.retailPrice) {
-    const rp = parseFloat(data.retailPrice)
-    if (rp > 0) {
-      updates.push('counter_price = ?')
-      params.push((rp * 1.3).toFixed(2))
-    }
-  }
-
   // JSON 字段
   if (data.scenes !== undefined) {
     updates.push('scene_tags = ?')
@@ -275,14 +266,13 @@ async function create(data) {
 
     // 插入商品
     const retailPrice = data.retailPrice || 0
-    const counterPrice = data.counterPrice || (retailPrice > 0 ? (retailPrice * 1.3).toFixed(2) : 0)
 
     const result = await conn.query(
       `INSERT INTO litemall_goods
-        (name, category_id, brief, detail, keywords, retail_price, counter_price,
+        (name, category_id, brief, detail, keywords, retail_price,
          special_price, is_special_price, pic_url, gallery, scene_tags, goods_params,
          status, is_on_sale, deleted, add_time, update_time)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', 0, 0, NOW(), NOW())`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', 0, 0, NOW(), NOW())`,
       [
         name.trim(),
         data.categoryId || null,
@@ -290,7 +280,6 @@ async function create(data) {
         data.detail || '',
         data.keywords || '',
         retailPrice,
-        counterPrice,
         data.specialPrice || null,
         data.specialPrice ? 1 : 0,
         data.picUrl || data.sourceImage || '',
@@ -320,8 +309,8 @@ async function create(data) {
       // SKU 最低价覆盖零售价
       if (minPrice !== null) {
         await conn.query(
-          `UPDATE litemall_goods SET retail_price = ?, counter_price = ? WHERE id = ?`,
-          [minPrice, (minPrice * 1.3).toFixed(2), goodsId]
+          `UPDATE litemall_goods SET retail_price = ? WHERE id = ?`,
+          [minPrice, goodsId]
         )
       }
     }

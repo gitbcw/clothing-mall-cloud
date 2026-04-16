@@ -250,33 +250,12 @@
         <el-col :xs="24" :sm="24" :lg="12" style="margin-bottom: 20px">
           <el-card class="box-card">
             <div slot="header" class="clearfix">
-              <span>海报点击 Top</span>
+              <span>分享海报 Top</span>
+              <el-tag size="mini" type="info" style="margin-left: 8px">需开启分享埋点</el-tag>
             </div>
-            <div class="rank-list">
-              <div
-                v-for="(item, index) in salesData.posterClickTop"
-                :key="index"
-                class="rank-item"
-              >
-                <div class="rank-index" :class="'rank-' + (index + 1)">
-                  {{ index + 1 }}
-                </div>
-                <div class="rank-info">
-                  <div class="rank-poster-wrapper">
-                    <div class="rank-poster" :style="{ backgroundColor: item.color }">{{ item.abbr }}</div>
-                  </div>
-                  <div class="rank-text">
-                    <div class="rank-name">{{ item.name }}</div>
-                    <el-progress
-                      :percentage="item.percentage"
-                      :show-text="false"
-                      :stroke-width="6"
-                      color="#E6A23C"
-                    />
-                  </div>
-                </div>
-                <div class="rank-value">{{ item.value }}</div>
-              </div>
+            <div class="empty-tip">
+              <i class="el-icon-info" />
+              <span>暂无数据，需在小程序端开启分享埋点后采集</span>
             </div>
           </el-card>
         </el-col>
@@ -409,7 +388,6 @@ export default {
         avgPrice: 0,
         salesTop: [],
         repurchaseTop: [],
-        posterClickTop: [],
         afterSalesTop: []
       }
     }
@@ -544,7 +522,6 @@ export default {
           avgPrice: data.avgPrice || 0,
           salesTop: data.salesTop || [],
           repurchaseTop: data.repurchaseTop || [],
-          posterClickTop: [], // 海报点击需要埋点数据，暂为空
           afterSalesTop: data.afterSalesTop || []
         }
       }).catch(() => {
@@ -554,7 +531,6 @@ export default {
           avgPrice: 0,
           salesTop: [],
           repurchaseTop: [],
-          posterClickTop: [],
           afterSalesTop: []
         }
       })
@@ -667,6 +643,14 @@ export default {
     border-bottom: 1px solid #f0f0f0;
     &:last-child {
       border-bottom: none;
+    }
+
+    .empty-tip {
+      padding: 20px;
+      text-align: center;
+      color: #909399;
+      font-size: 13px;
+      i { margin-right: 4px; }
     }
 
     .rank-index {

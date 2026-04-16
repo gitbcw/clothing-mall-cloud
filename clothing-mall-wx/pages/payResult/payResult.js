@@ -1,5 +1,6 @@
 var util = require('../../utils/util.js');
 var api = require('../../config/api.js');
+var tracker = require('../../utils/tracker.js');
 
 var app = getApp();
 Page({
@@ -13,13 +14,16 @@ Page({
       orderId: options.orderId,
       status: options.status === '1' ? true : false
     })
+    // 支付成功页进入时记录支付埋点
+    if (options.status === '1') {
+      tracker.trackOrderPay(options.orderId, options.amount || 0)
+    }
   },
   onReady: function() {
 
   },
   onShow: function() {
-    // 页面显示
-
+    tracker.trackPageView('支付结果');
   },
   onHide: function() {
     // 页面隐藏
@@ -51,6 +55,7 @@ Page({
           'paySign': payParam.paySign,
           'success': function(res) {
             console.log("支付过程成功")
+            tracker.trackOrderPay(that.data.orderId, 0)
             that.setData({
               status: true
             });

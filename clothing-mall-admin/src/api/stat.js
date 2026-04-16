@@ -139,3 +139,21 @@ export function statDashboardConversion() {
     method: 'get'
   })
 }
+
+// 销售商品排行
+export function statSalesGoodsTop(query) {
+  return request({
+    url: '/stat/sales/goods-top',
+    method: 'get',
+    params: query
+  })
+}
+
+// 收藏统计
+export function statCollect(query) {
+  return request({
+    url: '/stat/collect',
+    method: 'get',
+    params: query
+  })
+}

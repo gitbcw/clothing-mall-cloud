@@ -71,7 +71,7 @@ export default {
     getList() {
       this.loading = true
       listShipper().then(res => {
-        this.list = res.data.data
+        this.list = res.data.data.list
         this.loading = false
       })
     },

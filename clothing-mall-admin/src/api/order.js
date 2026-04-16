@@ -81,3 +81,11 @@ export function confirmOrder(data) {
     data
   })
 }
+
+export function verifyOrder(data) {
+  return request({
+    url: '/order/verify',
+    method: 'post',
+    data
+  })
+}

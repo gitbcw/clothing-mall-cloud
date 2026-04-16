@@ -55,6 +55,7 @@
         </el-form-item>
         <el-form-item label="门店图片" prop="imageUrl">
           <el-upload
+            action=""
             :http-request="cloudUpload"
             :show-file-list="false"
             :on-success="uploadSuccess"

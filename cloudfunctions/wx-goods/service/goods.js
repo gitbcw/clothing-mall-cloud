@@ -48,7 +48,6 @@ function toGoodsCamel(row) {
     specialPrice: row.special_price,
     isPresale: row.is_presale,
     unit: row.unit,
-    counterPrice: row.counter_price,
     retailPrice: row.retail_price,
     addTime: row.add_time,
     updateTime: row.update_time,
@@ -79,7 +78,7 @@ async function detail(data, context) {
       `SELECT id, goods_sn, name, category_id, brand_id, gallery, keywords, brief,
               is_on_sale, status, sort_order, pic_url, share_url,
               is_new, is_hot, is_special_price, special_price, is_presale,
-              unit, counter_price, retail_price, add_time, update_time,
+              unit, retail_price, add_time, update_time,
               detail, scene_tags, goods_params
        FROM litemall_goods WHERE id = ? AND deleted = 0 LIMIT 1`,
       [id]
@@ -316,7 +315,7 @@ async function list(data, context) {
     SELECT g.id, g.goods_sn, g.name, g.category_id, g.brand_id, g.gallery, g.keywords, g.brief,
            g.is_on_sale, g.status, g.sort_order, g.pic_url, g.share_url,
            g.is_new, g.is_hot, g.is_special_price, g.special_price, g.is_presale,
-           g.unit, g.counter_price, g.retail_price, g.add_time, g.update_time
+           g.unit, g.retail_price, g.add_time, g.update_time
     FROM litemall_goods g ${joinClause}
     WHERE g.status = 'published' AND g.deleted = 0 ${whereClause}
     ORDER BY ${orderClause}
@@ -425,7 +424,7 @@ async function related(data) {
 
   // 查同类商品，排除当前商品
   const rows = await db.query(
-    `SELECT id, name, brief, pic_url, is_hot, is_new, counter_price, retail_price, category_id
+    `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price, category_id
      FROM litemall_goods
      WHERE category_id = ? AND id != ? AND status = 'published' AND deleted = 0
      ORDER BY add_time DESC LIMIT 6`,
@@ -480,4 +479,60 @@ async function categoryWithGoods(data, context) {
   })
 }
 
-module.exports = { detail, category, list, related, count, categoryWithGoods }
+// ==================== 轻量全量列表（分类页专用） ====================
+
+function toGoodsBriefCamel(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    categoryId: row.category_id,
+    picUrl: row.pic_url,
+    retailPrice: row.retail_price,
+    isOnSale: row.is_on_sale,
+    isNew: !!row.is_new,
+    isHot: !!row.is_hot,
+    isSpecialPrice: !!row.is_special_price,
+    specialPrice: row.special_price,
+  }
+}
+
+async function listAllBrief(data, context) {
+  // 并发查：全量轻量商品 + L1 分类列表
+  const [goodsRows, catRows] = await Promise.all([
+    db.query(
+      `SELECT g.id, g.name, g.category_id, g.pic_url, g.retail_price,
+              g.is_on_sale, g.is_new, g.is_hot, g.is_special_price, g.special_price
+       FROM litemall_goods g
+       WHERE g.status = 'published' AND g.deleted = 0
+       ORDER BY g.sort_order DESC, g.add_time DESC`
+    ),
+    db.query(
+      `SELECT id, name, icon_url, pic_url
+       FROM litemall_category
+       WHERE level = 'L1' AND deleted = 0
+       ORDER BY sort_order`
+    ),
+  ])
+
+  // 尺码开关（批量查询，一次性取出所有相关分类）
+  const catIdsInResult = [...new Set(goodsRows.map(g => g.category_id).filter(Boolean))]
+  let enableSizeMap = {}
+  if (catIdsInResult.length > 0) {
+    const placeholders = catIdsInResult.map(() => '?').join(',')
+    const catDetailRows = await db.query(
+      `SELECT id, enable_size FROM litemall_category WHERE id IN (${placeholders}) AND deleted = 0`,
+      catIdsInResult
+    )
+    for (const c of catDetailRows) {
+      enableSizeMap[c.id] = c.enable_size != null ? !!c.enable_size : true
+    }
+  }
+
+  return response.ok({
+    list: goodsRows.map(toGoodsBriefCamel),
+    categories: catRows,
+    enableSizeMap,
+  })
+}
+
+module.exports = { detail, category, list, related, count, categoryWithGoods, listAllBrief }

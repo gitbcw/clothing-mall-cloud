@@ -281,7 +281,33 @@ page {
 
 /* ===== 加载状态 ===== */
 
-/* ===== 空状态 ===== */
+/* ===== 分类区块 ===== */
+
+.category-section {
+  margin-bottom: 8rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx 0 16rpx;
+}
+
+.section-line {
+  flex: 1;
+  max-width: 60rpx;
+  height: 1rpx;
+  background-color: #DDDDDD;
+}
+
+.section-title {
+  font-size: 26rpx;
+  color: #666666;
+  padding: 0 20rpx;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
 .empty-state {
   display: flex;
   flex-direction: column;

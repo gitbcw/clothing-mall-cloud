@@ -1,30 +1,44 @@
-.floating-cart {
+/* 悬浮工具栏 */
+.floating-toolbar {
+  position: relative;
+  z-index: 999;
+}
+
+.floating-btn-group {
   position: fixed;
   right: 32rpx;
   bottom: 200rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.floating-btn {
   width: 100rpx;
   height: 100rpx;
-  background: rgba(248, 227, 187, 0.4);
+  background: #fff;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 8rpx 24rpx rgba(139, 115, 85, 0.25);
-  z-index: 999;
+  box-shadow: 0 8rpx 24rpx rgba(255, 128, 150, 0.25);
+  position: relative;
 }
 
-.floating-cart:active {
+.floating-btn:active {
   transform: scale(0.95);
   opacity: 0.9;
 }
 
+/* 购物车角标 */
 .cart-badge {
   position: absolute;
   top: -8rpx;
   right: -8rpx;
   min-width: 36rpx;
   height: 36rpx;
-  background: #8B7355;
+  background: #ff8096;
   color: #fff;
   font-size: 22rpx;
   font-weight: bold;
@@ -34,4 +48,49 @@
   align-items: center;
   padding: 0 8rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+}
+
+/* 分享按钮重置 */
+.share-btn {
+  background: #fff !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: normal !important;
+  box-shadow: 0 8rpx 24rpx rgba(139, 115, 85, 0.25);
+}
+
+.share-btn::after {
+  border: none;
+}
+
+/* 展开按钮 */
+.toggle-btn {
+  transition: all 0.3s ease;
+}
+
+.toggle-btn.toggle-expanded {
+  transform: rotate(45deg);
+  background: #ffd6de;
+}
+
+/* 客服按钮：向上展开动画 */
+.cs-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cs-btn.btn-hidden {
+  opacity: 0;
+  transform: translateY(20rpx) scale(0.5);
+  max-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  margin-bottom: -24rpx;
+}
+
+.cs-btn.btn-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  max-height: 120rpx;
+  pointer-events: auto;
 }

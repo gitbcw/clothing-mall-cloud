@@ -131,9 +131,9 @@
         <template slot-scope="scope">
           <el-image
             v-if="scope.row.shareUrl"
-            :src="scope.row.shareUrl"
+            :src="thumbnail(imageUrl(scope.row.shareUrl))"
+            :preview-src-list="[imageUrl(scope.row.shareUrl)]"
             class="goods-thumb goods-thumb--sm"
-            :preview-src-list="[scope.row.shareUrl]"
             fit="cover"
           />
           <el-button v-else type="text" size="mini" class="text-btn" @click="handleGenerateShareImage(scope.row)">生成</el-button>
@@ -149,11 +149,6 @@
         </template>
       </el-table-column>
 
-      <el-table-column align="center" :label="$t('goods_list.table.counter_price')" prop="counterPrice" width="90">
-        <template slot-scope="scope">
-          <span class="price price--muted">¥{{ scope.row.counterPrice }}</span>
-        </template>
-      </el-table-column>
 
       <el-table-column align="center" :label="$t('goods_list.table.retail_price')" prop="retailPrice" width="90">
         <template slot-scope="scope">
@@ -571,10 +566,12 @@
 </style>
 
 <script>
-import { listGoods, deleteGoods, generateShareImage, publishGoodsBatch, unpublishGoodsBatch, unpublishAllGoods, listCatAndBrand } from '@/api/goods'
+import { listGoods, deleteGoods, editGoods, publishGoodsBatch, unpublishGoodsBatch, unpublishAllGoods, listCatAndBrand } from '@/api/goods'
 import BackToTop from '@/components/BackToTop'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { thumbnail, toPreview } from '@/utils/index'
+import { generateGoodsPoster } from '@/utils/poster'
+import { cloudUploadFile } from '@/utils/upload'
 
 export default {
   name: 'GoodsList',
@@ -705,25 +702,37 @@ export default {
       })
     },
     handleGenerateShareImage(row) {
-      generateShareImage(row.id).then(response => {
-        this.$notify.success({
-          title: '成功',
-          message: '分享海报生成成功'
-        })
-        // 更新当前行的分享图URL
-        row.shareUrl = response.data.data.shareUrl
-      }).catch(error => {
-        this.$notify.error({
-          title: '失败',
-          message: error?.response?.data?.errmsg || error?.message || '生成分享海报失败'
-        })
+      this.$set(row, '_generating', true)
+      generateGoodsPoster({
+        picUrl: row.picUrl,
+        name: row.name,
+        retailPrice: row.retailPrice,
+        specialPrice: row.specialPrice,
       })
+        .then(blob => {
+          blob.name = `poster_${row.id}.jpg`
+          return cloudUploadFile(blob)
+        })
+        .then(cloudPath => {
+          return editGoods({ goods: { id: row.id, share_url: cloudPath } }).then(() => cloudPath)
+        })
+        .then(cloudPath => {
+          row.shareUrl = cloudPath
+          this.$notify.success({ title: '成功', message: '分享海报生成成功' })
+        })
+        .catch(error => {
+          console.error('[海报生成] error:', error)
+          this.$notify.error({ title: '失败', message: error?.message || '生成分享海报失败' })
+        })
+        .finally(() => {
+          this.$set(row, '_generating', false)
+        })
     },
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['商品ID', '商品款号', '名称', '专柜价格', '当前价格', '是否新品', '是否热品', '是否在售', '首页主图', '宣传图片列表', '商品介绍', '详细介绍', '商品图片', '商品单位', '关键字', '类目ID', '品牌商ID']
-        const filterVal = ['id', 'goodsSn', 'name', 'counterPrice', 'retailPrice', 'isNew', 'isHot', 'isOnSale', 'listPicUrl', 'gallery', 'brief', 'detail', 'picUrl', 'goodsUnit', 'keywords', 'categoryId', 'brandId']
+        const tHeader = ['商品ID', '商品款号', '名称', '一口价', '是否新品', '是否热品', '是否在售', '首页主图', '宣传图片列表', '商品介绍', '详细介绍', '商品图片', '商品单位', '关键字', '类目ID', '品牌商ID']
+        const filterVal = ['id', 'goodsSn', 'name', 'retailPrice', 'isNew', 'isHot', 'isOnSale', 'listPicUrl', 'gallery', 'brief', 'detail', 'picUrl', 'goodsUnit', 'keywords', 'categoryId', 'brandId']
         excel.export_json_to_excel2(tHeader, this.list, filterVal, '商品信息')
         this.downloadLoading = false
       })

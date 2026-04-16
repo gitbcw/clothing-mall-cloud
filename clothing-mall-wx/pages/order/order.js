@@ -1,5 +1,6 @@
 const util = require('../../utils/util.js');
 const api = require('../../config/api.js');
+const tracker = require('../../utils/tracker.js');
 
 const app = getApp();
 
@@ -45,6 +46,8 @@ Page({
   },
 
   onShow() {
+    tracker.trackPageView('订单列表');
+
     this.setData({
       orderList: [],
       page: 1,

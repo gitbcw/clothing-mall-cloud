@@ -22,6 +22,7 @@ const ROUTE_MAP = {
   'goods/list':                    ['wx-goods', 'list'],
   'goods/category':                ['wx-goods', 'category'],
   'goods/categoryWithGoods':       ['wx-goods', 'categoryWithGoods'],
+  'goods/listAllBrief':            ['wx-goods', 'listAllBrief'],
   'goods/detail':                  ['wx-goods', 'detail'],
   'goods/related':                 ['wx-goods', 'related'],
   'brand/list':                    ['wx-goods', 'brandList'],

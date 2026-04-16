@@ -121,33 +121,35 @@
       </view>
     </view>
 
-    <!-- 搭配推荐 -->
+    <!-- 搭配推荐（匀速无限循环滚动） -->
     <view class="outfit-recommend-section" wx:if="{{matchRecommends.length > 0}}">
       <view class="section-header-weekly" style="text-align: center; margin-bottom: 32rpx;">
         <view class="section-title-cn" style="font-style: normal; font-size: 36rpx; margin-bottom: 8rpx; display: block; color: #333;">搭配推荐</view>
         <view class="section-title-en" style="font-size: 24rpx; color: #FF8096; margin: 0; letter-spacing: 2rpx; display: block; font-weight: normal;">SELECTION LIST</view>
       </view>
-      <scroll-view class="outfit-list-scroll" scroll-x enhanced show-scrollbar="{{false}}">
-        <view class="outfit-item-wrap" wx:for="{{matchRecommends}}" wx:key="id">
-          <!-- 背景海报图 -->
-          <image src="{{img.url(item.coverPic)}}" mode="aspectFill" class="outfit-bg-img" binderror="onHomeImageError" data-source="matchRecommends" data-index="{{index}}" />
-          <!-- 品牌水印（磨砂卡片） -->
-          <view class="outfit-brand-watermark outfit-brand--{{item.brandColor || 'white'}} outfit-brand-pos--{{item.brandPosition || 'top-right'}}">
-            <text class="outfit-brand-main">川着</text>
-            <text class="outfit-brand-sub">川行此着</text>
-          </view>
-          <!-- 商品浮窗 -->
-          <view class="outfit-float-panel float-pos--{{item.floatPosition || 'left'}}" wx:if="{{item.goods && item.goods.length > 0}}" catchtap="preventTap">
-            <view class="outfit-float-title">Get同款</view>
-            <scroll-view class="outfit-goods-scroll" scroll-y enhanced show-scrollbar="{{false}}">
-              <view class="outfit-good-item" wx:for="{{item.goods}}" wx:key="id" wx:for-item="good" catchtap="goToDetail" data-id="{{good.id}}">
-                <image src="{{img.url(good.picUrl)}}" mode="aspectFill" class="outfit-good-img" />
-                <view class="outfit-good-price">¥{{good.retailPrice}}</view>
-              </view>
-            </scroll-view>
+      <view class="outfit-scroll-wrapper" bindtouchstart="pauseOutfitScroll" bindtouchend="resumeOutfitScroll">
+        <view class="outfit-scroll-inner" style="animation-duration: {{outfitScrollDuration}}s; animation-play-state: {{outfitScrollPaused ? 'paused' : 'running'}}">
+          <view class="outfit-item-wrap" wx:for="{{outfitScrollList}}" wx:key="{{item.id}}_{{index}}" bindtap="goToOutfit" data-id="{{item.id}}">
+            <!-- 背景海报图 -->
+            <image src="{{img.url(item.coverPic)}}" mode="aspectFill" class="outfit-bg-img" binderror="onHomeImageError" data-source="matchRecommends" data-index="{{index % matchRecommends.length}}" />
+            <!-- 品牌水印（磨砂卡片） -->
+            <view class="outfit-brand-watermark outfit-brand--{{item.brandColor || 'white'}} outfit-brand-pos--{{item.brandPosition || 'top-right'}}">
+              <text class="outfit-brand-main">川着</text>
+              <text class="outfit-brand-sub">川行此着</text>
+            </view>
+            <!-- 商品浮窗 -->
+            <view class="outfit-float-panel float-pos--{{item.floatPosition || 'left'}}" wx:if="{{item.goods && item.goods.length > 0}}" catchtap="preventTap">
+              <view class="outfit-float-title">Get同款</view>
+              <scroll-view class="outfit-goods-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+                <view class="outfit-good-item" wx:for="{{item.goods}}" wx:key="id" wx:for-item="good" catchtap="goToDetail" data-id="{{good.id}}">
+                  <image src="{{img.url(good.picUrl)}}" mode="aspectFill" class="outfit-good-img" />
+                  <view class="outfit-good-price">¥{{good.retailPrice}}</view>
+                </view>
+              </scroll-view>
+            </view>
           </view>
         </view>
-      </scroll-view>
+      </view>
     </view>
 
     <!-- 饰饰如意 -->

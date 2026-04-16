@@ -25,11 +25,12 @@
   <!-- 主体内容区：左侧分类，右侧商品 -->
   <view class="main-content">
     <!-- 左侧分类列表 -->
-    <scroll-view class="category-sidebar" scroll-y="true">
+    <scroll-view class="category-sidebar" scroll-y="true" scroll-into-view="{{scrollIntoView}}" scroll-with-animation="true">
       <view
         class="category-item {{item.id === activeCategoryId ? 'active' : ''}}"
         wx:for="{{navList}}"
         wx:key="id"
+        id="nav-{{item.id}}"
         bindtap="switchCate"
         data-id="{{item.id}}"
       >
@@ -38,54 +39,69 @@
       <view class="sidebar-bottom-placeholder"></view>
     </scroll-view>
 
-    <!-- 右侧商品瀑布流 -->
-    <scroll-view class="goods-content" scroll-y="true" scroll-top="{{scrollTop}}" bindscroll="onGoodsScroll" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd">
+    <!-- 右侧全分类连续滚动 -->
+    <scroll-view class="goods-content" scroll-y="true" scroll-into-view="{{scrollIntoViewItem}}" scroll-with-animation="true" bindscroll="onGoodsScroll">
       <view style="min-height: {{scrollViewHeight}}px;">
       <!-- 加载状态 -->
       <page-loading visible="{{loading}}" />
 
       <!-- 空状态 -->
-      <view class="empty-state" wx:if="{{!loading && leftGoodsList.length === 0 && rightGoodsList.length === 0}}">
+      <view class="empty-state" wx:if="{{!loading && groupedGoods.length === 0}}">
         <view class="empty-text">暂无商品</view>
       </view>
 
-      <view class="waterfall-layout" wx:if="{{!loading && leftGoodsList.length > 0}}">
-        <!-- 左列 -->
-        <view class="waterfall-col">
-          <view class="goods-card" wx:for="{{leftGoodsList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
-            <view class="goods-img-wrap">
-              <image class="goods-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onCategoryImageError" data-source="leftGoodsList" data-index="{{index}}"></image>
-            </view>
-            <view class="goods-info">
-              <view class="goods-title">{{item.name}}</view>
-              <view class="goods-bottom">
-                <view class="price-wrap">
-                  <text class="price-symbol theme-color">￥</text>
-                  <text class="price-num theme-color">{{item.retailPrice}}</text>                </view>
-                <view class="cart-icon-small" catchtap="addToCart" data-id="{{item.id}}"></view>
-              </view>
-            </view>
+      <!-- 按分类分组的商品区块 -->
+      <block wx:for="{{groupedGoods}}" wx:key="categoryId" wx:for-item="group" wx:for-index="groupindex">
+        <view class="category-section" id="section-{{group.categoryId}}">
+          <!-- 分类标题 -->
+          <view class="section-header">
+            <view class="section-line"></view>
+            <text class="section-title">{{group.name}}</text>
+            <view class="section-line"></view>
           </view>
-        </view>
 
-        <!-- 右列 -->
-        <view class="waterfall-col">
-          <view class="goods-card" wx:for="{{rightGoodsList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
-            <view class="goods-img-wrap">
-              <image class="goods-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onCategoryImageError" data-source="rightGoodsList" data-index="{{index}}"></image>
+          <!-- 瀑布流布局 -->
+          <view class="waterfall-layout">
+            <!-- 左列 -->
+            <view class="waterfall-col">
+              <view class="goods-card" wx:for="{{group.leftGoods}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+                <view class="goods-img-wrap">
+                  <image class="goods-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onCategoryImageError" data-source="leftGoods" data-index="{{index}}" data-groupindex="{{groupindex}}"></image>
+                </view>
+                <view class="goods-info">
+                  <view class="goods-title">{{item.name}}</view>
+                  <view class="goods-bottom">
+                    <view class="price-wrap">
+                      <text class="price-symbol theme-color">￥</text>
+                      <text class="price-num theme-color">{{item.retailPrice}}</text>
+                    </view>
+                    <view class="cart-icon-small" catchtap="addToCart" data-id="{{item.id}}"></view>
+                  </view>
+                </view>
+              </view>
             </view>
-            <view class="goods-info">
-              <view class="goods-title">{{item.name}}</view>
-              <view class="goods-bottom">
-                <view class="price-wrap">
-                  <text class="price-symbol theme-color">￥</text>
-                  <text class="price-num theme-color">{{item.retailPrice}}</text>                </view>
-                <view class="cart-icon-small" catchtap="addToCart" data-id="{{item.id}}"></view>
+
+            <!-- 右列 -->
+            <view class="waterfall-col">
+              <view class="goods-card" wx:for="{{group.rightGoods}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+                <view class="goods-img-wrap">
+                  <image class="goods-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onCategoryImageError" data-source="rightGoods" data-index="{{index}}" data-groupindex="{{groupindex}}"></image>
+                </view>
+                <view class="goods-info">
+                  <view class="goods-title">{{item.name}}</view>
+                  <view class="goods-bottom">
+                    <view class="price-wrap">
+                      <text class="price-symbol theme-color">￥</text>
+                      <text class="price-num theme-color">{{item.retailPrice}}</text>
+                    </view>
+                    <view class="cart-icon-small" catchtap="addToCart" data-id="{{item.id}}"></view>
+                  </view>
+                </view>
               </view>
             </view>
           </view>
         </view>
-      </view>
+      </block>
       </view>
       <!-- 底部留白 -->
       <view class="content-bottom-placeholder"></view>
@@ -104,4 +120,7 @@
     bind:addcart="skuAddToCart"
     bind:buynow="skuBuyNow"
   />
+
+  <!-- 悬浮购物车 -->
+  <floating-cart />
 </view>

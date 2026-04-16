@@ -1,4 +1,24 @@
-<view class="floating-cart" bindtap="goToCart">
-  <van-icon name="shopping-cart-o" size="24px" color="#8B7355" />
-  <view class="cart-badge" wx:if="{{count > 0}}">{{count > 99 ? '99+' : count}}</view>
+<view class="floating-toolbar">
+  <view class="floating-btn-group">
+    <!-- 购物车（最上） -->
+    <view class="floating-btn cart-btn" bindtap="goToCart">
+      <van-icon name="shopping-cart-o" size="24px" color="#ff8096" />
+      <view class="cart-badge" wx:if="{{count > 0}}">{{count > 99 ? '99+' : count}}</view>
+    </view>
+
+    <!-- 分享 -->
+    <button class="floating-btn share-btn" open-type="share">
+      <van-icon name="share" size="22px" color="#ff8096" />
+    </button>
+
+    <!-- 客服（展开时显示，在分享下方） -->
+    <view class="floating-btn cs-btn {{expanded ? 'btn-visible' : 'btn-hidden'}}" bindtap="openCs">
+      <van-icon name="chat-o" size="22px" color="#ff8096" />
+    </view>
+
+    <!-- 展开/收起（最底） -->
+    <view class="floating-btn toggle-btn {{expanded ? 'toggle-expanded' : ''}}" bindtap="toggleExpand">
+      <van-icon name="plus" size="28px" color="#ff8096" />
+    </view>
+  </view>
 </view>

@@ -1,5 +1,6 @@
 const util = require('../../../utils/util.js');
 const api = require('../../../config/api.js');
+const tracker = require('../../../utils/tracker.js');
 
 Page({
   data: {
@@ -15,6 +16,10 @@ Page({
 
   onLoad() {
     this.loadCouponList();
+  },
+
+  onShow() {
+    tracker.trackPageView('优惠券');
   },
 
   onPullDownRefresh() {

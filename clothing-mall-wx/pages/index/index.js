@@ -20,6 +20,9 @@ Page({
 
     // 搭配推荐
     matchRecommends: [],
+    outfitScrollList: [],
+    outfitScrollDuration: 80,
+    outfitScrollPaused: false,
 
     // 活动位
     activityGoodsTop: [],
@@ -77,6 +80,8 @@ Page({
     tracker.trackPageView('首页')
     // 刷新轮播图，确保场景修改后能及时更新
     this.loadSceneBanners()
+    // 更新购物车角标
+    app.fetchCartCount()
   },
 
   onPageScroll() {},
@@ -117,11 +122,32 @@ Page({
 
         // 穿搭推荐（替换原来的搭配推荐数据源）
         const outfitList = res.data.outfitList || []
-        this.setData({ matchRecommends: outfitList, loading: false })
+        this.setData({
+          matchRecommends: outfitList,
+          outfitScrollList: [...outfitList, ...outfitList],
+          outfitScrollDuration: Math.max(outfitList.length * 10, 40),
+          loading: false
+        })
 
-        // 系统配置 - 活动位背景图
+        // 系统配置 - 活动位背景图 & 客服信息
         const systemConfig = res.data.systemConfig || {}
         let bgUrl = systemConfig.activityBgImage || ''
+
+        // 客服配置存入全局
+        var csConfig = {}
+        if (systemConfig.csQrCode) {
+          var csUrl = systemConfig.csQrCode
+          if (csUrl.indexOf('://') === -1 && csUrl.indexOf('/') !== 0) {
+            csUrl = 'https://636c-clo-test-4g8ukdond34672de-1258700476.tcb.qcloud.la/' + csUrl
+          }
+          csConfig.csQrCode = csUrl
+        }
+        if (systemConfig.csTitle) csConfig.csTitle = systemConfig.csTitle
+        if (systemConfig.csSubtitle) csConfig.csSubtitle = systemConfig.csSubtitle
+        if (systemConfig.csDesc) csConfig.csDesc = systemConfig.csDesc
+        if (Object.keys(csConfig).length > 0) {
+          app.globalData.csConfig = csConfig
+        }
         if (bgUrl && bgUrl.indexOf('://') === -1 && bgUrl.indexOf('/') !== 0) {
           bgUrl = 'https://636c-clo-test-4g8ukdond34672de-1258700476.tcb.qcloud.la/' + bgUrl
         }
@@ -256,8 +282,7 @@ Page({
       if (res.errno === 0) {
         wx.showToast({ title: '已加入购物车' })
         this.setData({ showSkuPicker: false })
-        // 立即刷新悬浮购物车角标
-        if (app.globalData.onCartChange) app.globalData.onCartChange()
+        app.fetchCartCount()
       } else {
         wx.showToast({ title: res.errmsg || '添加失败', icon: 'none' })
       }
@@ -299,5 +324,14 @@ Page({
 
   resumeHotScroll() {
     this.setData({ hotScrollPaused: false })
+  },
+
+  // 搭配推荐自动滚动控制
+  pauseOutfitScroll() {
+    this.setData({ outfitScrollPaused: true })
+  },
+
+  resumeOutfitScroll() {
+    this.setData({ outfitScrollPaused: false })
   }
 })

@@ -29,11 +29,6 @@
       </el-table-column>
       <el-table-column align="center" label="姓名" prop="name" />
       <el-table-column align="center" label="手机号" prop="phone" width="120" />
-      <el-table-column align="center" label="提成比例" width="100">
-        <template slot-scope="scope">
-          {{ scope.row.commissionRate ? (scope.row.commissionRate * 100).toFixed(1) + '%' : '-' }}
-        </template>
-      </el-table-column>
       <el-table-column align="center" label="状态" width="80">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status === 1 ? 'success' : 'info'" size="small">
@@ -41,7 +36,11 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="添加时间" prop="addTime" width="160" />
+      <el-table-column align="center" label="添加时间" width="160">
+        <template slot-scope="scope">
+          {{ scope.row.addTime ? scope.row.addTime.substring(0, 19).replace('T', ' ') : '-' }}
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="操作" width="150">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>

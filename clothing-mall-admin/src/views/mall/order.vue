@@ -1,330 +1,448 @@
 <template>
-  <div class="app-container">
+  <div class="order-page">
 
-    <!-- 业务视图切换 -->
-    <div style="margin-bottom: 15px;">
-      <el-radio-group v-model="businessView" @change="handleBusinessViewChange">
-        <el-radio-button label="pending">待处理</el-radio-button>
-        <el-radio-button label="completed">已完结</el-radio-button>
-      </el-radio-group>
-      <el-link v-if="businessView === 'pending'" type="info" style="margin-left: 20px;" @click="showAllOrders">查看全部订单</el-link>
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-left">
+        <h2 class="page-title">订单管理</h2>
+        <div class="view-switcher">
+          <button
+            :class="['view-btn', { active: businessView === 'pending' }]"
+            @click="businessView = 'pending'; handleBusinessViewChange()"
+          >待处理</button>
+          <button
+            :class="['view-btn', { active: businessView === 'completed' }]"
+            @click="businessView = 'completed'; handleBusinessViewChange()"
+          >已完结</button>
+        </div>
+      </div>
+      <el-link v-if="businessView === 'pending'" class="view-all-link" @click="showAllOrders">
+        查看全部订单 <i class="el-icon-arrow-right" />
+      </el-link>
     </div>
 
-    <el-tabs v-model="activeTab" type="border-card" @tab-click="handleTabClick">
-      <el-tab-pane v-for="tab in tabList" :key="tab.name" :name="tab.name">
-        <span slot="label">
-          {{ tab.label }}
-          <el-badge :value="statusCounts[tab.name]" :hidden="!statusCounts[tab.name]" class="item" :type="getBadgeType(tab.name)" style="margin-left: 5px; vertical-align: top;" />
+    <!-- Status Overview Cards -->
+    <div v-if="businessView === 'pending'" class="status-overview">
+      <div class="overview-card card-amber">
+        <div class="card-icon"><i class="el-icon-wallet" /></div>
+        <div class="card-body">
+          <span class="card-count">{{ statusCounts['101'] || 0 }}</span>
+          <span class="card-label">待付款</span>
+        </div>
+      </div>
+      <div class="overview-card card-blue">
+        <div class="card-icon"><i class="el-icon-truck" /></div>
+        <div class="card-body">
+          <span class="card-count">{{ statusCounts['201'] || 0 }}</span>
+          <span class="card-label">待发货</span>
+        </div>
+      </div>
+      <div class="overview-card card-teal">
+        <div class="card-icon"><i class="el-icon-circle-check" /></div>
+        <div class="card-body">
+          <span class="card-count">{{ statusCounts['501'] || 0 }}</span>
+          <span class="card-label">待核销</span>
+        </div>
+      </div>
+      <div class="overview-card card-orange">
+        <div class="card-icon"><i class="el-icon-warning-outline" /></div>
+        <div class="card-body">
+          <span class="card-count">{{ statusCounts['202'] || 0 }}</span>
+          <span class="card-label">退款中</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="custom-tabs">
+      <button
+        v-for="tab in tabList"
+        :key="tab.name"
+        :class="['tab-item', { active: activeTab === tab.name }]"
+        @click="activeTab = tab.name; handleTabClick({ name: tab.name })"
+      >
+        {{ tab.label }}
+        <span v-if="statusCounts[tab.name]" class="tab-badge" :class="'badge-' + getBadgeType(tab.name)">
+          {{ statusCounts[tab.name] }}
         </span>
+      </button>
+    </div>
 
-        <div v-if="activeTab === tab.name">
-          <!-- 查询和其他操作 -->
-          <div class="filter-container" style="margin-top: 15px;">
-            <el-input v-model="listQuery.nickname" clearable class="filter-item" style="width: 160px;" :placeholder="$t('mall_order.placeholder.filter_nickname')" />
-            <el-input v-model="listQuery.consignee" clearable class="filter-item" style="width: 160px;" :placeholder="$t('mall_order.placeholder.filter_consignee')" />
-            <el-input v-model="listQuery.orderSn" clearable class="filter-item" style="width: 160px;" :placeholder="$t('mall_order.placeholder.filter_order_sn')" />
-            <el-date-picker v-model="listQuery.timeArray" type="datetimerange" value-format="yyyy-MM-dd HH:mm:ss" class="filter-item" :range-separator="$t('mall_order.text.date_range_separator')" :start-placeholder="$t('mall_order.placeholder.filter_time_start')" :end-placeholder="$t('mall_order.placeholder.filter_time_end')" :picker-options="pickerOptions" />
-            <el-button v-permission="['GET /admin/order/list']" class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{ $t('app.button.search') }}</el-button>
-            <el-button :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">{{ $t('app.button.download') }}</el-button>
-          </div>
+    <!-- Main Content -->
+    <div class="content-card">
 
-          <!-- 查询结果 -->
-          <el-table v-loading="listLoading" :data="list" :element-loading-text="$t('app.message.list_loading')" border fit highlight-current-row>
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="filter-fields">
+          <el-input v-model="listQuery.nickname" clearable class="filter-input" :placeholder="$t('mall_order.placeholder.filter_nickname')" prefix-icon="el-icon-user" />
+          <el-input v-model="listQuery.consignee" clearable class="filter-input" :placeholder="$t('mall_order.placeholder.filter_consignee')" prefix-icon="el-icon-postcard" />
+          <el-input v-model="listQuery.orderSn" clearable class="filter-input" :placeholder="$t('mall_order.placeholder.filter_order_sn')" prefix-icon="el-icon-document" />
+          <el-date-picker
+            v-model="listQuery.timeArray"
+            type="datetimerange"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            class="filter-date"
+            :range-separator="$t('mall_order.text.date_range_separator')"
+            :start-placeholder="$t('mall_order.placeholder.filter_time_start')"
+            :end-placeholder="$t('mall_order.placeholder.filter_time_end')"
+            :picker-options="pickerOptions"
+          />
+        </div>
+        <div class="filter-actions">
+          <el-button v-permission="['GET /admin/order/list']" type="primary" icon="el-icon-search" @click="handleFilter">{{ $t('app.button.search') }}</el-button>
+          <el-button :loading="downloadLoading" icon="el-icon-download" @click="handleDownload">{{ $t('app.button.download') }}</el-button>
+        </div>
+      </div>
 
-            <el-table-column type="expand">
-              <template slot-scope="props">
-                <div v-for="item in props.row.goodsVoList" :key="item.id" class="order-goods">
-                  <div class="picture">
-                    <img :src="imageUrl(item.picUrl)" width="40">
-                  </div>
-                  <div class="name">
-                    {{ $t('mall_order.text.expand_goods_name', { goods_name: item.goodsName }) }}
-                  </div>
-                  <div class="spec">
+      <!-- Order Table -->
+      <el-table
+        v-loading="listLoading"
+        :data="list"
+        :element-loading-text="$t('app.message.list_loading')"
+        fit
+        highlight-current-row
+        class="order-table"
+      >
+        <el-table-column type="expand">
+          <template slot-scope="props">
+            <div class="expanded-row">
+              <div v-for="item in props.row.goodsVoList" :key="item.id" class="expanded-goods">
+                <img :src="imageUrl(item.picUrl)" class="goods-thumb">
+                <div class="goods-info">
+                  <span class="goods-name">{{ $t('mall_order.text.expand_goods_name', { goods_name: item.goodsName }) }}</span>
+                  <span class="goods-spec">
                     <span v-if="item.color || item.size">{{ item.color || '' }}{{ item.size ? ' / ' + item.size : '' }}</span>
                     <span v-else>{{ $t('mall_order.text.expand_specifications', { specifications: item.specifications ? item.specifications.join('-') : '' }) }}</span>
-                  </div>
-                  <div class="price">
-                    {{ $t('mall_order.text.expand_unit_price', { price: item.price }) }}
-                  </div>
-                  <div class="num">
-                    {{ $t('mall_order.text.expand_number', { number: item.number }) }}
-                  </div>
-                  <div class="price">
-                    {{ $t('mall_order.text.expand_subtotal_price', { price: item.price * item.number }) }}
-                  </div>
+                  </span>
                 </div>
+                <span class="goods-price">¥{{ item.price }}</span>
+                <span class="goods-num">×{{ item.number }}</span>
+                <span class="goods-subtotal">¥{{ item.price * item.number }}</span>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="orderSn" :label="$t('mall_order.table.order_sn')" min-width="140">
+          <template slot-scope="scope">
+            <span class="order-sn">{{ scope.row.orderSn }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column :label="$t('mall_order.table.user_name')" width="140">
+          <template slot-scope="scope">
+            <div class="user-cell">
+              <el-avatar :src="imageUrl(scope.row.avatar)" :size="28" />
+              <span class="user-name">{{ scope.row.userName }}</span>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column :label="$t('mall_order.table.add_time')" min-width="100">
+          <template slot-scope="scope">
+            <span class="time-text">{{ (scope.row.addTime || '').substring(0, 10) }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column :label="$t('mall_order.table.order_status')" width="110">
+          <template slot-scope="scope">
+            <span :class="['status-tag', 'status-' + scope.row.orderStatus]">
+              {{ scope.row.orderStatus | orderStatusFilter }}
+            </span>
+          </template>
+        </el-table-column>
+
+        <el-table-column :label="$t('mall_order.table.order_price')" width="130" align="right">
+          <template slot-scope="scope">
+            <div class="price-cell">
+              <span class="price-actual">¥{{ scope.row.actualPrice }}</span>
+              <span v-if="scope.row.orderPrice !== scope.row.actualPrice" class="price-original">¥{{ scope.row.orderPrice }}</span>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column :label="$t('mall_order.table.pay_time')" prop="payTime" min-width="100">
+          <template slot-scope="scope">
+            <span class="time-text">{{ scope.row.payTime || '—' }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column :label="$t('mall_order.table.consignee')" min-width="130">
+          <template slot-scope="scope">
+            <div class="consignee-cell">
+              <span class="consignee-name">{{ scope.row.consignee }}</span>
+              <span class="consignee-mobile">{{ scope.row.mobile }}</span>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column :label="$t('mall_order.table.ship_sn')" min-width="120">
+          <template slot-scope="scope">
+            <div v-if="scope.row.shipSn" class="ship-cell">
+              <span class="ship-channel">{{ scope.row.shipChannel }}</span>
+              <span class="ship-sn">{{ scope.row.shipSn }}</span>
+            </div>
+            <span v-else class="text-muted">—</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column :label="$t('mall_order.table.actions')" width="240" class-name="action-col" fixed="right">
+          <template slot-scope="scope">
+            <div class="action-buttons">
+              <el-button v-if="canShip(scope.row)" type="primary" size="mini" round @click="handleShip(scope.row)">{{ $t('mall_order.button.ship') }}</el-button>
+              <el-button v-if="canVerify(scope.row)" type="success" size="mini" round @click="handleVerify(scope.row)">核销</el-button>
+              <el-button v-if="canRefund(scope.row)" type="danger" size="mini" round @click="handleRefund(scope.row)">{{ $t('mall_order.button.refund') }}</el-button>
+              <el-button v-if="canDelete(scope.row)" size="mini" round @click="handleDelete(scope.row)">{{ $t('app.button.delete') }}</el-button>
+              <el-button size="mini" round plain @click="handleDetail(scope.row)">{{ $t('app.button.detail') }}</el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- Pagination -->
+      <div class="pagination-wrap">
+        <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+      </div>
+    </div>
+
+    <!-- Order Detail Dialog -->
+    <el-dialog :visible.sync="orderDialogVisible" :title="$t('mall_order.dialog.detail')" width="800px" custom-class="detail-dialog" top="4vh">
+      <div class="dialog-body">
+        <!-- Basic Info -->
+        <div class="detail-section">
+          <div class="section-title">基本信息</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">订单编号</span>
+              <span class="info-value">{{ orderDetail.order.orderSn }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">订单状态</span>
+              <span :class="['status-tag', 'status-' + orderDetail.order.orderStatus]">
+                {{ orderDetail.order.orderStatus | orderStatusFilter }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">{{ $t('mall_order.form.detail_user_nickname') }}</span>
+              <span class="info-value">{{ orderDetail.user.nickname }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">用户留言</span>
+              <span class="info-value">{{ orderDetail.order.message || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Receiving Info -->
+        <div class="detail-section">
+          <div class="section-title">{{ $t('mall_order.form.detail_receiving_info') }}</div>
+          <template v-if="orderDetail.order.deliveryType !== 'pickup'">
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">{{ $t('mall_order.text.detail_consigne', { consignee: '' }).replace(/\s*/g, '') }}</span>
+                <span class="info-value">{{ orderDetail.order.consignee }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">{{ $t('mall_order.text.detail_mobile', { mobile: '' }).replace(/\s*/g, '') }}</span>
+                <span class="info-value">{{ orderDetail.order.mobile }}</span>
+              </div>
+              <div class="info-item full-width">
+                <span class="info-label">{{ $t('mall_order.text.detail_address', { address: '' }).replace(/\s*/g, '') }}</span>
+                <span class="info-value">{{ orderDetail.order.address }}</span>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <div class="pickup-info">
+              <div class="pickup-badge">到店自提</div>
+              <div v-if="orderDetail.order.pickupCode" class="pickup-code">
+                取货码：<strong>{{ orderDetail.order.pickupCode }}</strong>
+              </div>
+              <div v-if="orderDetail.order.pickupContact" class="pickup-contact">
+                联系人：{{ orderDetail.order.pickupContact }}
+                <span style="margin-left: 16px;">电话：{{ orderDetail.order.pickupPhone }}</span>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Goods -->
+        <div class="detail-section">
+          <div class="section-title">{{ $t('mall_order.form.detail_goods') }}</div>
+          <el-table :data="orderDetail.orderGoods" size="small" class="goods-table">
+            <el-table-column align="center" :label="$t('mall_order.table.detail_goods_name')" prop="goodsName" />
+            <el-table-column align="center" :label="$t('mall_order.table.detail_goods_sn')" prop="goodsSn" width="120" />
+            <el-table-column align="center" :label="$t('mall_order.table.detail_goods_specifications')" prop="specifications" width="140">
+              <template slot-scope="scope">
+                <span v-if="scope.row.color || scope.row.size">{{ scope.row.color || '' }}{{ scope.row.size ? ' / ' + scope.row.size : '' }}</span>
+                <span v-else>{{ scope.row.specifications ? scope.row.specifications.join('-') : '' }}</span>
               </template>
             </el-table-column>
-
-            <el-table-column align="center" min-width="120" :label="$t('mall_order.table.order_sn')" prop="orderSn" />
-
-            <el-table-column align="center" :label="$t('mall_order.table.avatar')" width="80">
+            <el-table-column align="center" :label="$t('mall_order.table.detail_goods_price')" prop="price" width="100" />
+            <el-table-column align="center" :label="$t('mall_order.table.detail_goods_number')" prop="number" width="80" />
+            <el-table-column align="center" :label="$t('mall_order.table.detail_goods_pic_url')" prop="picUrl" width="70">
               <template slot-scope="scope">
-                <el-avatar :src="imageUrl(scope.row.avatar)" />
-              </template>
-            </el-table-column>
-
-            <el-table-column align="center" :label="$t('mall_order.table.user_name')" prop="userName" />
-
-            <el-table-column align="center" :label="$t('mall_order.table.add_time')" prop="addTime" min-width="100">
-              <template slot-scope="scope">
-                {{ (scope.row.addTime || '').substring(0, 10) }}
-              </template>
-            </el-table-column>
-            <el-table-column align="center" :label="$t('mall_order.table.order_status')" prop="orderStatus">
-              <template slot-scope="scope">
-                <el-tag>{{ scope.row.orderStatus | orderStatusFilter }}</el-tag>
-              </template>
-            </el-table-column>
-
-            <el-table-column align="center" :label="$t('mall_order.table.order_price')" prop="orderPrice">
-              <template slot-scope="scope">
-                {{ scope.row.orderPrice }} 元
-              </template>
-            </el-table-column>
-
-            <el-table-column align="center" :label="$t('mall_order.table.actual_price')" prop="actualPrice">
-              <template slot-scope="scope">
-                {{ scope.row.actualPrice }} 元
-              </template>
-            </el-table-column>
-
-            <el-table-column align="center" :label="$t('mall_order.table.pay_time')" prop="payTime" />
-
-            <el-table-column align="center" :label="$t('mall_order.table.consignee')" prop="consignee">
-              <template slot-scope="scope">
-                <span style="color:red; font-weight:bold;">{{ scope.row.consignee }}</span>
-              </template>
-            </el-table-column>
-
-            <el-table-column align="center" :label="$t('mall_order.table.mobile')" prop="mobile" min-width="100" />
-
-            <el-table-column align="center" :label="$t('mall_order.table.ship_sn')" prop="shipSn" />
-
-            <el-table-column align="center" :label="$t('mall_order.table.ship_channel')" prop="shipChannel" />
-
-            <el-table-column align="center" :label="$t('mall_order.table.actions')" width="280" class-name="oper">
-              <template slot-scope="scope">
-                <el-button type="primary" size="mini" @click="handleDetail(scope.row)">{{ $t('app.button.detail') }}</el-button>
-                <el-button v-if="scope.row.orderStatus === 150" type="success" size="mini" @click="handleConfirm(scope.row)">确认</el-button>
-                <el-button v-if="canDelete(scope.row)" type="danger" size="mini" @click="handleDelete(scope.row)">{{ $t('app.button.delete') }}</el-button>
-                <el-button v-if="canShip(scope.row)" type="primary" size="mini" @click="handleShip(scope.row)">{{ $t('mall_order.button.ship') }}</el-button>
-                <el-button v-if="canRefund(scope.row)" type="danger" size="mini" @click="handleRefund(scope.row)">{{ $t('mall_order.button.refund') }}</el-button>
+                <img :src="imageUrl(scope.row.picUrl)" width="40" style="border-radius: 4px;">
               </template>
             </el-table-column>
           </el-table>
-
-          <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
         </div>
-      </el-tab-pane>
-    </el-tabs>
 
-    <!-- 订单详情对话框 -->
-    <el-dialog :visible.sync="orderDialogVisible" :title="$t('mall_order.dialog.detail')" width="800">
-      <section ref="print">
-        <el-form :data="orderDetail" label-position="left">
-          <el-form-item :label="$t('mall_order.form.detail_order_sn')">
-            <span>{{ orderDetail.order.orderSn }}</span>
-          </el-form-item>
-          <el-form-item :label="$t('mall_order.form.detail_order_status')">
-            <el-tag>{{ orderDetail.order.orderStatus | orderStatusFilter }}</el-tag>
-          </el-form-item>
-          <el-form-item :label="$t('mall_order.form.detail_user_nickname')">
-            <span>{{ orderDetail.user.nickname }}</span>
-          </el-form-item>
-          <el-form-item :label="$t('mall_order.form.detail_message')">
-            <span>{{ orderDetail.order.message }}</span>
-          </el-form-item>
-          <el-form-item :label="$t('mall_order.form.detail_receiving_info')">
-            <!-- 快递配送 -->
-            <template v-if="orderDetail.order.deliveryType !== 'pickup'">
-              <span>{{ $t('mall_order.text.detail_consigne', { consignee: orderDetail.order.consignee }) }}</span>
-              <span>{{ $t('mall_order.text.detail_mobile', { mobile: orderDetail.order.mobile }) }}</span>
-              <span>{{ $t('mall_order.text.detail_address', { address: orderDetail.order.address }) }}</span>
-            </template>
-            <!-- 到店自提 -->
-            <template v-else>
-              <el-tag type="warning" style="margin-bottom: 10px;">到店自提</el-tag>
-              <div v-if="orderDetail.order.pickupCode" style="margin: 10px 0;">
-                <span style="color: #b4282d; font-weight: bold; font-size: 18px;">取货码：{{ orderDetail.order.pickupCode }}</span>
-              </div>
-              <div v-if="orderDetail.order.pickupContact">
-                <span>联系人：{{ orderDetail.order.pickupContact }}</span>
-                <span style="margin-left: 20px;">电话：{{ orderDetail.order.pickupPhone }}</span>
-              </div>
-            </template>
-          </el-form-item>
-          <el-form-item :label="$t('mall_order.form.detail_goods')">
-            <el-table :data="orderDetail.orderGoods" border fit highlight-current-row>
-              <el-table-column align="center" :label="$t('mall_order.table.detail_goods_name')" prop="goodsName" />
-              <el-table-column align="center" :label="$t('mall_order.table.detail_goods_sn')" prop="goodsSn" />
-              <el-table-column align="center" :label="$t('mall_order.table.detail_goods_specifications')" prop="specifications">
-                <template slot-scope="scope">
-                  <span v-if="scope.row.color || scope.row.size">{{ scope.row.color || '' }}{{ scope.row.size ? ' / ' + scope.row.size : '' }}</span>
-                  <span v-else>{{ scope.row.specifications ? scope.row.specifications.join('-') : '' }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column align="center" :label="$t('mall_order.table.detail_goods_price')" prop="price" />
-              <el-table-column align="center" :label="$t('mall_order.table.detail_goods_number')" prop="number" />
-              <el-table-column align="center" :label="$t('mall_order.table.detail_goods_pic_url')" prop="picUrl">
-                <template slot-scope="scope">
-                  <img :src="imageUrl(scope.row.picUrl)" width="40">
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-form-item>
-          <el-form-item :label="$t('mall_order.form.detail_price_info')">
-            <span>
-              {{ $t('mall_order.text.detail_price_info', {
-                actual_price: orderDetail.order.actualPrice,
-                goods_price: orderDetail.order.goodsPrice,
-                freight_price: orderDetail.order.freightPrice,
-                coupon_price: orderDetail.order.couponPrice,
-                integral_price: orderDetail.order.integralPrice
-              }) }}
-            </span>
-          </el-form-item>
-          <el-form-item :label="$t('mall_order.form.detail_pay_info')">
-            <span>{{ $t('mall_order.text.detail_pay_channel', { pay_channel: '微信支付' }) }}</span>
-            <span>{{ $t('mall_order.text.detail_pay_time', { pay_time: orderDetail.order.payTime }) }}</span>
-          </el-form-item>
-          <el-form-item :label="$t('mall_order.form.detail_ship_info')">
-            <span>{{ $t('mall_order.text.detail_ship_channel', { ship_channel: orderDetail.order.shipChannel }) }}</span>
-            <span>{{ $t('mall_order.text.detail_ship_sn', { ship_sn: orderDetail.order.shipSn }) }}</span>
-            <span>{{ $t('mall_order.text.detail_ship_time', { ship_time: orderDetail.order.shipTime }) }}</span>
-          </el-form-item>
-          <el-form-item :label="$t('mall_order.form.detail_refund_info')">
-            <span>{{ $t('mall_order.text.detail_refund_amount', { refund_amount: orderDetail.order.refundAmount }) }}</span>
-            <span>{{ $t('mall_order.text.detail_refund_type', { refund_type: orderDetail.order.refundType }) }}</span>
-            <span>{{ $t('mall_order.text.detail_refund_content', { refund_content: orderDetail.order.refundContent }) }}</span>
-            <span>{{ $t('mall_order.text.detail_refund_time', { refund_time: orderDetail.order.refundTime }) }}</span>
-          </el-form-item>
-          <el-form-item :label="$t('mall_order.form.detail_receipt_info')">
-            <span>{{ $t('mall_order.text.detail_confirm_time', { confirm_time: orderDetail.order.confirmTime }) }}</span>
-          </el-form-item>
-        </el-form>
-      </section>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="orderDialogVisible = false">{{ $t('mall_order.button.detail_cancel') }}</el-button>
-        <el-button type="primary" @click="printOrder">{{ $t('mall_order.button.detail_print') }}</el-button>
-      </span>
+        <!-- Price Info -->
+        <div class="detail-section">
+          <div class="section-title">{{ $t('mall_order.form.detail_price_info') }}</div>
+          <div class="price-breakdown">
+            <div class="price-row">
+              <span>商品总价</span><span>¥{{ orderDetail.order.goodsPrice }}</span>
+            </div>
+            <div class="price-row">
+              <span>运费</span><span>¥{{ orderDetail.order.freightPrice }}</span>
+            </div>
+            <div v-if="orderDetail.order.couponPrice" class="price-row discount">
+              <span>优惠券</span><span>-¥{{ orderDetail.order.couponPrice }}</span>
+            </div>
+            <div class="price-row total">
+              <span>实付金额</span><span>¥{{ orderDetail.order.actualPrice }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment & Shipping & Refund -->
+        <div class="detail-section">
+          <div class="section-title">支付与物流</div>
+          <div class="info-grid cols-2">
+            <div class="info-item">
+              <span class="info-label">支付方式</span>
+              <span class="info-value">微信支付</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">支付时间</span>
+              <span class="info-value">{{ orderDetail.order.payTime || '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">物流公司</span>
+              <span class="info-value">{{ orderDetail.order.shipChannel || '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">物流单号</span>
+              <span class="info-value">{{ orderDetail.order.shipSn || '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">发货时间</span>
+              <span class="info-value">{{ orderDetail.order.shipTime || '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">收货时间</span>
+              <span class="info-value">{{ orderDetail.order.confirmTime || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Refund Info -->
+        <div v-if="orderDetail.order.refundAmount" class="detail-section">
+          <div class="section-title">{{ $t('mall_order.form.detail_refund_info') }}</div>
+          <div class="info-grid cols-2">
+            <div class="info-item">
+              <span class="info-label">退款金额</span>
+              <span class="info-value refund-amount">¥{{ orderDetail.order.refundAmount }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">退款类型</span>
+              <span class="info-value">{{ orderDetail.order.refundType || '—' }}</span>
+            </div>
+            <div class="info-item full-width">
+              <span class="info-label">退款备注</span>
+              <span class="info-value">{{ orderDetail.order.refundContent || '—' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">退款时间</span>
+              <span class="info-value">{{ orderDetail.order.refundTime || '—' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="orderDialogVisible = false">关闭</el-button>
+        <el-button v-if="orderDetail.order.orderStatus === 201 && orderDetail.order.deliveryType !== 'pickup'" type="primary" icon="el-icon-truck" @click="dialogAction('ship')">发货</el-button>
+        <el-button v-if="orderDetail.order.orderStatus === 501" type="success" icon="el-icon-circle-check" @click="dialogAction('verify')">核销</el-button>
+        <el-button v-if="orderDetail.order.orderStatus === 202" type="danger" icon="el-icon-money" @click="dialogAction('refund')">退款</el-button>
+      </div>
     </el-dialog>
 
-    <!-- 收款对话框 -->
-    <el-dialog :visible.sync="payDialogVisible" :title="$t('mall_order.dialog.pay')" width="40%" center>
-      <el-form ref="payForm" :model="payForm" status-icon label-position="left" label-width="100px">
-        <div style="margin-bottom: 10px;">
+    <!-- Pay Dialog -->
+    <el-dialog :visible.sync="payDialogVisible" :title="$t('mall_order.dialog.pay')" width="500px" custom-class="action-dialog">
+      <div class="dialog-body">
+        <div class="pay-tip">
           {{ $t('mall_order.message.pay_confirm', { order_sn: payForm.orderSn }) }}
         </div>
-        <el-form-item :label="$t('mall_order.form.pay_old_money')" prop="oldMoney">
-          <el-input-number v-model="payForm.oldMoney" :controls="false" disabled />
-        </el-form-item>
-        <el-form-item :label="$t('mall_order.form.pay_new_money')" prop="newMoney">
-          <el-input-number v-model="payForm.newMoney" :controls="false" />
-        </el-form-item>
-      </el-form>
-      <el-table :data="payForm.goodsList">
-        <el-table-column property="goodsName" :label="$t('mall_order.table.pay_goods_name')" />
-        <el-table-column :label="$t('mall_order.table.pay_goods_specifications')">
-          <template slot-scope="scope">
-            {{ scope.row.specifications.join('-') }}
-          </template>
-        </el-table-column>
-        <el-table-column property="onumber" width="100" :label="$t('mall_order.table.pay_goods_number')" />
-        <!-- <el-table-column label="实际数量" width="100">
-          <template slot-scope="scope">
-            <el-input-number v-model="scope.row.number" :min="0" :controls="false" />
-          </template>
-        </el-table-column> -->
-      </el-table>
+        <el-form ref="payForm" :model="payForm" label-position="top">
+          <el-form-item :label="$t('mall_order.form.pay_old_money')">
+            <el-input-number v-model="payForm.oldMoney" :controls="false" disabled style="width: 100%;" />
+          </el-form-item>
+          <el-form-item :label="$t('mall_order.form.pay_new_money')">
+            <el-input-number v-model="payForm.newMoney" :controls="false" style="width: 100%;" />
+          </el-form-item>
+        </el-form>
+        <el-table :data="payForm.goodsList" size="small">
+          <el-table-column property="goodsName" :label="$t('mall_order.table.pay_goods_name')" />
+          <el-table-column :label="$t('mall_order.table.pay_goods_specifications')">
+            <template slot-scope="scope">
+              {{ scope.row.specifications.join('-') }}
+            </template>
+          </el-table-column>
+          <el-table-column property="onumber" width="100" :label="$t('mall_order.table.pay_goods_number')" />
+        </el-table>
+      </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="payDialogVisible = false">{{ $t('app.button.cancel') }}</el-button>
         <el-button type="primary" @click="confirmPay">{{ $t('app.button.confirm') }}</el-button>
       </div>
     </el-dialog>
 
-    <!-- 发货对话框 -->
-    <el-dialog :visible.sync="shipDialogVisible" :title="$t('mall_order.dialog.ship')">
-      <el-form ref="shipForm" :model="shipForm" status-icon label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item :label="$t('mall_order.form.ship_channel')" prop="shipChannel">
-          <el-select v-model="shipForm.shipChannel" :placeholder="$t('mall_order.placeholder.ship_channel')">
-            <el-option v-for="item in channels" :key="item.code" :label="item.name" :value="item.code" />
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="$t('mall_order.form.ship_sn')" prop="shipSn">
-          <el-input v-model="shipForm.shipSn" />
-        </el-form-item>
-      </el-form>
+    <!-- Ship Dialog -->
+    <el-dialog :visible.sync="shipDialogVisible" :title="$t('mall_order.dialog.ship')" width="480px" custom-class="action-dialog">
+      <div class="dialog-body">
+        <el-form ref="shipForm" :model="shipForm" label-position="top">
+          <el-form-item :label="$t('mall_order.form.ship_channel')" prop="shipChannel">
+            <el-select v-model="shipForm.shipChannel" :placeholder="$t('mall_order.placeholder.ship_channel')" style="width: 100%;">
+              <el-option v-for="item in channels" :key="item.code" :label="item.name" :value="item.code" />
+            </el-select>
+          </el-form-item>
+          <el-form-item :label="$t('mall_order.form.ship_sn')" prop="shipSn">
+            <el-input v-model="shipForm.shipSn" placeholder="请输入物流单号" />
+          </el-form-item>
+        </el-form>
+      </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="shipDialogVisible = false">{{ $t('app.button.cancel') }}</el-button>
-        <el-button type="primary" @click="confirmShip">{{ $t('app.button.confirm') }}</el-button>
+        <el-button type="primary" icon="el-icon-check" @click="confirmShip">{{ $t('app.button.confirm') }}</el-button>
       </div>
     </el-dialog>
 
-    <!-- 退款对话框 -->
-    <el-dialog :visible.sync="refundDialogVisible" :title="$t('mall_order.dialog.refund')">
-      <el-form ref="refundForm" :model="refundForm" status-icon label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item :label="$t('mall_order.form.refund_money')" prop="refundMoney">
-          <el-input v-model="refundForm.refundMoney" :disabled="true" />
-        </el-form-item>
-      </el-form>
+    <!-- Refund Dialog -->
+    <el-dialog :visible.sync="refundDialogVisible" :title="$t('mall_order.dialog.refund')" width="420px" custom-class="action-dialog">
+      <div class="dialog-body">
+        <div class="refund-tip">确认对该订单进行退款？</div>
+        <el-form ref="refundForm" :model="refundForm" label-position="top">
+          <el-form-item :label="$t('mall_order.form.refund_money')">
+            <el-input v-model="refundForm.refundMoney" :disabled="true">
+              <template slot="prepend">¥</template>
+            </el-input>
+          </el-form-item>
+        </el-form>
+      </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="refundDialogVisible = false">{{ $t('app.button.cancel') }}</el-button>
-        <el-button type="primary" @click="confirmRefund">{{ $t('app.button.confirm') }}</el-button>
+        <el-button type="danger" @click="confirmRefund">确认退款</el-button>
       </div>
     </el-dialog>
 
   </div>
 </template>
 
-<style lang="scss" scoped>
-.el-table--medium th, .el-table--medium td {
-    padding: 3px 0;
-}
-
-.el-input-number--medium {
-  width: 100%;
-}
-
-.oper .el-button--mini {
-  padding: 7px 4px;
-  width: 40px;
-  font-size: 10px;
-  margin-left: 1px;
-}
-
-::v-deep .el-table__expanded-cell {
-  padding: 6px 80px;
-}
-
-.order-goods {
-  display: flex;
-  justify-content: space-around;
-  justify-items: center;
-  align-items:center;
-  padding: 6px 0;
-}
-
-.name {
-  width: 400px;
-}
-
-.spec {
-  width: 180px;
-}
-
-.price {
-  width: 120px;
-}
-
-.num {
-  width: 120px;
-}
-</style>
-
 <script>
-import { detailOrder, listOrder, listChannel, refundOrder, payOrder, deleteOrder, shipOrder, listOrderCount, confirmOrder } from '@/api/order'
+import { detailOrder, listOrder, listChannel, refundOrder, payOrder, deleteOrder, shipOrder, listOrderCount, verifyOrder } from '@/api/order'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import checkPermission from '@/utils/permission' // 权限判断函数
 
@@ -332,7 +450,7 @@ const statusMap = {
   101: '未付款',
   102: '用户取消',
   103: '系统取消',
-  150: '待确认',
+  104: '管理员取消',
   201: '已付款',
   202: '申请退款',
   203: '已退款',
@@ -436,9 +554,8 @@ export default {
         return [
           { name: 'pending_all', label: '全部待处理' },
           { name: '101', label: '待付款' },
-          { name: '150', label: '待确认' },
           { name: '201', label: '待发货' },
-          { name: 'pickup', label: '到店自提' }
+          { name: '501', label: '待核销' }
         ]
       } else if (this.businessView === 'completed') {
         return [
@@ -448,7 +565,9 @@ export default {
           { name: '203', label: '已退款' },
           { name: '401', label: '用户收货' },
           { name: '402', label: '系统收货' },
-          { name: '502', label: '已核销' }
+          { name: '502', label: '已核销' },
+          { name: '503', label: '核销过期' },
+          { name: '504', label: '核销退款' }
         ]
       }
       // 全部订单
@@ -469,8 +588,8 @@ export default {
   methods: {
     checkPermission,
     getBadgeType(status) {
-      // 红色: 150(待确认), 201(已付款), 202(申请退款), 501(待核销) - 需要紧急处理
-      if (['150', '201', '202', '501', 'pending_all', 'pickup'].includes(String(status))) {
+      // 红色: 201(已付款), 202(申请退款), 501(待核销) - 需要紧急处理
+      if (['201', '202', '501', 'pending_all'].includes(String(status))) {
         return 'danger'
       }
       // 蓝色: 301(已发货), all(全部) - 进行中或总览
@@ -508,35 +627,16 @@ export default {
     },
     // 按钮显示条件
     canDelete(row) {
-      return [102, 103, 203, 401, 402, 502, 503, 504].includes(row.orderStatus)
+      return [102, 103, 104, 203, 401, 402, 502, 503, 504].includes(row.orderStatus)
     },
     canShip(row) {
       return row.orderStatus === 201 && row.deliveryType !== 'pickup'
     },
     canRefund(row) {
-      return [150, 201, 501].includes(row.orderStatus)
+      return row.orderStatus === 202
     },
-    // 确认订单
-    handleConfirm(row) {
-      this.$confirm('确认该订单？确认后将根据配送方式进入相应状态', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        confirmOrder({ orderId: row.id }).then(response => {
-          this.$notify.success({
-            title: '成功',
-            message: '订单确认成功'
-          })
-          this.getList()
-          this.getOrderCounts()
-        }).catch(response => {
-          this.$notify.error({
-            title: '失败',
-            message: response.data.errmsg
-          })
-        })
-      }).catch(() => {})
+    canVerify(row) {
+      return row.orderStatus === 501
     },
     getOrderCounts() {
       listOrderCount().then(response => {
@@ -596,14 +696,10 @@ export default {
         // 全部订单 - 不筛选
       } else if (tabName === 'pending_all') {
         // 全部待处理
-        this.listQuery.orderStatusArray = [101, 150, 201, 501]
-      } else if (tabName === 'pickup') {
-        // 到店自提（已付款 + 待核销）
-        this.listQuery.orderStatusArray = [201, 501]
-        this.listQuery.deliveryType = 'pickup'
+        this.listQuery.orderStatusArray = [101, 201, 501]
       } else if (tabName === 'completed_all') {
         // 全部已完结
-        this.listQuery.orderStatusArray = [102, 103, 203, 401, 402, 502, 503, 504]
+        this.listQuery.orderStatusArray = [102, 103, 104, 203, 401, 402, 502, 503, 504]
       } else {
         // 单个状态
         this.listQuery.orderStatusArray = [parseInt(tabName)]
@@ -619,6 +715,33 @@ export default {
         this.orderDetail = response.data.data
       })
       this.orderDialogVisible = true
+    },
+    // 详情对话框操作按钮 → 跳转到对应操作
+    dialogAction(action) {
+      this.orderDialogVisible = false
+      const row = { id: this.orderDetail.order.id, orderStatus: this.orderDetail.order.orderStatus, actualPrice: this.orderDetail.order.actualPrice }
+      if (action === 'ship') {
+        this.handleShip({ id: row.id, shipChannel: this.orderDetail.order.shipChannel, shipSn: this.orderDetail.order.shipSn })
+      } else if (action === 'verify') {
+        this.handleVerify({ id: row.id })
+      } else if (action === 'refund') {
+        this.handleRefund({ id: row.id, actualPrice: row.actualPrice })
+      }
+    },
+    handleVerify(row) {
+      this.$confirm('确认核销该订单？', '核销确认', {
+        confirmButtonText: '确定核销',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        verifyOrder({ orderId: row.id }).then(response => {
+          this.$notify.success({ title: '成功', message: '核销成功' })
+          this.getList()
+          this.getOrderCounts()
+        }).catch(response => {
+          this.$notify.error({ title: '失败', message: response.data.errmsg })
+        })
+      }).catch(() => {})
     },
     handlePay(row) {
       this.payForm.orderId = row.id
@@ -679,6 +802,7 @@ export default {
               message: '确认发货成功'
             })
             this.getList()
+            this.getOrderCounts()
           }).catch(response => {
             this.$notify.error({
               title: '失败',
@@ -695,6 +819,7 @@ export default {
           message: '订单删除成功'
         })
         this.getList()
+        this.getOrderCounts()
       }).catch(response => {
         this.$notify.error({
           title: '失败',
@@ -721,6 +846,7 @@ export default {
               message: '确认退款成功'
             })
             this.getList()
+            this.getOrderCounts()
           }).catch(response => {
             this.$notify.error({
               title: '失败',
@@ -738,11 +864,699 @@ export default {
         excel.export_json_to_excel2(tHeader, this.list, filterVal, '订单信息')
         this.downloadLoading = false
       })
-    },
-    printOrder() {
-      this.$print(this.$refs.print)
-      this.orderDialogVisible = false
     }
   }
 }
 </script>
+
+<style lang="scss" scoped>
+// ====================== Variables ======================
+$order-primary: #1890ff;
+$order-success: #52c41a;
+$order-warning: #fa8c16;
+$order-danger: #ff4d4f;
+$order-bg: #f0f2f5;
+$order-surface: #ffffff;
+$order-text: #1f1f1f;
+$order-text-secondary: #8c8c8c;
+$order-border: #f0f0f0;
+$order-radius: 8px;
+
+.order-page {
+  padding: 24px;
+  background: $order-bg;
+  min-height: calc(100vh - 84px);
+
+  // ====================== Page Header ======================
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: $order-text;
+      margin: 0;
+    }
+
+    .view-switcher {
+      display: flex;
+      background: $order-surface;
+      border-radius: 6px;
+      padding: 3px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+
+      .view-btn {
+        padding: 6px 18px;
+        border: none;
+        border-radius: 4px;
+        font-size: 13px;
+        color: $order-text-secondary;
+        background: transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 500;
+
+        &.active {
+          background: $order-primary;
+          color: #fff;
+          box-shadow: 0 2px 4px rgba(24, 144, 255, 0.3);
+        }
+
+        &:not(.active):hover {
+          color: $order-primary;
+        }
+      }
+    }
+
+    .view-all-link {
+      font-size: 13px;
+      color: $order-text-secondary;
+      cursor: pointer;
+      transition: color 0.2s;
+
+      &:hover {
+        color: $order-primary;
+      }
+
+      i {
+        margin-left: 2px;
+        font-size: 12px;
+      }
+    }
+  }
+
+  // ====================== Status Overview ======================
+  .status-overview {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+
+    .overview-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      background: $order-surface;
+      border-radius: $order-radius;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      transition: transform 0.2s, box-shadow 0.2s;
+      border-left: 3px solid transparent;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      .card-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+      }
+
+      .card-body {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .card-count {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      .card-label {
+        font-size: 13px;
+        color: $order-text-secondary;
+        margin-top: 2px;
+      }
+
+      &.card-amber {
+        border-left-color: $order-warning;
+        .card-icon { background: rgba(250, 140, 22, 0.1); color: $order-warning; }
+        .card-count { color: $order-warning; }
+      }
+
+      &.card-blue {
+        border-left-color: $order-primary;
+        .card-icon { background: rgba(24, 144, 255, 0.1); color: $order-primary; }
+        .card-count { color: $order-primary; }
+      }
+
+      &.card-teal {
+        border-left-color: #13c2c2;
+        .card-icon { background: rgba(19, 194, 194, 0.1); color: #13c2c2; }
+        .card-count { color: #13c2c2; }
+      }
+
+      &.card-orange {
+        border-left-color: $order-danger;
+        .card-icon { background: rgba(255, 77, 79, 0.1); color: $order-danger; }
+        .card-count { color: $order-danger; }
+      }
+    }
+  }
+
+  // ====================== Tab Navigation ======================
+  .custom-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 6px 8px;
+    background: $order-surface;
+    border-radius: $order-radius;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    overflow-x: auto;
+
+    .tab-item {
+      position: relative;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      font-size: 13px;
+      color: $order-text-secondary;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      font-weight: 500;
+
+      &:hover {
+        color: $order-text;
+        background: rgba(0, 0, 0, 0.04);
+      }
+
+      &.active {
+        color: $order-primary;
+        background: rgba(24, 144, 255, 0.08);
+        font-weight: 600;
+      }
+
+      .tab-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        margin-left: 6px;
+        border-radius: 9px;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1;
+
+        &.badge-danger { background: rgba(255, 77, 79, 0.1); color: $order-danger; }
+        &.badge-primary { background: rgba(24, 144, 255, 0.1); color: $order-primary; }
+        &.badge-warning { background: rgba(250, 140, 22, 0.1); color: $order-warning; }
+        &.badge-success { background: rgba(82, 196, 26, 0.1); color: $order-success; }
+        &.badge-info { background: rgba(140, 140, 140, 0.1); color: $order-text-secondary; }
+      }
+    }
+  }
+
+  // ====================== Content Card ======================
+  .content-card {
+    background: $order-surface;
+    border-radius: $order-radius;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+  }
+
+  // ====================== Filter Bar ======================
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid $order-border;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    .filter-fields {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .filter-input {
+      width: 160px;
+    }
+
+    .filter-date {
+      width: 360px;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+  }
+
+  // ====================== Table ======================
+  .order-table {
+    ::v-deep {
+      th {
+        background: #fafbfc !important;
+        color: $order-text-secondary !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        border-bottom: 1px solid #eee !important;
+      }
+
+      td {
+        padding: 12px 0;
+      }
+
+      .el-table__expanded-cell {
+        padding: 0;
+      }
+    }
+
+    .order-sn {
+      font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+      font-size: 13px;
+      color: $order-text;
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .user-name {
+        font-size: 13px;
+        color: $order-text;
+      }
+    }
+
+    .time-text {
+      font-size: 13px;
+      color: $order-text-secondary;
+    }
+
+    // Status Tags
+    .status-tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-101 { background: rgba(250, 140, 22, 0.1); color: $order-warning; }
+    .status-102, .status-103, .status-104 { background: rgba(140, 140, 140, 0.1); color: #8c8c8c; }
+    .status-201 { background: rgba(24, 144, 255, 0.1); color: $order-primary; }
+    .status-202 { background: rgba(255, 77, 79, 0.1); color: $order-danger; }
+    .status-203 { background: rgba(140, 140, 140, 0.1); color: #8c8c8c; }
+    .status-301 { background: rgba(24, 144, 255, 0.1); color: $order-primary; }
+    .status-401, .status-402 { background: rgba(82, 196, 26, 0.1); color: $order-success; }
+    .status-501 { background: rgba(19, 194, 194, 0.1); color: #13c2c2; }
+    .status-502 { background: rgba(82, 196, 26, 0.1); color: $order-success; }
+    .status-503, .status-504 { background: rgba(140, 140, 140, 0.1); color: #8c8c8c; }
+
+    // Price Cell
+    .price-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+
+      .price-actual {
+        font-size: 14px;
+        font-weight: 600;
+        color: $order-text;
+      }
+
+      .price-original {
+        font-size: 12px;
+        color: #bbb;
+        text-decoration: line-through;
+      }
+    }
+
+    // Consignee Cell
+    .consignee-cell {
+      display: flex;
+      flex-direction: column;
+
+      .consignee-name {
+        font-size: 13px;
+        color: $order-text;
+        font-weight: 500;
+      }
+
+      .consignee-mobile {
+        font-size: 12px;
+        color: $order-text-secondary;
+      }
+    }
+
+    // Ship Cell
+    .ship-cell {
+      display: flex;
+      flex-direction: column;
+
+      .ship-channel {
+        font-size: 13px;
+        color: $order-text;
+      }
+
+      .ship-sn {
+        font-size: 12px;
+        color: $order-text-secondary;
+        font-family: 'SF Mono', monospace;
+      }
+    }
+
+    .text-muted {
+      color: #d9d9d9;
+    }
+
+    // Action Buttons
+    .action-buttons {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+
+      .el-button--mini {
+        padding: 5px 12px;
+        font-size: 12px;
+      }
+    }
+  }
+
+  // ====================== Expanded Row ======================
+  .expanded-row {
+    padding: 12px 20px;
+    background: #fafbfc;
+
+    .expanded-goods {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 0;
+      border-bottom: 1px solid $order-border;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .goods-thumb {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+
+      .goods-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+
+        .goods-name {
+          font-size: 13px;
+          color: $order-text;
+        }
+
+        .goods-spec {
+          font-size: 12px;
+          color: $order-text-secondary;
+          margin-top: 2px;
+        }
+      }
+
+      .goods-price {
+        width: 80px;
+        text-align: right;
+        font-size: 13px;
+        color: $order-text-secondary;
+      }
+
+      .goods-num {
+        width: 60px;
+        text-align: center;
+        font-size: 13px;
+        color: $order-text-secondary;
+      }
+
+      .goods-subtotal {
+        width: 80px;
+        text-align: right;
+        font-size: 13px;
+        font-weight: 600;
+        color: $order-text;
+      }
+    }
+  }
+
+  // ====================== Pagination ======================
+  .pagination-wrap {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+// ====================== Dialogs ======================
+::v-deep .detail-dialog {
+  border-radius: 12px;
+  overflow: hidden;
+
+  .el-dialog__header {
+    padding: 20px 24px;
+    border-bottom: 1px solid $order-border;
+    background: #fafbfc;
+
+    .el-dialog__title {
+      font-size: 16px;
+      font-weight: 600;
+      color: $order-text;
+    }
+  }
+
+  .el-dialog__body {
+    padding: 0;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .el-dialog__footer {
+    padding: 16px 24px;
+    border-top: 1px solid $order-border;
+  }
+}
+
+.detail-dialog .dialog-body {
+  .detail-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid $order-border;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: $order-text;
+      margin-bottom: 16px;
+      padding-left: 10px;
+      border-left: 3px solid $order-primary;
+    }
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px 24px;
+
+    &.cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      &.full-width {
+        grid-column: 1 / -1;
+      }
+
+      .info-label {
+        font-size: 12px;
+        color: $order-text-secondary;
+      }
+
+      .info-value {
+        font-size: 14px;
+        color: $order-text;
+
+        &.refund-amount {
+          color: $order-danger;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .status-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .pickup-info {
+    background: rgba(250, 140, 22, 0.06);
+    border-radius: 8px;
+    padding: 16px;
+
+    .pickup-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      background: rgba(250, 140, 22, 0.15);
+      color: $order-warning;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .pickup-code {
+      font-size: 14px;
+      margin-bottom: 8px;
+
+      strong {
+        color: $order-danger;
+        font-size: 20px;
+        font-weight: 700;
+      }
+    }
+
+    .pickup-contact {
+      font-size: 13px;
+      color: $order-text-secondary;
+    }
+  }
+
+  .price-breakdown {
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+      color: $order-text-secondary;
+
+      &.discount span:last-child {
+        color: $order-success;
+      }
+
+      &.total {
+        border-top: 1px solid $order-border;
+        margin-top: 8px;
+        padding-top: 12px;
+        font-weight: 600;
+        color: $order-text;
+        font-size: 16px;
+
+        span:last-child {
+          color: $order-danger;
+        }
+      }
+    }
+  }
+
+  .goods-table {
+    ::v-deep th {
+      background: #fafbfc !important;
+      font-size: 12px !important;
+    }
+  }
+}
+
+::v-deep .action-dialog {
+  border-radius: 12px;
+
+  .el-dialog__header {
+    padding: 20px 24px 12px;
+
+    .el-dialog__title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+  }
+
+  .el-dialog__body {
+    padding: 12px 24px;
+  }
+
+  .el-dialog__footer {
+    padding: 12px 24px 20px;
+  }
+}
+
+.action-dialog .dialog-body {
+  .pay-tip {
+    padding: 12px 16px;
+    background: rgba(24, 144, 255, 0.06);
+    border-radius: 6px;
+    font-size: 13px;
+    color: $order-primary;
+    margin-bottom: 16px;
+  }
+
+  .refund-tip {
+    padding: 12px 16px;
+    background: rgba(255, 77, 79, 0.06);
+    border-radius: 6px;
+    font-size: 13px;
+    color: $order-danger;
+    margin-bottom: 16px;
+  }
+}
+
+// ====================== Responsive ======================
+@media (max-width: 1200px) {
+  .order-page {
+    .status-overview {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .order-page {
+    padding: 16px;
+
+    .status-overview {
+      grid-template-columns: 1fr;
+    }
+
+    .filter-bar {
+      flex-direction: column;
+
+      .filter-fields {
+        width: 100%;
+        .filter-input, .filter-date { width: 100%; }
+      }
+    }
+  }
+}
+</style>

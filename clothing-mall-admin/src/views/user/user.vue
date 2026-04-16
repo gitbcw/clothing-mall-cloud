@@ -42,9 +42,9 @@
         </template>
       </el-table-column>
 
-      <el-table-column align="center" label="角色" prop="roleIds">
+      <el-table-column align="center" label="角色" prop="role">
         <template slot-scope="scope">
-          <span>{{ getRoleNames(scope.row.roleIds) }}</span>
+          <span>{{ roleMap[scope.row.role] || '普通用户' }}</span>
         </template>
       </el-table-column>
 
@@ -74,9 +74,9 @@
         <el-form-item :label="$t('user_user.form.status')" prop="status">
           <el-select v-model="userDetail.status" :placeholder="$t('user_user.placeholder.status')"><el-option v-for="(item, index) in statusDic" :key="index" :label="item" :value="index" /></el-select>
         </el-form-item>
-        <el-form-item label="角色" prop="roleIdsList">
-          <el-select v-model="userDetail.roleIdsList" multiple placeholder="请选择角色" style="width: 100%;">
-            <el-option v-for="item in roleOptions" :key="item.value" :label="item.label" :value="item.value" />
+        <el-form-item label="角色" prop="role">
+          <el-select v-model="userDetail.role" placeholder="请选择角色" style="width: 100%;">
+            <el-option v-for="(label, value) in roleMap" :key="value" :label="label" :value="value" />
           </el-select>
         </el-form-item>
       </el-form>
@@ -90,7 +90,6 @@
 
 <script>
 import { fetchList, userDetail, updateUser } from '@/api/user'
-import { userRoleOptions } from '@/api/role'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
@@ -112,7 +111,7 @@ export default {
       downloadLoading: false,
       genderDic: ['未知', '男', '女'],
       statusDic: ['可用', '禁用', '注销'],
-      roleOptions: [],
+      roleMap: { user: '普通用户', owner: '店主', guide: '导购' },
       userDialogVisible: false,
       userDetail: {
       }
@@ -120,30 +119,8 @@ export default {
   },
   created() {
     this.getList()
-    this.getRoleOptions()
   },
   methods: {
-    getRoleOptions() {
-      userRoleOptions().then(response => {
-        this.roleOptions = response.data.data || []
-      })
-    },
-    parseRoleIds(roleIds) {
-      if (!roleIds) return []
-      try {
-        return JSON.parse(roleIds)
-      } catch (e) {
-        return []
-      }
-    },
-    getRoleNames(roleIds) {
-      const ids = this.parseRoleIds(roleIds)
-      if (ids.length === 0) return '-'
-      return ids.map(id => {
-        const role = this.roleOptions.find(r => r.value === id)
-        return role ? role.label : id
-      }).join(', ')
-    },
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
@@ -170,15 +147,11 @@ export default {
       })
     },
     handleDetail(row) {
-      this.userDetail = { ...row, roleIdsList: this.parseRoleIds(row.roleIds) }
+      this.userDetail = { ...row }
       this.userDialogVisible = true
     },
     handleUserUpdate() {
-      // 序列化 roleIdsList 为 JSON 字符串
       const data = { ...this.userDetail }
-      if (data.roleIdsList) {
-        data.roleIds = JSON.stringify(data.roleIdsList)
-      }
       updateUser(data)
         .then((response) => {
           this.userDialogVisible = false

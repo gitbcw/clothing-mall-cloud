@@ -1,6 +1,9 @@
 <view class="custom-tab-bar">
   <view class="tab-item" wx:for="{{list}}" wx:key="index" bindtap="switchTab" data-path="{{item.pagePath}}" data-index="{{index}}">
-    <view class="tab-icon {{item.iconClass}} {{active === index ? 'active' : ''}}"></view>
+    <view class="tab-icon-wrapper">
+      <view class="tab-icon {{item.iconClass}} {{active === index ? 'active' : ''}}"></view>
+      <view class="badge" wx:if="{{item.iconClass === 'cart' && cartCount > 0}}">{{cartCount > 99 ? '99+' : cartCount}}</view>
+    </view>
     <text class="tab-text {{active === index ? 'active' : ''}}">{{item.text}}</text>
   </view>
 </view>

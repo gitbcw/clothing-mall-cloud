@@ -34,7 +34,8 @@ Page({
     ],
     regionType: 1,
     regionList: [],
-    selectRegionDone: false
+    selectRegionDone: false,
+    regionScrollTop: 0
   },
   bindinputMobile(event) {
     let address = this.data.address;
@@ -89,6 +90,11 @@ Page({
     })
 
   },
+  resetRegionScroll() {
+    this.setData({
+      regionScrollTop: this.data.regionScrollTop === 0 ? 0.1 : 0
+    });
+  },
   chooseRegion() {
     let that = this;
     this.setData({
@@ -124,6 +130,7 @@ Page({
         regionType: 3,
         regionList: regionList
       });
+      this.resetRegionScroll();
 
     } else {
       let selectRegionList = [{
@@ -145,6 +152,7 @@ Page({
         regionType: 1,
         regionList: area.getList('province')
       });
+      this.resetRegionScroll();
     }
 
     this.setRegionDoneStatus();
@@ -203,6 +211,7 @@ Page({
       regionList: regionList,
       regionType: regionTypeIndex + 1
     })
+    this.resetRegionScroll();
 
     this.setRegionDoneStatus();
   },
@@ -265,6 +274,7 @@ Page({
     this.setData({
       regionList: regionList
     })
+    this.resetRegionScroll();
 
     this.setRegionDoneStatus();
   },

@@ -67,9 +67,9 @@
     </view>
   </view>
 
-  <!-- 服务与选择区块 -->
+  <!-- 服务与选择区块（暂时隐藏） -->
+  <!--
   <view class="service-section">
-    <!-- 配送 -->
     <view class="service-item" bindtap="selectAddress">
       <text class="label">配送</text>
       <view class="content">
@@ -79,7 +79,6 @@
       </view>
       <view class="arrow"></view>
     </view>
-    <!-- 服务 -->
     <view class="service-item" bindtap="openServicePopup">
       <text class="label">服务</text>
       <view class="content">
@@ -88,7 +87,6 @@
       </view>
       <view class="arrow"></view>
     </view>
-    <!-- 选择规格 -->
     <view class="service-item no-border" bindtap="openSkuPicker">
       <text class="label">规格</text>
       <view class="content">
@@ -99,6 +97,7 @@
       <view class="arrow"></view>
     </view>
   </view>
+  -->
 
   <!-- 商品参数 -->
   <view class="attr-section" wx:if="{{attribute.length > 0}}">

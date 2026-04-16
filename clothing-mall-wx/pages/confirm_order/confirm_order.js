@@ -48,6 +48,8 @@ Page({
   },
 
   onShow() {
+    tracker.trackPageView('确认订单');
+
     wx.showLoading({ title: '加载中...' })
 
     // 获取存储的 cartId, addressId, couponId

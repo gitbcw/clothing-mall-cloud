@@ -17,7 +17,7 @@ const { wxAuth } = require('layer-auth')
 // ==================== 路由注册 ====================
 
 const {
-  detail, category, list, related, count, categoryWithGoods,
+  detail, category, list, related, count, categoryWithGoods, listAllBrief,
 } = require('./service/goods')
 
 const {
@@ -41,6 +41,7 @@ const routes = {
   list,
   related,
   count,
+  listAllBrief,
 
   // 分类
   getFirstCategory,
@@ -72,6 +73,7 @@ const ACTION_ERRORS = {
   list: '商品列表加载失败，请刷新重试',
   related: '推荐商品加载失败',
   count: '获取商品数量失败',
+  listAllBrief: '商品列表加载失败，请刷新重试',
   getFirstCategory: '分类加载失败，请刷新重试',
   getSecondCategory: '分类加载失败，请刷新重试',
   catalogIndex: '分类加载失败，请刷新重试',

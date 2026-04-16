@@ -1,6 +1,9 @@
+const app = getApp()
+
 Component({
   data: {
     active: 0,
+    cartCount: 0,
     list: [
       {
         pagePath: "/pages/index/index",
@@ -23,6 +26,11 @@ Component({
         iconClass: "mine"
       }
     ]
+  },
+  lifetimes: {
+    attached() {
+      this.setData({ cartCount: app.globalData.cartCount || 0 })
+    }
   },
   methods: {
     switchTab(e) {

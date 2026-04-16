@@ -26,6 +26,7 @@
     "pages/ucenter/aftersale/aftersale",
     "pages/ucenter/aftersaleDetail/aftersaleDetail",
     "pages/ucenter/aftersaleList/aftersaleList",
+    "pages/ucenter/contact/contact",
     "pages/ucenter/logistics/logistics",
     "pages/search/search",
     "pages/payResult/payResult",

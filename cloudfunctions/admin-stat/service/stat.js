@@ -11,9 +11,12 @@ async function statUser() {
   return response.ok({ columns: ['day', 'users'], rows })
 }
 
-async function statOrder() {
+async function statOrder(data) {
+  const start = (data && data.startDate) || new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
+  const end = (data && data.endDate) || new Date().toISOString().slice(0, 10)
   const rows = await query(
-    "SELECT DATE(add_time) AS day, COUNT(*) AS orders, COUNT(DISTINCT user_id) AS customers, COALESCE(SUM(actual_price), 0) AS amount FROM litemall_order WHERE deleted = 0 AND add_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(add_time) ORDER BY day ASC"
+    "SELECT DATE(add_time) AS day, COUNT(*) AS orders, COUNT(DISTINCT user_id) AS customers, COALESCE(SUM(actual_price), 0) AS amount FROM litemall_order WHERE deleted = 0 AND DATE(add_time) BETWEEN ? AND ? GROUP BY DATE(add_time) ORDER BY day ASC",
+    [start, end]
   )
   return response.ok({ columns: ['day', 'orders', 'customers', 'amount'], rows })
 }
@@ -41,12 +44,12 @@ async function statGrowth(data) {
     [start, end]
   )
 
-  // 按天分组：日活趋势（基于浏览足迹去重用户）
+  // 按天分组：日活趋势（基于 page_view 埋点去重用户）
   const dauRows = await query(
-    `SELECT DATE(add_time) AS day, COUNT(DISTINCT user_id) AS dau
-     FROM litemall_footprint
-     WHERE deleted = 0 AND DATE(add_time) BETWEEN ? AND ?
-     GROUP BY DATE(add_time) ORDER BY day ASC`,
+    `SELECT DATE(server_time) AS day, COUNT(DISTINCT user_id) AS dau
+     FROM litemall_tracker_event
+     WHERE event_type = 'page_view' AND DATE(server_time) BETWEEN ? AND ?
+     GROUP BY DATE(server_time) ORDER BY day ASC`,
     [start, end]
   )
 
@@ -93,7 +96,7 @@ async function statRetention(data) {
   const cohortCount = cohortRows[0] ? cohortRows[0].c : 0
 
   const retainedRows = await query(
-    'SELECT COUNT(DISTINCT user_id) AS c FROM litemall_footprint WHERE deleted = 0 AND DATE(add_time) = DATE_ADD(?, INTERVAL ? DAY) AND user_id IN (SELECT id FROM litemall_user WHERE deleted = 0 AND DATE(add_time) = ?)',
+    "SELECT COUNT(DISTINCT user_id) AS c FROM litemall_tracker_event WHERE event_type = 'page_view' AND DATE(server_time) = DATE_ADD(?, INTERVAL ? DAY) AND user_id IN (SELECT id FROM litemall_user WHERE deleted = 0 AND DATE(add_time) = ?)",
     [cohortDate, offset, cohortDate]
   )
   const retainedCount = retainedRows[0] ? retainedRows[0].c : 0
@@ -109,25 +112,19 @@ async function statRetention(data) {
 
 async function statActiveUsers() {
   const wauRows = await query(
-    "SELECT COUNT(DISTINCT user_id) AS c FROM litemall_footprint WHERE deleted = 0 AND add_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+    "SELECT COUNT(DISTINCT user_id) AS c FROM litemall_tracker_event WHERE event_type = 'page_view' AND server_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
   )
   const mauRows = await query(
-    "SELECT COUNT(DISTINCT user_id) AS c FROM litemall_footprint WHERE deleted = 0 AND add_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
+    "SELECT COUNT(DISTINCT user_id) AS c FROM litemall_tracker_event WHERE event_type = 'page_view' AND server_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
   )
   return response.ok({ wau: wauRows[0].c, mau: mauRows[0].c })
 }
 
 // 埋点概览
 async function statTrackerOverview() {
-  let rows
-  try {
-    rows = await query(
-      "SELECT type, COUNT(*) AS total FROM litemall_tracker WHERE deleted = 0 AND add_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY type"
-    )
-  } catch (e) {
-    // litemall_tracker 表可能不存在，返回空数据
-    return response.ok({ byType: [], pageView: 0, addCart: 0, orderPay: 0, addCartRate: 0, payRate: 0 })
-  }
+  const rows = await query(
+    "SELECT event_type AS type, COUNT(*) AS total FROM litemall_tracker_event WHERE server_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY event_type"
+  )
   let pageView = 0, addCart = 0, orderPay = 0
   for (const r of rows) {
     if (r.type === 'page_view') pageView = r.total
@@ -144,29 +141,21 @@ async function statTrackerOverview() {
 
 // 埋点趋势
 async function statTrackerTrend() {
-  try {
-    const rows = await query(
-      "SELECT DATE(add_time) AS day, type, COUNT(*) AS total FROM litemall_tracker WHERE deleted = 0 AND add_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(add_time), type ORDER BY day ASC"
-    )
-    return response.ok(rows)
-  } catch (e) {
-    return response.ok([])
-  }
+  const rows = await query(
+    "SELECT DATE(server_time) AS day, event_type AS type, COUNT(*) AS total FROM litemall_tracker_event WHERE server_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(server_time), event_type ORDER BY day ASC"
+  )
+  return response.ok(rows)
 }
 
 // 埋点页面排行
 async function statTrackerPages(data) {
   const eventType = data.eventType || 'page_view'
   const limit = Math.min(data.limit || 10, 50)
-  try {
-    const rows = await query(
-      'SELECT page_url, COUNT(*) AS count FROM litemall_tracker WHERE deleted = 0 AND type = ? AND add_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY page_url ORDER BY count DESC LIMIT ?',
-      [eventType, limit]
-    )
-    return response.ok(rows)
-  } catch (e) {
-    return response.ok([])
-  }
+  const rows = await query(
+    'SELECT page_route AS pageRoute, COUNT(*) AS `count`, COUNT(DISTINCT user_id) AS uniqueUsers FROM litemall_tracker_event WHERE event_type = ? AND server_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY page_route ORDER BY count DESC LIMIT ?',
+    [eventType, limit]
+  )
+  return response.ok(rows)
 }
 
 // 营收总览
@@ -180,7 +169,7 @@ async function statRevenueOverview(data) {
 // 场景销售
 async function statRevenueScene(data) {
   const rows = await query(
-    "SELECT o.delivery_type AS scene, COUNT(*) AS orders, COALESCE(SUM(o.actual_price), 0) AS amount FROM litemall_order o WHERE o.deleted = 0 AND o.order_status IN (301, 401, 402, 502) AND o.add_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY o.delivery_type ORDER BY amount DESC"
+    "SELECT o.delivery_type AS name, COUNT(*) AS orders, COALESCE(SUM(o.actual_price), 0) AS amount FROM litemall_order o WHERE o.deleted = 0 AND o.order_status IN (301, 401, 402, 502) AND o.add_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY o.delivery_type ORDER BY amount DESC"
   )
   const totalAmount = rows.reduce((s, r) => s + parseFloat(r.amount), 0)
   for (const r of rows) {
@@ -319,10 +308,10 @@ async function statDashboardConversion() {
   try {
     // 推送查看率：push_view 事件 / push_send 事件
     const pushSendRows = await query(
-      "SELECT COUNT(*) AS c FROM litemall_tracker_event WHERE deleted = 0 AND event_type = 'push_send'"
+      "SELECT COUNT(*) AS c FROM litemall_tracker_event WHERE event_type = 'push_send'"
     )
     const pushViewRows = await query(
-      "SELECT COUNT(*) AS c FROM litemall_tracker_event WHERE deleted = 0 AND event_type = 'push_view'"
+      "SELECT COUNT(*) AS c FROM litemall_tracker_event WHERE event_type = 'push_view'"
     )
     const pushSend = Number(pushSendRows[0]?.c || 0)
     const pushView = Number(pushViewRows[0]?.c || 0)
@@ -330,10 +319,10 @@ async function statDashboardConversion() {
 
     // 场景点击率：scene_click / scene_view
     const sceneViewRows = await query(
-      "SELECT COUNT(*) AS c FROM litemall_tracker_event WHERE deleted = 0 AND event_type = 'scene_view'"
+      "SELECT COUNT(*) AS c FROM litemall_tracker_event WHERE event_type = 'scene_view'"
     )
     const sceneClickRows = await query(
-      "SELECT COUNT(*) AS c FROM litemall_tracker_event WHERE deleted = 0 AND event_type = 'scene_click'"
+      "SELECT COUNT(*) AS c FROM litemall_tracker_event WHERE event_type = 'scene_click'"
     )
     const sceneView = Number(sceneViewRows[0]?.c || 0)
     const sceneClick = Number(sceneClickRows[0]?.c || 0)
@@ -350,10 +339,121 @@ async function statDashboardConversion() {
   })
 }
 
+// 收藏统计
+async function statCollect(data) {
+  const start = (data && data.startDate) || new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
+  const end = (data && data.endDate) || new Date().toISOString().slice(0, 10)
+
+  // KPI 指标
+  const totalRows = await query(
+    'SELECT COUNT(*) AS c FROM litemall_collect WHERE deleted = 0 AND type = 0'
+  )
+  const userCountRows = await query(
+    'SELECT COUNT(DISTINCT user_id) AS c FROM litemall_collect WHERE deleted = 0 AND type = 0'
+  )
+  const goodsCountRows = await query(
+    'SELECT COUNT(DISTINCT value_id) AS c FROM litemall_collect WHERE deleted = 0 AND type = 0'
+  )
+  const newRows = await query(
+    'SELECT COUNT(*) AS c FROM litemall_collect WHERE deleted = 0 AND type = 0 AND DATE(add_time) BETWEEN ? AND ?',
+    [start, end]
+  )
+
+  const totalCount = Number(totalRows[0]?.c || 0)
+  const userCount = Number(userCountRows[0]?.c || 0)
+  const perUser = userCount > 0 ? (totalCount / userCount).toFixed(1) : 0
+
+  // 趋势
+  const trendRows = await query(
+    `SELECT DATE(add_time) AS day, COUNT(*) AS count
+     FROM litemall_collect
+     WHERE deleted = 0 AND type = 0 AND DATE(add_time) BETWEEN ? AND ?
+     GROUP BY DATE(add_time) ORDER BY day ASC`,
+    [start, end]
+  )
+  // 补全日期
+  const trendMap = new Map(trendRows.map(r => [r.day, Number(r.count)]))
+  const trend = []
+  const s = new Date(start + 'T00:00:00')
+  const e = new Date(end + 'T00:00:00')
+  for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+    const dayStr = d.toISOString().slice(0, 10)
+    trend.push({ day: dayStr, count: trendMap.get(dayStr) || 0 })
+  }
+
+  // TOP10 商品
+  const topRows = await query(
+    `SELECT c.value_id AS goodsId, MAX(g.name) AS name, MAX(g.pic_url) AS picUrl,
+            MAX(g.retail_price) AS price, COUNT(*) AS count
+     FROM litemall_collect c
+     LEFT JOIN litemall_goods g ON c.value_id = g.id
+     WHERE c.deleted = 0 AND c.type = 0
+     GROUP BY c.value_id
+     ORDER BY count DESC LIMIT 10`
+  )
+
+  // 分类分布
+  const categoryRows = await query(
+    `SELECT COALESCE(cat.name, '未分类') AS name, COUNT(*) AS count
+     FROM litemall_collect c
+     LEFT JOIN litemall_goods g ON c.value_id = g.id
+     LEFT JOIN litemall_category cat ON g.category_id = cat.id
+     WHERE c.deleted = 0 AND c.type = 0
+     GROUP BY cat.id
+     ORDER BY count DESC`
+  )
+
+  // 价格区间分布
+  const priceRows = await query(
+    `SELECT name, COUNT(*) AS count FROM (
+       SELECT CASE
+         WHEN g.retail_price < 50 THEN '50以下'
+         WHEN g.retail_price < 100 THEN '50-100'
+         WHEN g.retail_price < 200 THEN '100-200'
+         WHEN g.retail_price < 500 THEN '200-500'
+         ELSE '500以上'
+       END AS name
+       FROM litemall_collect c
+       LEFT JOIN litemall_goods g ON c.value_id = g.id
+       WHERE c.deleted = 0 AND c.type = 0
+     ) t GROUP BY name
+     ORDER BY FIELD(name, '50以下', '50-100', '100-200', '200-500', '500以上')`
+  )
+
+  return response.ok({
+    totalCount,
+    perUser: Number(perUser),
+    goodsCount: Number(goodsCountRows[0]?.c || 0),
+    newCount: Number(newRows[0]?.c || 0),
+    trend,
+    topGoods: topRows,
+    categoryDistribution: categoryRows,
+    priceDistribution: priceRows,
+  })
+}
+
+// 销售商品排行
+async function statSalesGoodsTop(data) {
+  const start = (data && data.startDate) || new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
+  const end = (data && data.endDate) || new Date().toISOString().slice(0, 10)
+  const limit = Math.min((data && data.limit) || 10, 50)
+  const rows = await query(
+    `SELECT og.goods_id, MAX(og.goods_name) AS name, SUM(og.number) AS sales, COALESCE(SUM(og.price * og.number), 0) AS amount
+     FROM litemall_order_goods og
+     INNER JOIN litemall_order o ON og.order_id = o.id
+     WHERE og.deleted = 0 AND o.deleted = 0 AND DATE(o.add_time) BETWEEN ? AND ?
+     GROUP BY og.goods_id
+     ORDER BY amount DESC LIMIT ?`,
+    [start, end, limit]
+  )
+  return response.ok(rows)
+}
+
 module.exports = {
   statUser, statOrder, statGoods, statGrowth, statRetention, statActiveUsers,
   statTrackerOverview, statTrackerTrend, statTrackerPages,
   statRevenueOverview, statRevenueScene, statRevenueCategory,
   statRevenueSeasonOverview, statRevenueSeasonHotGoods,
   statDashboardSales, statDashboardConversion,
+  statSalesGoodsTop, statCollect,
 }

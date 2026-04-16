@@ -139,7 +139,6 @@ Page({
           name: data.name || '',
           brief: data.brief || '',
           retailPrice: parseFloat(data.retailPrice) || 0,
-          counterPrice: data.counterPrice || '',
           specialPrice: data.specialPrice || '',
           isSpecialPrice: !!(data.specialPrice && parseFloat(data.specialPrice) > 0),
           picUrl: data.picUrl || '',
@@ -248,6 +247,7 @@ Page({
           showSkuPicker: false,
           cartGoodsCount: res.data
         })
+        app.fetchCartCount()
         tracker.trackAddCart(that.data.goods.id, that.data.goods.name, that.data.goods.retailPrice, quantity)
       } else {
         wx.showToast({ title: res.errmsg, icon: 'none' })

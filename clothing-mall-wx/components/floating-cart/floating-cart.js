@@ -6,43 +6,58 @@ Component({
   properties: {},
 
   data: {
-    count: 0
+    count: 0,
+    expanded: false
   },
 
   lifetimes: {
     attached: function() {
       this.refreshCount();
-      // 注册全局回调，供页面加购后直接调用
-      app.globalData.onCartChange = this.refreshCount.bind(this);
+      if (!app.globalData.cartListeners) {
+        app.globalData.cartListeners = []
+      }
+      this._listener = this.refreshCount.bind(this)
+      app.globalData.cartListeners.push(this._listener)
     },
     detached: function() {
-      app.globalData.onCartChange = null;
+      if (app.globalData.cartListeners) {
+        var idx = app.globalData.cartListeners.indexOf(this._listener)
+        if (idx > -1) app.globalData.cartListeners.splice(idx, 1)
+      }
     }
   },
 
   pageLifetimes: {
     show: function() {
-      // 每次页面显示时刷新购物车数量
       this.refreshCount();
     }
   },
 
   methods: {
-    refreshCount: function() {
+    refreshCount: function(count) {
+      if (typeof count === 'number') {
+        this.setData({ count: count });
+        return;
+      }
       var that = this;
       util.request(api.CartGoodsCount).then(function(res) {
         if (res.errno === 0) {
           that.setData({ count: res.data });
         }
-      }).catch(function() {
-        // 静默失败，不影响用户体验
-      });
+      }).catch(function() {});
     },
 
     goToCart: function() {
-      wx.switchTab({
-        url: '/pages/cart/cart'
-      });
+      wx.switchTab({ url: '/pages/cart/cart' });
+    },
+
+    toggleExpand: function() {
+      this.setData({ expanded: !this.data.expanded });
+    },
+
+    openCs: function() {
+      this.setData({ expanded: false });
+      wx.navigateTo({ url: '/pages/ucenter/contact/contact' });
     }
   }
 });

@@ -1,5 +1,6 @@
 var util = require('../../../utils/util.js');
 var api = require('../../../config/api.js');
+var tracker = require('../../../utils/tracker.js');
 
 Page({
   data: {
@@ -334,7 +335,7 @@ Page({
     // 页面渲染完成
   },
   onShow: function() {
-    // 页面显示
+    tracker.trackPageView('订单详情');
   },
   onHide: function() {
     // 页面隐藏

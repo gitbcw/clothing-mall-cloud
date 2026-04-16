@@ -40,6 +40,9 @@ Page({
       suggestionList: []
     });
   },
+  onShow: function() {
+    tracker.trackPageView('搜索页');
+  },
   onLoad: function() {
     const { statusBarHeight } = wx.getWindowInfo();
     this.setData({

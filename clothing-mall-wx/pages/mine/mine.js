@@ -1,5 +1,6 @@
 const util = require('../../utils/util.js');
 const api = require('../../config/api.js');
+const tracker = require('../../utils/tracker.js');
 
 const app = getApp();
 
@@ -40,10 +41,15 @@ Page({
   },
 
   onShow() {
+    tracker.trackPageView('我的');
+
     // 更新 TabBar 状态
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ active: 3 })
     }
+
+    // 更新购物车角标
+    app.fetchCartCount()
 
     // 获取用户的登录信息
     if (app.globalData.hasLogin) {

@@ -71,6 +71,41 @@ App({
 
   globalData: {
     hasLogin: false,
-    loginPromise: null
+    loginPromise: null,
+    cartCount: 0,
+    cartListeners: []
+  },
+
+  // 更新购物车角标数量
+  updateCartCount(count) {
+    this.globalData.cartCount = count
+    // 更新自定义 tabbar 角标
+    const pages = getCurrentPages()
+    if (pages.length > 0) {
+      const page = pages[pages.length - 1]
+      if (typeof page.getTabBar === 'function' && page.getTabBar()) {
+        page.getTabBar().setData({ cartCount: count })
+      }
+    }
+    // 通知悬浮购物车组件
+    var listeners = this.globalData.cartListeners || []
+    for (var i = 0; i < listeners.length; i++) {
+      listeners[i](count)
+    }
+  },
+
+  // 从服务端获取购物车数量并更新角标
+  fetchCartCount() {
+    if (!this.globalData.hasLogin) {
+      this.updateCartCount(0)
+      return
+    }
+    var util = require('./utils/util.js')
+    var api = require('./config/api.js')
+    util.request(api.CartGoodsCount).then(res => {
+      if (res.errno === 0) {
+        this.updateCartCount(res.data || 0)
+      }
+    }).catch(() => {})
   }
 })

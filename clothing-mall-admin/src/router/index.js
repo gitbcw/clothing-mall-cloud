@@ -358,6 +358,7 @@ export const asyncRoutes = [
     component: Layout,
     redirect: 'noredirect',
     alwaysShow: true,
+    hidden: true,
     name: 'systemManage',
     meta: {
       title: 'app.menu.system',
@@ -400,7 +401,7 @@ export const asyncRoutes = [
         },
         hidden: true
       },
-      // 权限管理（合并管理员+角色管理）
+      // 权限管理（已隐藏，后台仅开发者使用无需分角色）
       {
         path: 'permission',
         component: () => import('@/views/sys/permission'),
@@ -409,7 +410,8 @@ export const asyncRoutes = [
           perms: ['GET /admin/admin/list', 'GET /admin/role/list'],
           title: 'app.menu.platform_permission',
           noCache: true
-        }
+        },
+        hidden: true
       },
       // 通用问题（已移至 /platform/config，保留路由兼容）
       {
@@ -435,7 +437,7 @@ export const asyncRoutes = [
         },
         hidden: true
       },
-      // 操作日志
+      // 操作日志（已隐藏，开发者用后台无需日志审计）
       {
         path: 'log',
         component: () => import('@/views/sys/log'),
@@ -444,7 +446,8 @@ export const asyncRoutes = [
           perms: ['GET /admin/log/list'],
           title: 'app.menu.platform_log',
           noCache: true
-        }
+        },
+        hidden: true
       },
       // 小程序设置（已拆分至 /platform/config 的客服设置和促销规则 Tab）
       // 隐藏的原商城配置（保留路由兼容）

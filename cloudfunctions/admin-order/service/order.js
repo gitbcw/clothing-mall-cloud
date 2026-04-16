@@ -62,7 +62,7 @@ async function list(data) {
     resultList.push({
       ...order,
       orderStatusText: orderStatusText(order),
-      goodsList: goodsRows,
+      goodsVoList: goodsRows,
       goodsCount: goodsRows.length,
     })
   }
@@ -82,6 +82,10 @@ async function detail(data) {
   const order = rows[0]
   const result = { order: { ...order, orderStatusText: orderStatusText(order) } }
 
+  // 用户信息
+  const userRows = await query('SELECT id, nickname, avatar, mobile FROM litemall_user WHERE id = ? AND deleted = 0', [order.user_id])
+  result.user = userRows.length > 0 ? userRows[0] : {}
+
   // 商品列表
   const goodsRows = await query(
     `SELECT * FROM litemall_order_goods WHERE order_id = ? AND deleted = 0`, [id]
@@ -91,7 +95,7 @@ async function detail(data) {
       try { g.specifications = JSON.parse(g.specifications) } catch (e) { /* ignore */ }
     }
   }
-  result.goodsList = goodsRows
+  result.orderGoods = goodsRows
 
   return response.ok(result)
 }
@@ -194,7 +198,7 @@ async function deleteFn(data) {
 
   const status = rows[0].order_status
   // 只允许删除已完成/已取消的订单
-  const allowStatuses = [STATUS.CANCEL, STATUS.AUTO_CANCEL, STATUS.ADMIN_CANCEL, STATUS.CONFIRM, STATUS.AUTO_CONFIRM, STATUS.REFUND_CONFIRM, STATUS.VERIFIED]
+  const allowStatuses = [STATUS.CANCEL, STATUS.AUTO_CANCEL, STATUS.ADMIN_CANCEL, STATUS.CONFIRM, STATUS.AUTO_CONFIRM, STATUS.REFUND_CONFIRM, STATUS.VERIFIED, STATUS.VERIFY_EXPIRED, STATUS.VERIFY_REFUND]
   if (!allowStatuses.includes(status)) {
     return response.fail(403, '订单状态不允许删除')
   }
@@ -206,22 +210,31 @@ async function deleteFn(data) {
 // ==================== 订单概览 ====================
 
 async function overview() {
-  const statuses = [
-    { key: 'unconfirmed', code: STATUS.SHIP },
-    { key: 'unfinished', code: STATUS.PAY },
-    { key: 'all', code: null }, // 总数
-  ]
-
+  // 按 tab name 返回计数，前端直接用 statusCounts[tabName] 取值
   const result = {}
-  for (const s of statuses) {
-    if (s.code === null) {
-      const rows = await query('SELECT COUNT(*) AS c FROM litemall_order WHERE deleted = 0')
-      result[s.key] = rows[0].c
-    } else {
-      const rows = await query('SELECT COUNT(*) AS c FROM litemall_order WHERE deleted = 0 AND order_status = ?', [s.code])
-      result[s.key] = rows[0].c
-    }
+
+  // 单个状态计数（key 为状态码字符串）
+  const singleStatuses = [
+    { key: '101', code: STATUS.CREATE },
+    { key: '201', code: STATUS.PAY },
+    { key: '301', code: STATUS.SHIP },
+    { key: '501', code: STATUS.VERIFY_PENDING },
+  ]
+  for (const s of singleStatuses) {
+    const rows = await query('SELECT COUNT(*) AS c FROM litemall_order WHERE deleted = 0 AND order_status = ?', [s.code])
+    result[s.key] = rows[0].c
   }
+
+  // 聚合计数
+  const pendingAll = await query(
+    `SELECT COUNT(*) AS c FROM litemall_order WHERE deleted = 0 AND order_status IN (101, 201, 501)`
+  )
+  result['pending_all'] = pendingAll[0].c
+
+  const completedAll = await query(
+    `SELECT COUNT(*) AS c FROM litemall_order WHERE deleted = 0 AND order_status IN (102, 103, 104, 203, 401, 402, 502, 503, 504)`
+  )
+  result['completed_all'] = completedAll[0].c
 
   return response.ok(result)
 }
@@ -307,4 +320,29 @@ async function pay(data) {
   return response.ok()
 }
 
-module.exports = { list, detail, ship, refund, reply, delete: deleteFn, overview, channel, express, snapshot, snapshotBySn, pay }
+// ==================== 核销自提订单 ====================
+
+async function verify(data) {
+  const { orderId, pickupCode } = data
+  if (!orderId || !pickupCode) return response.badArgument()
+
+  const rows = await query('SELECT * FROM litemall_order WHERE id = ? AND deleted = 0', [orderId])
+  if (rows.length === 0) return response.badArgument()
+
+  const order = rows[0]
+  if (order.order_status !== STATUS.VERIFY_PENDING) {
+    return response.fail(403, '订单状态不允许核销')
+  }
+
+  if (order.pickup_code !== pickupCode) {
+    return response.fail(400, '取货码错误')
+  }
+
+  await execute(
+    'UPDATE litemall_order SET order_status = ?, confirm_time = NOW() WHERE id = ?',
+    [STATUS.VERIFIED, orderId]
+  )
+  return response.ok()
+}
+
+module.exports = { list, detail, ship, refund, reply, delete: deleteFn, overview, channel, express, snapshot, snapshotBySn, pay, verify }

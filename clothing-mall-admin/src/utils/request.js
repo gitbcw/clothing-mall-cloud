@@ -79,6 +79,7 @@ const ROUTE_MAP = {
   'order/ship': ['admin-order', 'orderShip'],
   'order/refund': ['admin-order', 'orderRefund'],
   'order/pay': ['admin-order', 'orderPay'],
+  'order/verify': ['admin-order', 'orderVerify'],
   'order/delete': ['admin-order', 'orderDelete'],
   'order/reply': ['admin-order', 'orderReply'],
   'order/channel': ['admin-order', 'orderChannel'],
@@ -109,6 +110,7 @@ const ROUTE_MAP = {
   'stat/revenue/season/hot-goods': ['admin-stat', 'statRevenueSeasonHotGoods'],
   'stat/dashboard/sales': ['admin-stat', 'statDashboardSales'],
   'stat/dashboard/conversion': ['admin-stat', 'statDashboardConversion'],
+  'stat/collect': ['admin-stat', 'statCollect'],
   'dashboard': ['admin-stat', 'dashboardInfo'],
 
   // ---- admin-config (GET=list, POST=update) ----

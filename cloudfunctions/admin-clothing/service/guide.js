@@ -24,7 +24,8 @@ async function list(data) {
 
   const countRows = await query(`SELECT COUNT(*) AS total FROM clothing_guide WHERE ${whereClause}`, params)
   const total = countRows[0] ? countRows[0].total : 0
-  const sql = paginate.appendLimit(`SELECT * FROM clothing_guide WHERE ${whereClause} ORDER BY ${sort} ${order}`, offset, limit)
+  const selectFields = `id, name, phone, avatar, store_id AS storeId, qrcode_url AS qrcodeUrl, commission_rate AS commissionRate, status, add_time AS addTime, update_time AS updateTime`
+  const sql = paginate.appendLimit(`SELECT ${selectFields} FROM clothing_guide WHERE ${whereClause} ORDER BY ${sort} ${order}`, offset, limit)
   const listRows = await query(sql, params)
   return response.okList(listRows, total, page, limit)
 }
@@ -32,7 +33,7 @@ async function list(data) {
 async function read(data) {
   const { id } = data
   if (!id) return response.badArgument()
-  const rows = await query('SELECT * FROM clothing_guide WHERE id = ? AND deleted = 0', [id])
+  const rows = await query('SELECT id, name, phone, avatar, store_id AS storeId, qrcode_url AS qrcodeUrl, commission_rate AS commissionRate, status, add_time AS addTime, update_time AS updateTime FROM clothing_guide WHERE id = ? AND deleted = 0', [id])
   if (rows.length === 0) return response.badArgumentValue()
   return response.ok(rows[0])
 }
@@ -57,7 +58,7 @@ async function update(data) {
   const { id, name, phone, storeId, avatar, commissionRate, status } = data
   if (!id) return response.badArgument()
 
-  const rows = await query('SELECT * FROM clothing_guide WHERE id = ? AND deleted = 0', [id])
+  const rows = await query('SELECT id, phone FROM clothing_guide WHERE id = ? AND deleted = 0', [id])
   if (rows.length === 0) return response.badArgumentValue()
 
   if (phone && !/^1[3-9]\d{9}$/.test(phone)) return response.badArgument()

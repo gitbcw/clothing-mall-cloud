@@ -22,9 +22,29 @@
 .tab-icon {
   width: 48rpx;
   height: 48rpx;
-  margin-bottom: 4rpx;
   background-size: cover;
   background-position: center;
+}
+
+.tab-icon-wrapper {
+  position: relative;
+  margin-bottom: 4rpx;
+}
+
+.badge {
+  position: absolute;
+  top: -8rpx;
+  right: -16rpx;
+  min-width: 28rpx;
+  height: 28rpx;
+  line-height: 28rpx;
+  padding: 0 8rpx;
+  background-color: #FF4D4F;
+  color: #FFFFFF;
+  font-size: 18rpx;
+  text-align: center;
+  border-radius: 14rpx;
+  box-sizing: border-box;
 }
 
 /* ========== 商城端图标 ========== */

@@ -14,7 +14,7 @@ const {
   refund: orderRefund, reply: orderReply, delete: orderDelete,
   overview: orderOverview, channel: orderChannel,
   express: orderExpress, snapshot: orderSnapshot,
-  snapshotBySn: orderSnapshotBySn, pay: orderPay,
+  snapshotBySn: orderSnapshotBySn, pay: orderPay, verify: orderVerify,
 } = require('./service/order')
 
 const {
@@ -48,6 +48,7 @@ const routes = {
   orderDelete:       { handler: orderDelete,       permission: 'admin:order:delete' },
   orderOverview:     { handler: orderOverview,     permission: 'admin:order:list' },
   orderPay:          { handler: orderPay,          permission: 'admin:order:pay' },
+  orderVerify:       { handler: orderVerify,       permission: 'admin:order:ship' },
   orderChannel:      { handler: orderChannel,      permission: null },
   orderExpress:      { handler: orderExpress,      permission: null },
   orderSnapshot:     { handler: orderSnapshot,     permission: null },

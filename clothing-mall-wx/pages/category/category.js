@@ -1,5 +1,6 @@
 const util = require('../../utils/util.js');
 const api = require('../../config/api.js');
+const tracker = require('../../utils/tracker.js');
 
 const app = getApp();
 
@@ -10,24 +11,17 @@ Page({
 
     // 分类列表
     navList: [],
-    currentCategory: {},
     activeCategoryId: 0,
 
-    // 商品列表
-    goodsList: [],
-    page: 1,
-    limit: 10,
-    pages: 1,
+    // 按分类分组的商品
+    groupedGoods: [],  // [{ categoryId, name, goods: [], leftGoods: [], rightGoods: [] }]
     loading: false,
 
-    // 瀑布流
-    leftGoodsList: [],
-    rightGoodsList: [],
-    defaultImage: '/static/images/fallback-image.svg',
+    // 滚动联动
+    scrollIntoView: '',     // 左侧 sidebar scroll-into-view
+    scrollIntoViewItem: '', // 右侧内容 scroll-into-view
 
-    scrollLeft: 0,
-    scrollTop: 0,
-    scrollHeight: 0,
+    defaultImage: '/static/images/fallback-image.svg',
     scrollViewHeight: 0,
 
     // 尺码选择器
@@ -35,13 +29,12 @@ Page({
     skuGoods: {}
   },
 
-  // ========== 缓存层 ==========
-  // 商品缓存：{ categoryId: { list, pages, page } }
-  _goodsCache: {},
-  // navList 是否已加载（整个页面生命周期只加载一次）
-  _navLoaded: false,
-  // 预加载锁，防止重复预加载
-  _preloading: false,
+  // 保存所有商品扁平列表，供 SKU Picker 查找
+  _allGoodsMap: {},
+  // 防止点击侧边栏触发的滚动反过来更新高亮
+  _scrollByTap: false,
+  // 滚动节流
+  _scrollThrottle: null,
 
   onLoad(options) {
     const { system } = wx.getDeviceInfo()
@@ -50,7 +43,6 @@ Page({
     this.setData({
       statusBarHeight,
       navBarHeight: isIOS ? 44 : 48,
-      scrollHeight: windowHeight,
       scrollViewHeight: windowHeight - statusBarHeight - (isIOS ? 44 : 48) - 52
     })
 
@@ -58,311 +50,168 @@ Page({
       this.setData({ activeCategoryId: parseInt(options.id) })
     }
 
-    this._goodsCache = {}
-    this._navLoaded = false
-    this.loadInitial()
+    this.loadAllGoods()
   },
 
   onShow() {
+    tracker.trackPageView('分类页');
+
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ active: 1 })
     }
+    app.fetchCartCount()
   },
 
-  // ========== 首次加载：用合并接口一次拿到分类 + 商品 ==========
+  // ========== 全量加载 ==========
 
-  loadInitial() {
-    let that = this
+  loadAllGoods() {
     this.setData({ loading: true })
 
-    util.request(api.GoodsCategoryWithGoods, {
-      id: this.data.activeCategoryId,
-      page: 1,
-      limit: this.data.limit
-    }).then(function(res) {
+    util.request(api.GoodsListAllBrief).then(res => {
       if (res.errno !== 0) return
-      const d = res.data
+      const { list, categories, enableSizeMap } = res.data
 
-      // 处理分类结构
-      that.setData({
-        navList: d.brotherCategory || [],
-        currentCategory: d.currentCategory || {}
+      // 构建分类 map
+      const catMap = {}
+      categories.forEach(cat => { catMap[cat.id] = cat.name })
+
+      // 按 categoryId 分组
+      const groupMap = {}
+      const groupOrder = []
+      list.forEach(item => {
+        item.enableSize = enableSizeMap[item.categoryId] !== false
+        const cid = item.categoryId
+        if (!groupMap[cid]) {
+          groupMap[cid] = { categoryId: cid, name: catMap[cid] || '未分类', goods: [] }
+          groupOrder.push(cid)
+        }
+        groupMap[cid].goods.push(item)
       })
 
-      if (d.parentCategory) {
-        wx.setNavigationBarTitle({ title: d.parentCategory.name })
+      // 按分类排序（保持 navList 顺序），为每个分组计算瀑布流
+      const navList = categories
+      const groupedGoods = []
+      for (const cat of navList) {
+        const group = groupMap[cat.id]
+        if (group && group.goods.length > 0) {
+          group.leftGoods = []
+          group.rightGoods = []
+          group.goods.forEach((item, i) => {
+            if (i % 2 === 0) group.leftGoods.push(item)
+            else group.rightGoods.push(item)
+          })
+          groupedGoods.push(group)
+        }
       }
 
-      // L1 → L2 自动降级
-      if (d.parentCategory && d.parentCategory.id === that.data.activeCategoryId) {
-        that.setData({ activeCategoryId: d.currentCategory.id })
+      // 构建 allGoodsMap（用于 SKU Picker 查找商品）
+      const allGoodsMap = {}
+      list.forEach(item => { allGoodsMap[item.id] = item })
+
+      // 确定默认 activeCategoryId
+      let activeCategoryId = this.data.activeCategoryId
+      if (!activeCategoryId || !navList.find(c => c.id === activeCategoryId)) {
+        activeCategoryId = navList.length > 0 ? navList[0].id : 0
       }
 
-      // 默认选中第一个
-      var navList = that.data.navList
-      if ((!that.data.activeCategoryId || !navList.find(function(item) { return item.id === that.data.activeCategoryId })) && navList.length > 0) {
-        that.setData({ activeCategoryId: navList[0].id, currentCategory: navList[0] })
+      this.setData({
+        navList,
+        activeCategoryId,
+        groupedGoods,
+        loading: false,
+      })
+      this._allGoodsMap = allGoodsMap
+
+      // 初始跳转
+      if (activeCategoryId) {
+        setTimeout(() => {
+          this.setData({ scrollIntoViewItem: 'section-' + activeCategoryId })
+        }, 300)
       }
-
-      that._navLoaded = true
-
-      // 处理商品数据
-      that._applyGoodsData(d.goods)
-
-      // 缓存当前分类的商品
-      that._cacheCurrentGoods()
-
-      // 预加载相邻分类
-      that._preloadAdjacent()
     })
   },
 
-  // ========== 切换分类（走缓存优先） ==========
+  // ========== 滚动联动（实时 DOM 查询） ==========
+
+  onGoodsScroll() {
+    if (this._scrollByTap) {
+      this._scrollByTap = false
+      return
+    }
+
+    // 节流：80ms 内只查一次
+    if (this._scrollThrottle) return
+    this._scrollThrottle = setTimeout(() => {
+      this._scrollThrottle = null
+      this._updateActiveByScroll()
+    }, 80)
+  },
+
+  _updateActiveByScroll() {
+    const { groupedGoods, activeCategoryId } = this.data
+    if (!groupedGoods.length) return
+
+    const currentIdx = groupedGoods.findIndex(g => g.categoryId === activeCategoryId)
+    if (currentIdx === -1) return
+
+    // 一张商品卡片高度（340rpx ≈ 170px，加上 info 区约 220px）
+    const CARD_HEIGHT = 220
+
+    const query = wx.createSelectorQuery()
+    query.select('.goods-content').boundingClientRect()
+    query.select('#section-' + activeCategoryId).boundingClientRect()
+    if (currentIdx > 0) {
+      query.select('#section-' + groupedGoods[currentIdx - 1].categoryId).boundingClientRect()
+    }
+    query.exec(results => {
+      if (!results || !results[0] || !results[1]) return
+      const viewTop = results[0].top
+      const currentRect = results[1]
+
+      let newId = activeCategoryId
+
+      // 向下滚：当前区块底部离顶边 < 一张卡片高度 → 切下一个
+      const remaining = currentRect.bottom - viewTop
+      if (remaining < CARD_HEIGHT && currentIdx < groupedGoods.length - 1) {
+        newId = groupedGoods[currentIdx + 1].categoryId
+      }
+
+      // 向上滚：上一个区块底部离顶边 > 一张卡片高度 → 切回上一个
+      if (newId === activeCategoryId && currentIdx > 0 && results[2]) {
+        const prevRect = results[2]
+        const prevVisible = prevRect.bottom - viewTop
+        if (prevVisible > CARD_HEIGHT) {
+          newId = groupedGoods[currentIdx - 1].categoryId
+        }
+      }
+
+      if (newId !== activeCategoryId) {
+        this.setData({
+          activeCategoryId: newId,
+          scrollIntoView: 'nav-' + newId,
+        })
+      }
+    })
+  },
+
+  // ========== 侧边栏点击 → 跳转 ==========
 
   switchCate(e) {
-    let id = e.currentTarget.dataset.id
+    const id = e.currentTarget.dataset.id
     if (this.data.activeCategoryId === id) return
-
-    // 滚动位置调整
-    let clientX = e.detail && e.detail.x ? e.detail.x : 0
-    let currentTarget = e.currentTarget
-    if (clientX < 60) {
-      this.setData({ scrollLeft: currentTarget.offsetLeft - 60 })
-    } else if (clientX > 330) {
-      this.setData({ scrollLeft: currentTarget.offsetLeft })
-    }
-
-    this._switchTo(id)
-  },
-
-  // 通用切换逻辑
-  _switchTo(categoryId) {
-    const cached = this._goodsCache[categoryId]
-
-    // 切换 activeCategoryId
+    this._scrollByTap = true
     this.setData({
-      activeCategoryId: categoryId,
-      scrollTop: 0
+      activeCategoryId: id,
+      scrollIntoViewItem: 'section-' + id,
+      scrollIntoView: 'nav-' + id,
     })
-
-    if (cached) {
-      // 命中缓存：直接渲染，0 网络请求
-      const enableSizeMap = cached.enableSizeMap || {}
-      const list = (cached.list || []).map(function(item) {
-        item.enableSize = enableSizeMap[item.categoryId] !== false
-        return item
-      })
-      this.setData({
-        goodsList: list,
-        page: cached.page || 1,
-        pages: cached.pages || 1,
-        loading: false
-      })
-      this.updateWaterfall()
-    } else {
-      // 无缓存：请求合并接口
-      this.setData({
-        goodsList: [],
-        leftGoodsList: [],
-        rightGoodsList: [],
-        page: 1,
-        loading: true
-      })
-      this._fetchGoods(categoryId)
-    }
-  },
-
-  // 请求商品数据（navList 已有，只请求商品）
-  _fetchGoods(categoryId) {
-    let that = this
-    util.request(api.GoodsList, {
-      categoryId: categoryId,
-      page: 1,
-      limit: that.data.limit
-    }).then(function(res) {
-      if (res.errno !== 0) return
-      that._applyGoodsData(res.data)
-      that._cacheCurrentGoods()
-      that._preloadAdjacent()
-    })
-  },
-
-  // ========== 加载更多（分页） ==========
-
-  getGoodsList() {
-    let that = this
-    util.request(api.GoodsList, {
-      categoryId: that.data.activeCategoryId,
-      page: that.data.page,
-      limit: that.data.limit
-    }).then(function(res) {
-      if (res.errno === 0) {
-        that._applyGoodsData(res.data, true)
-        that._cacheCurrentGoods()
-      }
-    })
-  },
-
-  // ========== 数据处理 ==========
-
-  _applyGoodsData(goodsData, append) {
-    if (!goodsData) return
-    const enableSizeMap = goodsData.enableSizeMap || {}
-    const newList = (goodsData.list || []).map(function(item) {
-      item.enableSize = enableSizeMap[item.categoryId] !== false
-      return item
-    })
-
-    let goodsList = append ? this.data.goodsList.concat(newList) : newList
-    this.setData({
-      goodsList: goodsList,
-      pages: goodsData.pages || 1,
-      loading: false
-    })
-    this.updateWaterfall()
-  },
-
-  _cacheCurrentGoods() {
-    const id = this.data.activeCategoryId
-    this._goodsCache[id] = {
-      list: this.data.goodsList.slice(),
-      pages: this.data.pages,
-      page: this.data.page,
-    }
-  },
-
-  // ========== 预加载相邻分类 ==========
-
-  _preloadAdjacent() {
-    if (this._preloading) return
-    const navList = this.data.navList
-    if (!navList.length) return
-
-    const currentId = this.data.activeCategoryId
-    const idx = navList.findIndex(item => item.id === currentId)
-
-    // 找到需要预加载的相邻分类（前后各 1 个，跳过已缓存的）
-    const toPreload = []
-    if (idx > 0 && !this._goodsCache[navList[idx - 1].id]) {
-      toPreload.push(navList[idx - 1].id)
-    }
-    if (idx < navList.length - 1 && !this._goodsCache[navList[idx + 1].id]) {
-      toPreload.push(navList[idx + 1].id)
-    }
-
-    if (toPreload.length === 0) return
-
-    this._preloading = true
-    const limit = this.data.limit
-
-    // 并发预加载
-    const that = this
-    Promise.all(toPreload.map(function(catId) {
-      return util.request(api.GoodsList, {
-        categoryId: catId,
-        page: 1,
-        limit: limit
-      }).then(function(res) {
-        if (res.errno === 0) {
-          that._goodsCache[catId] = {
-            list: (res.data.list || []).map(function(item) {
-              item.enableSize = (res.data.enableSizeMap || {})[item.categoryId] !== false
-              return item
-            }),
-            pages: res.data.pages || 1,
-            page: 1,
-          }
-        }
-      }).catch(function() {})
-    })).then(function() {
-      that._preloading = false
-    })
-  },
-
-  // ========== 瀑布流布局 ==========
-
-  updateWaterfall() {
-    const goodsList = this.data.goodsList
-    const leftGoodsList = []
-    const rightGoodsList = []
-
-    goodsList.forEach((item, index) => {
-      if (index % 2 === 0) {
-        leftGoodsList.push(item)
-      } else {
-        rightGoodsList.push(item)
-      }
-    })
-
-    this.setData({ leftGoodsList, rightGoodsList })
-  },
-
-  // ========== 滚动与触摸 ==========
-
-  onGoodsScroll(e) {
-    this._scrollTop = e.detail.scrollTop
-    this._scrollHeight = e.detail.scrollHeight
-  },
-
-  onTouchStart(e) {
-    this._touchStartY = e.touches[0].clientY
-  },
-
-  onTouchEnd(e) {
-    if (this.data.loading) return
-
-    const deltaY = e.changedTouches[0].clientY - this._touchStartY
-    if (Math.abs(deltaY) < 50) return
-
-    const scrollTop = this._scrollTop || 0
-    const scrollHeight = this._scrollHeight || 0
-    const viewHeight = this.data.scrollViewHeight
-    const atTop = scrollTop <= 100
-    const atBottom = scrollTop + viewHeight >= scrollHeight - 100
-
-    if (deltaY < 0 && atBottom) {
-      if (this.data.page < this.data.pages) {
-        this.setData({ page: this.data.page + 1 })
-        this.getGoodsList()
-      } else {
-        this.switchToNextCategory()
-      }
-    } else if (deltaY > 0 && atTop) {
-      this.switchToPrevCategory()
-    }
-  },
-
-  switchToPrevCategory() {
-    const navList = this.data.navList
-    const currentId = this.data.activeCategoryId
-    let currentIndex = navList.findIndex(item => item.id === currentId)
-
-    if (currentIndex <= 0) {
-      wx.showToast({ title: '已经是第一个了', icon: 'none' })
-      return
-    }
-
-    this._switchTo(navList[currentIndex - 1].id)
-  },
-
-  switchToNextCategory() {
-    const navList = this.data.navList
-    const currentId = this.data.activeCategoryId
-    let currentIndex = navList.findIndex(item => item.id === currentId)
-
-    if (currentIndex === -1 || currentIndex >= navList.length - 1) {
-      wx.showToast({ title: '已经到底了', icon: 'none' })
-      return
-    }
-
-    this._switchTo(navList[currentIndex + 1].id)
   },
 
   // ========== 尺码选择器 ==========
 
   addToCart(e) {
     const id = e.currentTarget.dataset.id
-    const goods = this.data.goodsList.find(item => item.id === id)
+    const goods = this._allGoodsMap[id]
     if (!goods) return
     this.setData({
       showSkuPicker: true,
@@ -386,6 +235,7 @@ Page({
       if (res.errno === 0) {
         wx.showToast({ title: '已加入购物车' })
         this.setData({ showSkuPicker: false })
+        app.fetchCartCount()
       } else {
         wx.showToast({ title: res.errmsg || '添加失败', icon: 'none' })
       }
@@ -425,14 +275,11 @@ Page({
   },
 
   onCategoryImageError(e) {
-    const { source, index } = e.currentTarget.dataset
-    const list = this.data[source] || []
-    const defaultImage = this.data.defaultImage
-    if (list[index] && list[index].picUrl !== defaultImage) {
-      this.setData({
-        [`${source}[${index}].picUrl`]: defaultImage
-      })
-    }
+    const { index, groupindex, source } = e.currentTarget.dataset
+    const key = `groupedGoods[${groupindex}].${source}[${index}].picUrl`
+    this.setData({
+      [key]: this.data.defaultImage
+    })
   },
 
   goBack() {

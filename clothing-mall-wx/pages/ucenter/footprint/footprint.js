@@ -1,5 +1,6 @@
 var util = require('../../../utils/util.js');
 var api = require('../../../config/api.js');
+var tracker = require('../../../utils/tracker.js');
 
 var app = getApp();
 
@@ -10,6 +11,10 @@ Page({
     limit: 10,
     totalPages: 1,
     loading: false
+  },
+
+  onShow() {
+    tracker.trackPageView('足迹');
   },
 
   getFootprintList() {

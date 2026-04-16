@@ -1,5 +1,6 @@
 const util = require('../../utils/util.js');
 const api = require('../../config/api.js');
+const tracker = require('../../utils/tracker.js');
 
 const app = getApp();
 
@@ -36,6 +37,8 @@ Page({
   },
 
   onShow() {
+    tracker.trackPageView('购物车');
+
     // 更新 TabBar 状态
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ active: 2 })
@@ -48,6 +51,7 @@ Page({
       this.getCartList()
     } else {
       this.setData({ loading: false })
+      app.updateCartCount(0)
     }
   },
 
@@ -64,6 +68,8 @@ Page({
         that.setData({
           checkedAllStatus: that.isCheckedAll()
         })
+        // 同步购物车角标
+        app.updateCartCount(res.data.cartTotal ? res.data.cartTotal.goodsCount : 0)
       } else {
         that.setData({ loading: false })
       }

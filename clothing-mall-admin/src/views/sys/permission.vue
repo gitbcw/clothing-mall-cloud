@@ -341,13 +341,13 @@ export default {
 
     // ========== 角色相关 ==========
     getRoleOptions() {
-      roleOptions().then(response => {
+      roleOptions({ type: 'admin' }).then(response => {
         this.roleOptions = response.data.data || []
       })
     },
     getRoleList() {
       this.roleLoading = true
-      listRole(this.roleQuery)
+      listRole({ ...this.roleQuery, type: 'admin' })
         .then(response => {
           this.roleList = response.data.data.list
           this.roleTotal = response.data.data.total
