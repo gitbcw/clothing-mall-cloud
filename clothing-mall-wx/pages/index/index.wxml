@@ -1,7 +1,7 @@
 <wxs src="../../utils/image.wxs" module="img" />
 <view class="container">
   <!-- 自定义导航栏 -->
-  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+  <view class="custom-nav" style="padding-top: {{statusBarHeight}}px; height: {{navBarHeight +statusBarHeight}}px;"> 
     <view class="nav-left"></view>
     <view class="nav-title">川着·Transmute</view>
     <view class="nav-right"></view>
