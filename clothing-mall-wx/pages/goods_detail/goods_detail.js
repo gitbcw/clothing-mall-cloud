@@ -81,6 +81,14 @@ Page({
   },
 
   onLoad(options) {
+     // 初始化导航栏
+     const { system } = wx.getDeviceInfo()
+     const { statusBarHeight } = wx.getWindowInfo()
+     const isIOS = system.indexOf('iOS') > -1
+     this.setData({
+       statusBarHeight,
+       navBarHeight: isIOS ? 44 : 48
+     })
     if (options.preview === '1') {
       this.setData({ isPreview: true })
       if (options.from === 'draft') {

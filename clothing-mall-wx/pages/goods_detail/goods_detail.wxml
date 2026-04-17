@@ -13,7 +13,7 @@
   <!-- 正常商品内容（下架或隐藏） -->
   <block wx:if="{{!isUnshelved && !loading}}">
   <!-- 沉浸式自定义导航栏 -->
-  <view class="custom-nav" style="padding-top: {{statusBarHeight+16}}px; height: {{navBarHeight}}px;">
+  <view class="custom-nav" style="padding-top: {{statusBarHeight}}px; height: {{navBarHeight +statusBarHeight}}px;">
     <view class="back-btn" bindtap="goBack">
       <view class="back-icon"></view>
     </view>
@@ -22,7 +22,7 @@
   </view>
 
   <!-- 顶部商品主图轮播 -->
-  <view class="swiper-wrap" style="padding-top: {{statusBarHeight + navBarHeight + 16}}px;">
+  <view class="swiper-wrap" style="padding-top: {{statusBarHeight + navBarHeight}}px;">
     <swiper class="goods-swiper" bindchange="onSwiperChange" autoplay="{{true}}" interval="3000" circular="{{true}}">
       <block wx:for="{{gallery}}" wx:key="*this">
         <swiper-item>

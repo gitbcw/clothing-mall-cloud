@@ -141,7 +141,7 @@ page {
   width: 100%;
   display: block;
   background: #f5f5f5;
-  min-height: 200rpx;
+  height: 120rpx;
 }
 
 .goods-info {

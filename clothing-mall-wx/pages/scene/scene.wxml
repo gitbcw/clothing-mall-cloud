@@ -14,9 +14,9 @@
   <view style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
 
   <!-- 场景描述 -->
-  <view class="scene-header" wx:if="{{sceneDesc}}">
+  <!-- <view class="scene-header" wx:if="{{sceneDesc}}">
     <text class="scene-desc">{{sceneDesc}}</text>
-  </view>
+  </view> -->
 
   <!-- 商品列表（瀑布流） -->
   <view class="goods-content" wx:if="{{leftGoodsList.length > 0 || rightGoodsList.length > 0}}">

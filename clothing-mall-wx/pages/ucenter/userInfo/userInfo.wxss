@@ -37,7 +37,6 @@
   height: 144rpx;
   border-radius: 50%;
   overflow: hidden;
-  border: 4rpx solid rgba(255, 128, 150, 0.2);
 }
 
 .avatar {
