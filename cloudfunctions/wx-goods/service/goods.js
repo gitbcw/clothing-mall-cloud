@@ -280,10 +280,27 @@ async function list(data, context) {
   if (isNew !== undefined && isNew !== null) { conditions.push('g.is_new = ?'); params.push(isNew ? 1 : 0) }
   if (isHot !== undefined && isHot !== null) { conditions.push('g.is_hot = ?'); params.push(isHot ? 1 : 0) }
 
-  // 关键词搜索（OR: keywords LIKE 或 name LIKE）
+  // 关键词搜索（匹配商品 name/keywords + 分类 name/keywords）
+  let matchedCatIds = []
   if (keyword) {
-    conditions.push('(g.keywords LIKE ? OR g.name LIKE ?)')
-    params.push(`%${keyword}%`, `%${keyword}%`)
+    // 查找 keywords 或 name 命中的分类（含子分类的父分类）
+    const like = `%${keyword}%`
+    const catRows = await db.query(
+      `SELECT id FROM litemall_category
+       WHERE deleted = 0 AND (keywords LIKE ? OR name LIKE ?)`,
+      [like, like]
+    )
+    matchedCatIds = catRows.map(r => r.id)
+
+    // 构造搜索条件：商品本身匹配 OR 属于命中分类
+    if (matchedCatIds.length > 0) {
+      const catPlaceholders = matchedCatIds.map(() => '?').join(',')
+      conditions.push(`(g.keywords LIKE ? OR g.name LIKE ? OR g.category_id IN (${catPlaceholders}))`)
+      params.push(like, like, ...matchedCatIds)
+    } else {
+      conditions.push('(g.keywords LIKE ? OR g.name LIKE ?)')
+      params.push(like, like)
+    }
   }
 
   const whereClause = conditions.length > 0 ? 'AND ' + conditions.join(' AND ') : ''
@@ -291,16 +308,19 @@ async function list(data, context) {
   // 排序逻辑
   let orderClause
   if (sort === 'default' && keyword) {
-    // 关键词相关度排序
+    // 关键词相关度排序（分类匹配权重最低）
+    const catIdList = matchedCatIds.length > 0 ? matchedCatIds : [-1]
+    const catWhen = catIdList.map(() => '?').join(',')
     orderClause = `CASE
       WHEN g.name = ? THEN 100
       WHEN g.name LIKE ? THEN 80
       WHEN g.name LIKE ? THEN 50
       WHEN g.keywords LIKE ? THEN 30
       WHEN g.keywords LIKE ? THEN 10
+      WHEN g.category_id IN (${catWhen}) THEN 5
       ELSE 0
     END DESC, g.sort_order DESC, g.add_time DESC`
-    params.push(keyword, `${keyword}%`, `%${keyword}%`, `${keyword}%`, `%${keyword}%`)
+    params.push(keyword, `${keyword}%`, `%${keyword}%`, `${keyword}%`, `%${keyword}%`, ...catIdList)
   } else if (sort === 'default') {
     orderClause = 'g.sort_order DESC, g.add_time DESC'
   } else {
@@ -394,8 +414,23 @@ async function getCatIds(brandId, isNew, isHot, keyword) {
   let whereClause = conditions.length > 0 ? conditions.join(' AND ') : '1=1'
 
   if (keyword) {
-    whereClause = `(${conditions.length > 0 ? conditions.join(' AND ') + ' AND ' : ''}(keywords LIKE ? OR name LIKE ?))`
-    params.push(`%${keyword}%`, `%${keyword}%`)
+    // 查找匹配的分类 ID
+    const like = `%${keyword}%`
+    const catRows = await db.query(
+      `SELECT id FROM litemall_category
+       WHERE deleted = 0 AND (keywords LIKE ? OR name LIKE ?)`,
+      [like, like]
+    )
+    const matchedCatIds = catRows.map(r => r.id)
+
+    if (matchedCatIds.length > 0) {
+      const catPlaceholders = matchedCatIds.map(() => '?').join(',')
+      whereClause = `(${conditions.length > 0 ? conditions.join(' AND ') + ' AND ' : ''}(keywords LIKE ? OR name LIKE ? OR category_id IN (${catPlaceholders})))`
+      params.push(like, like, ...matchedCatIds)
+    } else {
+      whereClause = `(${conditions.length > 0 ? conditions.join(' AND ') + ' AND ' : ''}(keywords LIKE ? OR name LIKE ?))`
+      params.push(like, like)
+    }
   }
 
   const rows = await db.query(

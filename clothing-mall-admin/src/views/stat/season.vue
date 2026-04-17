@@ -113,8 +113,8 @@ export default {
       quickYear: 'thisYear',
       currentSeason: 'spring',
       seasons: [
-        { key: 'spring', name: '春季', icon: '🌸', months: '3-5月' },
-        { key: 'winter', name: '冬季', icon: '❄️', months: '12-2月' }
+        { key: 'spring', name: '春季', icon: '🌸', months: '3-9月' },
+        { key: 'winter', name: '冬季', icon: '❄️', months: '10-2月' }
       ],
       seasonData: {
         spring: { amount: 0, orders: 0, growth: 0 },
@@ -190,7 +190,7 @@ export default {
           {
             seasonKey: 'spring',
             season: '春季',
-            months: '3-5月',
+            months: '3-9月',
             orders: this.seasonData.spring.orders || 0,
             amount: this.seasonData.spring.amount || 0,
             goodsCount: 0,
@@ -200,7 +200,7 @@ export default {
           {
             seasonKey: 'winter',
             season: '冬季',
-            months: '12-2月',
+            months: '10-2月',
             orders: this.seasonData.winter.orders || 0,
             amount: this.seasonData.winter.amount || 0,
             goodsCount: 0,

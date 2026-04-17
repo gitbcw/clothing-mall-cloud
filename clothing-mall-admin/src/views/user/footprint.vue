@@ -1,89 +1,244 @@
 <template>
-  <div class="app-container">
-
-    <!-- 查询和其他操作 -->
-    <div class="filter-container">
-      <el-input v-model="listQuery.userId" clearable class="filter-item" style="width: 200px;" :placeholder="$t('user_footprint.placeholder.filter_user_id')" />
-      <el-input v-model="listQuery.goodsId" clearable class="filter-item" style="width: 200px;" :placeholder="$t('user_footprint.placeholder.filter_goods_id')" />
-      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">{{ $t('app.button.search') }}</el-button>
-      <el-button :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">{{ $t('app.button.download') }}</el-button>
+  <div class="footprint-stats">
+    <!-- 概览 -->
+    <div class="kpi-strip">
+      <div class="kpi-item">
+        <span class="kpi-num primary">{{ formatNum(kpi.totalCount) }}</span>
+        <span class="kpi-label">浏览总量</span>
+      </div>
+      <div class="kpi-divider" />
+      <div class="kpi-item">
+        <span class="kpi-num">{{ kpi.dailyAvg }}</span>
+        <span class="kpi-label">日均浏览</span>
+      </div>
+      <div class="kpi-divider" />
+      <div class="kpi-item">
+        <span class="kpi-num">{{ kpi.perUser }}</span>
+        <span class="kpi-label">人均浏览</span>
+      </div>
+      <div class="kpi-divider" />
+      <div class="kpi-item">
+        <span class="kpi-num">{{ formatNum(kpi.goodsCount) }}</span>
+        <span class="kpi-label">被浏览商品</span>
+      </div>
     </div>
 
-    <!-- 查询结果 -->
-    <el-table v-loading="listLoading" :data="list" :element-loading-text="$t('app.message.list_loading')" border fit highlight-current-row>
-      <!-- 足迹ID列已隐藏 -->
-      <el-table-column align="center" min-width="100px" :label="$t('user_footprint.table.user_name')" prop="userName" />
-
-      <el-table-column align="center" min-width="100px" :label="$t('user_footprint.table.goods_name')" prop="goodsName" />
-
-      <el-table-column align="center" min-width="100px" :label="$t('user_footprint.table.add_time')" prop="addTime" />
-
-    </el-table>
-
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
+    <!-- 分类分布 + 时段分布 + 热门浏览 -->
+    <el-row :gutter="16">
+      <el-col :xs="24" :sm="10" :md="8">
+        <div class="chart-card">
+          <div class="card-title">分类分布</div>
+          <ve-pie :data="categoryData" :settings="categorySettings" :extend="pieExtend" height="280px" />
+        </div>
+        <div class="chart-card">
+          <div class="card-title">时段分布</div>
+          <ve-histogram :data="hourlyData" :settings="hourlySettings" :extend="hourlyExtend" height="200px" />
+        </div>
+      </el-col>
+      <el-col :xs="24" :sm="14" :md="16">
+        <div class="chart-card">
+          <div class="card-title">热门浏览 TOP10</div>
+          <div class="rank-list">
+            <div v-if="!topList.length" class="empty-tip">暂无浏览数据</div>
+            <div v-for="(item, idx) in topList" :key="idx" class="rank-item">
+              <span :class="['rank-index', `rank-${idx + 1}`]">{{ idx + 1 }}</span>
+              <el-image v-if="item.picUrl" :src="imageUrl(item.picUrl)" :preview-src-list="[imageUrl(item.picUrl)]" class="rank-img" fit="cover" />
+              <div v-else class="rank-img rank-img-empty" />
+              <div class="rank-text">
+                <div class="rank-name">{{ item.name }}</div>
+                <div class="rank-price">{{ item.price ? '¥' + Number(item.price).toFixed(0) : '' }}</div>
+              </div>
+              <div class="rank-value">
+                <span class="value-num">{{ item.count }}</span>
+                <span class="value-unit">次</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script>
-import { listFootprint } from '@/api/user'
-import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+import VePie from 'v-charts/lib/pie'
+import VeHistogram from 'v-charts/lib/histogram'
+import { statFootprint } from '@/api/stat'
+
+const COLORS = ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#9B59B6', '#40C9C6', '#36A3F7', '#34BFA3']
 
 export default {
   name: 'FootPrint',
-  components: { Pagination },
+  components: { VePie, VeHistogram },
   data() {
     return {
-      list: null,
-      total: 0,
-      listLoading: true,
-      listQuery: {
-        page: 1,
-        limit: 20,
-        userId: undefined,
-        goodsId: undefined,
-        sort: 'add_time',
-        order: 'desc'
+      kpi: { totalCount: 0, dailyAvg: 0, perUser: 0, goodsCount: 0 },
+      categoryData: { columns: ['name', 'count'], rows: [] },
+      categorySettings: { radius: 90, offsetY: 140, labelMap: { count: '浏览数' } },
+      pieExtend: {
+        color: COLORS,
+        legend: { bottom: 0, textStyle: { fontSize: 12, color: '#909399' } },
+        series: { label: { fontSize: 11 } }
       },
-      downloadLoading: false
+      hourlyData: { columns: ['name', 'count'], rows: [] },
+      hourlySettings: { labelMap: { count: '浏览数' } },
+      hourlyExtend: {
+        color: ['#409EFF'],
+        series: { barWidth: 12, itemStyle: { borderRadius: [3, 3, 0, 0] } },
+        xAxis: { axisLabel: { fontSize: 10, interval: 1 } },
+        yAxis: { splitLine: { lineStyle: { color: '#F2F6FC' } } }
+      },
+      topList: []
     }
   },
   created() {
-    this.getList()
+    this.fetchData()
   },
   methods: {
-    getList() {
-      this.listLoading = true
-      listFootprint(this.listQuery)
-        .then(response => {
-          this.list = response.data.data.list
-          this.total = response.data.data.total
-          this.listLoading = false
-        })
-        .catch(() => {
-          this.list = []
-          this.total = 0
-          this.listLoading = false
-        })
+    formatNum(n) {
+      return n == null ? '0' : Number(n).toLocaleString('zh-CN')
     },
-    handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
-    },
-    handleDownload() {
-      this.downloadLoading = true
-      import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['会员名称', '商品名称', '添加时间']
-        const filterVal = ['userName', 'goodsName', 'addTime']
-        excel.export_json_to_excel2(
-          tHeader,
-          this.list,
-          filterVal,
-          '会员足迹信息'
-        )
-        this.downloadLoading = false
+    fetchData() {
+      statFootprint().then(res => {
+        const d = res.data.data || {}
+        this.kpi = {
+          totalCount: d.totalCount || 0,
+          dailyAvg: d.dailyAvg || 0,
+          perUser: d.perUser || 0,
+          goodsCount: d.goodsCount || 0
+        }
+        this.topList = (d.topGoods || []).map(r => ({
+          name: r.name || '-', picUrl: r.picUrl || '', price: r.price || 0, count: Number(r.count)
+        }))
+        this.categoryData.rows = (d.categoryDistribution || []).map(r => ({
+          name: r.name || '未分类', count: Number(r.count)
+        }))
+        this.hourlyData.rows = (d.hourlyDistribution || []).map(r => ({
+          name: r.name, count: Number(r.count)
+        }))
+      }).catch(() => {
+        this.$message.warning('获取浏览足迹统计数据失败')
       })
     }
   }
 }
 </script>
+
+<style rel="stylesheet/scss" lang="scss" scoped>
+.footprint-stats {
+  padding: 20px;
+  background: #f5f7fa;
+  min-height: 100%;
+}
+
+.kpi-strip {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px 0;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.kpi-item {
+  flex: 1;
+  text-align: center;
+  .kpi-num {
+    display: block;
+    font-size: 26px;
+    font-weight: 700;
+    color: #303133;
+    line-height: 1.3;
+    &.primary { color: #409eff; }
+  }
+  .kpi-label {
+    display: block;
+    font-size: 12px;
+    color: #909399;
+    margin-top: 4px;
+  }
+}
+.kpi-divider {
+  width: 1px;
+  height: 32px;
+  background: #ebeef5;
+  flex-shrink: 0;
+}
+
+.chart-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 12px;
+}
+
+.rank-list {
+  .empty-tip {
+    text-align: center;
+    padding: 40px 0;
+    color: #909399;
+    font-size: 13px;
+  }
+}
+.rank-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
+  &:last-child { border-bottom: none; }
+}
+.rank-index {
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  border-radius: 50%;
+  background: #f0f2f5;
+  color: #909399;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 12px;
+  flex-shrink: 0;
+  &.rank-1 { background: #f56c6c; color: #fff; }
+  &.rank-2 { background: #e6a23c; color: #fff; }
+  &.rank-3 { background: #409eff; color: #fff; }
+}
+.rank-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  margin-right: 10px;
+  flex-shrink: 0;
+  background: #f5f7fa;
+  &.rank-img-empty { background: #f0f2f5; }
+}
+.rank-text {
+  flex: 1;
+  overflow: hidden;
+  .rank-name {
+    font-size: 14px;
+    color: #303133;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .rank-price {
+    font-size: 12px;
+    color: #909399;
+    margin-top: 2px;
+  }
+}
+.rank-value {
+  flex-shrink: 0;
+  margin-left: 12px;
+  .value-num { font-size: 16px; font-weight: 700; color: #303133; }
+  .value-unit { font-size: 12px; color: #909399; margin-left: 2px; }
+}
+</style>

@@ -157,3 +157,19 @@ export function statCollect(query) {
     params: query
   })
 }
+
+// 浏览足迹统计
+export function statFootprint() {
+  return request({
+    url: '/stat/footprint',
+    method: 'get'
+  })
+}
+
+// 搜索历史统计
+export function statSearchHistory() {
+  return request({
+    url: '/stat/search-history',
+    method: 'get'
+  })
+}

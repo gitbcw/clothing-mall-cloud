@@ -51,13 +51,23 @@ async function list(data) {
     }
 
     const orderRows = await query(
-      'SELECT order_sn, consignee, mobile FROM litemall_order WHERE id = ? AND deleted = 0 LIMIT 1',
+      'SELECT order_sn, consignee, mobile, user_id FROM litemall_order WHERE id = ? AND deleted = 0 LIMIT 1',
       [a.order_id]
     )
     if (orderRows.length > 0) {
       item.orderSn = orderRows[0].order_sn
       item.consignee = orderRows[0].consignee
       item.mobile = orderRows[0].mobile
+
+      // 查询下单用户信息
+      const userRows = await query(
+        'SELECT nickname AS userName, avatar FROM litemall_user WHERE id = ? AND deleted = 0 LIMIT 1',
+        [orderRows[0].user_id]
+      )
+      if (userRows.length > 0) {
+        item.userName = userRows[0].userName
+        item.avatar = userRows[0].avatar
+      }
     }
 
     const goodsRows = await query(

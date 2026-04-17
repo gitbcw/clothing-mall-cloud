@@ -11,7 +11,10 @@ const BIT_FIELDS = ['is_new', 'is_hot', 'is_on_sale', 'is_special_price', 'delet
 
 function normalizeBitFields(row) {
   for (const key of BIT_FIELDS) {
-    if (row[key] != null) row[key] = !!row[key]
+    const val = row[key]
+    if (val == null) continue
+    // mysql2 execute() 不触发 typeCast，BIT(1) 返回 Buffer；Buffer 是 truthy 不能直接 !!
+    row[key] = Buffer.isBuffer(val) ? val[0] === 1 : !!val
   }
   return row
 }

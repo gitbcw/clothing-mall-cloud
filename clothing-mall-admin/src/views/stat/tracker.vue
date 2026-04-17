@@ -117,6 +117,7 @@ export default {
         addCartRate: 0,
         payRate: 0
       },
+      eventTypes: ['page_view', 'goods_view', 'add_cart', 'order_create', 'order_pay'],
       trendChartData: {
         columns: ['day', 'page_view', 'goods_view', 'add_cart', 'order_create', 'order_pay'],
         rows: []
@@ -131,7 +132,18 @@ export default {
         }
       },
       chartExtend: {
-        xAxis: { boundaryGap: false },
+        xAxis: {
+          boundaryGap: false,
+          axisLabel: {
+            formatter: function(val) {
+              const d = new Date(val)
+              if (isNaN(d.getTime())) return val
+              const mm = String(d.getMonth() + 1).padStart(2, '0')
+              const dd = String(d.getDate()).padStart(2, '0')
+              return mm + '-' + dd
+            }
+          }
+        },
         series: {
           smooth: true,
           areaStyle: { opacity: 0.3 }
@@ -177,7 +189,7 @@ export default {
       statTrackerOverview(this.getQueryParams()).then(response => {
         const data = response.data.data
         this.overview = {
-          total: data.total || 0,
+          total: (data.byType || []).reduce(function(s, r) { return s + (r.total || 0) }, 0),
           pageView: data.pageView || 0,
           addCart: data.addCart || 0,
           orderPay: data.orderPay || 0,
@@ -188,7 +200,16 @@ export default {
     },
     fetchTrend() {
       statTrackerTrend(this.getQueryParams()).then(response => {
-        this.trendChartData.rows = response.data.data || []
+        const raw = response.data.data || []
+        // 后端返回 [{day, type, total}] 长格式 → 透视为 [{day, page_view: 100, ...}] 宽格式
+        const map = {}
+        raw.forEach(function(r) {
+          if (!map[r.day]) {
+            map[r.day] = { day: r.day }
+          }
+          map[r.day][r.type] = r.total
+        })
+        this.trendChartData.rows = Object.values(map)
       })
     },
     fetchPages() {

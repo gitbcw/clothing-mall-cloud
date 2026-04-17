@@ -84,17 +84,32 @@ async function helper(data) {
   const like = `%${keyword}%`
   const lowerKeyword = keyword.toLowerCase()
 
-  // 同时匹配 keywords 和 name
-  const rows = await db.query(
-    `SELECT id, name, keywords FROM litemall_goods
-     WHERE deleted = 0 AND status = 'published'
-       AND (keywords LIKE ? OR name LIKE ?)
-     LIMIT ${limit * 3}`,
-    [like, like]
-  )
+  // 并发匹配：商品 + 分类
+  const [rows, catRows] = await Promise.all([
+    db.query(
+      `SELECT id, name, keywords FROM litemall_goods
+       WHERE deleted = 0 AND status = 'published'
+         AND (keywords LIKE ? OR name LIKE ?)
+       LIMIT ${limit * 3}`,
+      [like, like]
+    ),
+    db.query(
+      `SELECT id, name FROM litemall_category
+       WHERE deleted = 0 AND (keywords LIKE ? OR name LIKE ?)`,
+      [like, like]
+    ),
+  ])
 
   const suggestions = []
   const seenTexts = new Set()
+
+  // 分类名称匹配 → type: 'category'
+  for (const cat of catRows) {
+    if (cat.name && cat.name.toLowerCase().includes(lowerKeyword) && !seenTexts.has(cat.name)) {
+      seenTexts.add(cat.name)
+      suggestions.push({ type: 'category', text: cat.name, id: cat.id })
+    }
+  }
 
   for (const row of rows) {
     // 商品名称匹配 → type: 'goods'（可直接跳详情）

@@ -152,36 +152,137 @@ async function statTrackerPages(data) {
   const eventType = data.eventType || 'page_view'
   const limit = Math.min(data.limit || 10, 50)
   const rows = await query(
-    'SELECT page_route AS pageRoute, COUNT(*) AS `count`, COUNT(DISTINCT user_id) AS uniqueUsers FROM litemall_tracker_event WHERE event_type = ? AND server_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY page_route ORDER BY count DESC LIMIT ?',
-    [eventType, limit]
+    `SELECT page_route AS pageRoute, COUNT(*) AS \`count\`, COUNT(DISTINCT user_id) AS uniqueUsers FROM litemall_tracker_event WHERE event_type = ? AND server_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY page_route ORDER BY count DESC LIMIT ${limit}`,
+    [eventType]
   )
   return response.ok(rows)
 }
 
 // 营收总览
 async function statRevenueOverview(data) {
-  const rows = await query(
-    "SELECT DATE_FORMAT(pay_time, '%Y-%m') AS month, COUNT(*) AS orders, COALESCE(SUM(actual_price), 0) AS amount FROM litemall_order WHERE deleted = 0 AND order_status IN (301, 401, 402, 502) AND pay_time >= DATE_SUB(NOW(), INTERVAL 12 MONTH) GROUP BY DATE_FORMAT(pay_time, '%Y-%m') ORDER BY month ASC"
+  const startMonth = (data && data.startMonth) || new Date(Date.now() - 11 * 30 * 86400000).toISOString().slice(0, 7)
+  const endMonth = (data && data.endMonth) || new Date().toISOString().slice(0, 7)
+
+  // 按月营收（已支付订单）
+  const revenueRows = await query(
+    `SELECT DATE_FORMAT(pay_time, '%Y-%m') AS month,
+            COUNT(*) AS orders,
+            COALESCE(SUM(actual_price), 0) AS revenue
+     FROM litemall_order
+     WHERE deleted = 0 AND order_status IN (301, 401, 402, 502)
+       AND DATE_FORMAT(pay_time, '%Y-%m') BETWEEN ? AND ?
+     GROUP BY DATE_FORMAT(pay_time, '%Y-%m') ORDER BY month ASC`,
+    [startMonth, endMonth]
   )
-  return response.ok(rows)
+
+  // 按月退款
+  const refundRows = await query(
+    `SELECT DATE_FORMAT(update_time, '%Y-%m') AS month,
+            COALESCE(SUM(amount), 0) AS refund
+     FROM litemall_aftersale
+     WHERE deleted = 0 AND type = 1 AND status = 2
+       AND DATE_FORMAT(update_time, '%Y-%m') BETWEEN ? AND ?
+     GROUP BY DATE_FORMAT(update_time, '%Y-%m')`,
+    [startMonth, endMonth]
+  )
+  const refundMap = new Map(refundRows.map(r => [r.month, parseFloat(r.refund)]))
+
+  // 消费客户数
+  const customerRows = await query(
+    `SELECT COUNT(DISTINCT user_id) AS c FROM litemall_order
+     WHERE deleted = 0 AND order_status IN (301, 401, 402, 502)
+       AND DATE_FORMAT(pay_time, '%Y-%m') BETWEEN ? AND ?`,
+    [startMonth, endMonth]
+  )
+
+  // 组装 trend 和 detail
+  const trend = []
+  const detail = []
+  for (const r of revenueRows) {
+    const revenue = parseFloat(r.revenue)
+    const orders = Number(r.orders)
+    const refund = refundMap.get(r.month) || 0
+    trend.push({ month: r.month, revenue, orders })
+    detail.push({ month: r.month, orders, revenue, refund })
+  }
+
+  // 汇总 KPI
+  const totalRevenue = trend.reduce((s, r) => s + r.revenue, 0)
+  const totalOrders = trend.reduce((s, r) => s + r.orders, 0)
+
+  return response.ok({
+    overview: {
+      totalRevenue: Math.round(totalRevenue),
+      totalOrders,
+      avgOrderPrice: totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0,
+      totalCustomers: Number(customerRows[0]?.c || 0),
+    },
+    trend,
+    detail,
+  })
 }
 
-// 场景销售
+// 场景销售（按商品 scene_tags 聚合）
 async function statRevenueScene(data) {
+  const start = (data && data.startDate) || new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
+  const end = (data && data.endDate) || new Date().toISOString().slice(0, 10)
+
   const rows = await query(
-    "SELECT o.delivery_type AS name, COUNT(*) AS orders, COALESCE(SUM(o.actual_price), 0) AS amount FROM litemall_order o WHERE o.deleted = 0 AND o.order_status IN (301, 401, 402, 502) AND o.add_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY o.delivery_type ORDER BY amount DESC"
+    `SELECT og.order_id, og.price, og.number, g.scene_tags
+     FROM litemall_order_goods og
+     INNER JOIN litemall_goods g ON og.goods_id = g.id
+     INNER JOIN litemall_order o ON og.order_id = o.id
+     WHERE og.deleted = 0 AND o.deleted = 0
+       AND o.order_status IN (301, 401, 402, 502)
+       AND DATE(o.add_time) BETWEEN ? AND ?
+       AND g.scene_tags IS NOT NULL`,
+    [start, end]
   )
-  const totalAmount = rows.reduce((s, r) => s + parseFloat(r.amount), 0)
+
+  // 解析 JSON 聚合到场景维度
+  const sceneMap = new Map()
   for (const r of rows) {
-    r.percent = totalAmount > 0 ? Math.round(parseFloat(r.amount) / totalAmount * 1000) / 10 : 0
+    let tags = []
+    try { tags = JSON.parse(r.scene_tags) } catch (e) { continue }
+    if (!Array.isArray(tags) || tags.length === 0) continue
+
+    const amount = parseFloat(r.price) * parseInt(r.number)
+    for (const tag of tags) {
+      if (!tag) continue
+      if (!sceneMap.has(tag)) sceneMap.set(tag, { name: tag, orders: new Set(), amount: 0 })
+      const s = sceneMap.get(tag)
+      s.orders.add(r.order_id)
+      s.amount += amount
+    }
   }
-  return response.ok(rows)
+
+  const result = Array.from(sceneMap.values()).map(s => ({
+    name: s.name,
+    orders: s.orders.size,
+    amount: Math.round(s.amount * 100) / 100,
+  })).sort((a, b) => b.amount - a.amount)
+
+  const totalAmount = result.reduce((s, r) => s + r.amount, 0)
+  for (const r of result) {
+    r.percent = totalAmount > 0 ? Math.round(r.amount / totalAmount * 1000) / 10 : 0
+  }
+  return response.ok(result)
 }
 
 // 分类销售
 async function statRevenueCategory(data) {
+  const start = (data && data.startDate) || new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
+  const end = (data && data.endDate) || new Date().toISOString().slice(0, 10)
   const rows = await query(
-    "SELECT c.name AS category, COUNT(DISTINCT og.order_id) AS orders, COALESCE(SUM(og.price * og.number), 0) AS amount FROM litemall_order_goods og INNER JOIN litemall_goods g ON og.goods_id = g.id INNER JOIN litemall_category c ON g.category_id = c.id INNER JOIN litemall_order o ON og.order_id = o.id WHERE og.deleted = 0 AND o.deleted = 0 AND o.order_status IN (301, 401, 402, 502) AND o.add_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY c.id ORDER BY amount DESC"
+    `SELECT c.name AS name, COUNT(DISTINCT g.id) AS goodsCount, COUNT(DISTINCT og.order_id) AS orders, COALESCE(SUM(og.price * og.number), 0) AS amount
+     FROM litemall_order_goods og
+     INNER JOIN litemall_goods g ON og.goods_id = g.id
+     INNER JOIN litemall_category c ON g.category_id = c.id
+     INNER JOIN litemall_order o ON og.order_id = o.id
+     WHERE og.deleted = 0 AND o.deleted = 0 AND o.order_status IN (301, 401, 402, 502)
+       AND DATE(o.add_time) BETWEEN ? AND ?
+     GROUP BY c.id ORDER BY amount DESC`,
+    [start, end]
   )
   return response.ok(rows)
 }
@@ -189,11 +290,42 @@ async function statRevenueCategory(data) {
 // 季节概览
 async function statRevenueSeasonOverview(data) {
   const year = data.year || new Date().getFullYear()
-  const rows = await query(
-    "SELECT CASE WHEN MONTH(pay_time) IN (3,4,5) THEN 'spring' WHEN MONTH(pay_time) IN (6,7,8) THEN 'summer' WHEN MONTH(pay_time) IN (9,10,11) THEN 'autumn' ELSE 'winter' END AS season, COUNT(*) AS orders, COALESCE(SUM(actual_price), 0) AS amount FROM litemall_order WHERE deleted = 0 AND order_status IN (301, 401, 402, 502) AND YEAR(pay_time) = ? GROUP BY season",
-    [year]
+
+  // 春季：3-9月（当年）
+  const springRows = await query(
+    "SELECT COUNT(*) AS orders, COALESCE(SUM(actual_price), 0) AS amount FROM litemall_order WHERE deleted = 0 AND order_status IN (301, 401, 402, 502) AND pay_time >= ? AND pay_time < ?",
+    [`${year}-03-01`, `${year}-10-01`]
   )
-  return response.ok(rows)
+  // 冬季：10-次年2月（当年10月 ~ 次年2月）
+  const winterRows = await query(
+    "SELECT COUNT(*) AS orders, COALESCE(SUM(actual_price), 0) AS amount FROM litemall_order WHERE deleted = 0 AND order_status IN (301, 401, 402, 502) AND pay_time >= ? AND pay_time < ?",
+    [`${year}-10-01`, `${year + 1}-03-01`]
+  )
+
+  // 去年同期数据，计算同比
+  const lastSpringRows = await query(
+    "SELECT COUNT(*) AS orders, COALESCE(SUM(actual_price), 0) AS amount FROM litemall_order WHERE deleted = 0 AND order_status IN (301, 401, 402, 502) AND pay_time >= ? AND pay_time < ?",
+    [`${year - 1}-03-01`, `${year - 1}-10-01`]
+  )
+  const lastWinterRows = await query(
+    "SELECT COUNT(*) AS orders, COALESCE(SUM(actual_price), 0) AS amount FROM litemall_order WHERE deleted = 0 AND order_status IN (301, 401, 402, 502) AND pay_time >= ? AND pay_time < ?",
+    [`${year - 1}-10-01`, `${year}-03-01`]
+  )
+
+  function calcGrowth(curr, last) {
+    const c = parseFloat(curr.amount) || 0
+    const l = parseFloat(last.amount) || 0
+    return l > 0 ? Math.round((c - l) / l * 1000) / 10 : 0
+  }
+
+  return response.ok({
+    spring: { orders: springRows[0].orders, amount: parseFloat(springRows[0].amount), growth: calcGrowth(springRows[0], lastSpringRows[0]) },
+    winter: { orders: winterRows[0].orders, amount: parseFloat(winterRows[0].amount), growth: calcGrowth(winterRows[0], lastWinterRows[0]) },
+    chartData: [
+      { season: 'spring', orders: springRows[0].orders, amount: parseFloat(springRows[0].amount) },
+      { season: 'winter', orders: winterRows[0].orders, amount: parseFloat(winterRows[0].amount) }
+    ]
+  })
 }
 
 // 季节热销商品
@@ -202,18 +334,21 @@ async function statRevenueSeasonHotGoods(data) {
   const season = data.season || 'spring'
   const limit = Math.min(data.limit || 10, 50)
 
-  let monthRange
-  switch (season) {
-    case 'spring': monthRange = '3,4,5'; break
-    case 'summer': monthRange = '6,7,8'; break
-    case 'autumn': monthRange = '9,10,11'; break
-    case 'winter': monthRange = '12,1,2'; break
-    default: monthRange = '3,4,5'
+  // 用日期范围查询，避免跨年月份问题
+  let dateStart, dateEnd
+  if (season === 'winter') {
+    // 冬季：当年10月 ~ 次年2月底
+    dateStart = `${year}-10-01`
+    dateEnd = `${year + 1}-03-01`
+  } else {
+    // 春季：3月 ~ 9月底
+    dateStart = `${year}-03-01`
+    dateEnd = `${year}-10-01`
   }
 
   const rows = await query(
-    `SELECT MAX(og.goods_name) AS goods_name, og.goods_id, SUM(og.number) AS sold, COALESCE(SUM(og.price * og.number), 0) AS amount FROM litemall_order_goods og INNER JOIN litemall_order o ON og.order_id = o.id WHERE og.deleted = 0 AND o.deleted = 0 AND o.order_status IN (301, 401, 402, 502) AND YEAR(o.pay_time) = ? AND MONTH(o.pay_time) IN (${monthRange}) GROUP BY og.goods_id ORDER BY amount DESC LIMIT ${limit}`,
-    [year]
+    `SELECT MAX(og.goods_name) AS goods_name, og.goods_id, SUM(og.number) AS sold, COALESCE(SUM(og.price * og.number), 0) AS amount FROM litemall_order_goods og INNER JOIN litemall_order o ON og.order_id = o.id WHERE og.deleted = 0 AND o.deleted = 0 AND o.order_status IN (301, 401, 402, 502) AND o.pay_time >= ? AND o.pay_time < ? GROUP BY og.goods_id ORDER BY amount DESC LIMIT ${limit}`,
+    [dateStart, dateEnd]
   )
   const totalAmount = rows.reduce((s, r) => s + parseFloat(r.amount), 0)
   for (const r of rows) {
@@ -386,24 +521,24 @@ async function statCollect(data) {
     `SELECT c.value_id AS goodsId, MAX(g.name) AS name, MAX(g.pic_url) AS picUrl,
             MAX(g.retail_price) AS price, COUNT(*) AS count
      FROM litemall_collect c
-     LEFT JOIN litemall_goods g ON c.value_id = g.id
+     INNER JOIN litemall_goods g ON c.value_id = g.id
      WHERE c.deleted = 0 AND c.type = 0
      GROUP BY c.value_id
      ORDER BY count DESC LIMIT 10`
   )
 
-  // 分类分布
+  // 分类分布（只统计仍存在的商品）
   const categoryRows = await query(
     `SELECT COALESCE(cat.name, '未分类') AS name, COUNT(*) AS count
      FROM litemall_collect c
-     LEFT JOIN litemall_goods g ON c.value_id = g.id
+     INNER JOIN litemall_goods g ON c.value_id = g.id
      LEFT JOIN litemall_category cat ON g.category_id = cat.id
      WHERE c.deleted = 0 AND c.type = 0
      GROUP BY cat.id
      ORDER BY count DESC`
   )
 
-  // 价格区间分布
+  // 价格区间分布（只统计仍存在的商品）
   const priceRows = await query(
     `SELECT name, COUNT(*) AS count FROM (
        SELECT CASE
@@ -414,7 +549,7 @@ async function statCollect(data) {
          ELSE '500以上'
        END AS name
        FROM litemall_collect c
-       LEFT JOIN litemall_goods g ON c.value_id = g.id
+       INNER JOIN litemall_goods g ON c.value_id = g.id
        WHERE c.deleted = 0 AND c.type = 0
      ) t GROUP BY name
      ORDER BY FIELD(name, '50以下', '50-100', '100-200', '200-500', '500以上')`
@@ -432,6 +567,132 @@ async function statCollect(data) {
   })
 }
 
+// 浏览足迹统计
+async function statFootprint() {
+  // KPI
+  const kpiRows = await query(
+    `SELECT COUNT(*) AS totalCount,
+            COUNT(DISTINCT user_id) AS userCount,
+            COUNT(DISTINCT goods_id) AS goodsCount
+     FROM litemall_footprint WHERE deleted = 0`
+  )
+  const recentRows = await query(
+    `SELECT COUNT(*) AS c FROM litemall_footprint
+     WHERE deleted = 0 AND add_time >= DATE_SUB(NOW(), INTERVAL 30 DAY)`
+  )
+  const totalCount = Number(kpiRows[0]?.totalCount || 0)
+  const userCount = Number(kpiRows[0]?.userCount || 0)
+  const recentCount = Number(recentRows[0]?.c || 0)
+  const perUser = userCount > 0 ? (totalCount / userCount).toFixed(1) : 0
+  const dailyAvg = recentCount > 0 ? Math.round(recentCount / 30) : 0
+
+  // 分类分布（只统计仍存在的商品）
+  const categoryRows = await query(
+    `SELECT COALESCE(cat.name, '未分类') AS name, COUNT(*) AS count
+     FROM litemall_footprint f
+     INNER JOIN litemall_goods g ON f.goods_id = g.id
+     LEFT JOIN litemall_category cat ON g.category_id = cat.id
+     WHERE f.deleted = 0
+     GROUP BY cat.id
+     ORDER BY count DESC`
+  )
+
+  // 时段分布（0-23点）
+  const hourlyRows = await query(
+    `SELECT HOUR(add_time) AS hour, COUNT(*) AS count
+     FROM litemall_footprint WHERE deleted = 0
+     GROUP BY HOUR(add_time) ORDER BY hour`
+  )
+  const hourlyMap = new Map(hourlyRows.map(r => [Number(r.hour), Number(r.count)]))
+  const hourlyDistribution = []
+  for (let h = 0; h < 24; h++) {
+    hourlyDistribution.push({ hour: h, name: `${h}:00`, count: hourlyMap.get(h) || 0 })
+  }
+
+  // 热门浏览 TOP10（只统计仍存在的商品）
+  const topRows = await query(
+    `SELECT f.goods_id AS goodsId, MAX(g.name) AS name, MAX(g.pic_url) AS picUrl,
+            MAX(g.retail_price) AS price, COUNT(*) AS count
+     FROM litemall_footprint f
+     INNER JOIN litemall_goods g ON f.goods_id = g.id
+     WHERE f.deleted = 0
+     GROUP BY f.goods_id
+     ORDER BY count DESC LIMIT 10`
+  )
+
+  return response.ok({
+    totalCount,
+    dailyAvg,
+    perUser: Number(perUser),
+    goodsCount: Number(kpiRows[0]?.goodsCount || 0),
+    categoryDistribution: categoryRows,
+    hourlyDistribution,
+    topGoods: topRows,
+  })
+}
+
+// 搜索历史统计
+async function statSearchHistory() {
+  // KPI
+  const kpiRows = await query(
+    `SELECT COUNT(*) AS totalCount,
+            COUNT(DISTINCT keyword) AS keywordCount,
+            COUNT(DISTINCT user_id) AS userCount
+     FROM litemall_search_history WHERE deleted = 0`
+  )
+  const dayRows = await query(
+    `SELECT COUNT(DISTINCT DATE(add_time)) AS days
+     FROM litemall_search_history WHERE deleted = 0`
+  )
+  const totalCount = Number(kpiRows[0]?.totalCount || 0)
+  const keywordCount = Number(kpiRows[0]?.keywordCount || 0)
+  const userCount = Number(kpiRows[0]?.userCount || 0)
+  const days = Math.max(Number(dayRows[0]?.days || 0), 1)
+  const dailyAvg = totalCount > 0 ? (totalCount / days).toFixed(1) : 0
+
+  // 热门搜索 TOP10
+  const topRows = await query(
+    `SELECT keyword, COUNT(*) AS count
+     FROM litemall_search_history WHERE deleted = 0
+     GROUP BY keyword ORDER BY count DESC LIMIT 10`
+  )
+
+  // 时段分布（0-23点）
+  const hourlyRows = await query(
+    `SELECT HOUR(add_time) AS hour, COUNT(*) AS count
+     FROM litemall_search_history WHERE deleted = 0
+     GROUP BY HOUR(add_time) ORDER BY hour`
+  )
+  const hourlyMap = new Map(hourlyRows.map(r => [Number(r.hour), Number(r.count)]))
+  const hourlyDistribution = []
+  for (let h = 0; h < 24; h++) {
+    hourlyDistribution.push({ hour: h, name: `${h}:00`, count: hourlyMap.get(h) || 0 })
+  }
+
+  // 近 7 天趋势
+  const trendRows = await query(
+    `SELECT DATE(add_time) AS date, COUNT(*) AS count
+     FROM litemall_search_history
+     WHERE deleted = 0 AND add_time >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+     GROUP BY DATE(add_time) ORDER BY date`
+  )
+  const trendMap = new Map(trendRows.map(r => [String(r.date).slice(0, 10), Number(r.count)]))
+  const dailyTrend = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000)
+    const key = d.toISOString().slice(0, 10)
+    dailyTrend.push({ date: key, name: `${d.getMonth() + 1}/${d.getDate()}`, count: trendMap.get(key) || 0 })
+  }
+
+  return response.ok({
+    totalCount, keywordCount, userCount,
+    dailyAvg: Number(dailyAvg),
+    topKeywords: topRows,
+    hourlyDistribution,
+    dailyTrend,
+  })
+}
+
 // 销售商品排行
 async function statSalesGoodsTop(data) {
   const start = (data && data.startDate) || new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
@@ -443,8 +704,8 @@ async function statSalesGoodsTop(data) {
      INNER JOIN litemall_order o ON og.order_id = o.id
      WHERE og.deleted = 0 AND o.deleted = 0 AND DATE(o.add_time) BETWEEN ? AND ?
      GROUP BY og.goods_id
-     ORDER BY amount DESC LIMIT ?`,
-    [start, end, limit]
+     ORDER BY amount DESC LIMIT ${limit}`,
+    [start, end]
   )
   return response.ok(rows)
 }
@@ -455,5 +716,5 @@ module.exports = {
   statRevenueOverview, statRevenueScene, statRevenueCategory,
   statRevenueSeasonOverview, statRevenueSeasonHotGoods,
   statDashboardSales, statDashboardConversion,
-  statSalesGoodsTop, statCollect,
+  statSalesGoodsTop, statCollect, statFootprint, statSearchHistory,
 }

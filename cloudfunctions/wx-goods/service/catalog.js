@@ -46,7 +46,7 @@ async function getFirstCategory() {
   const rows = await db.query(
     `SELECT id, name, keywords, \`desc\`, season_switch, enable_size, pid, icon_url, pic_url,
             \`level\`, sort_order
-     FROM litemall_category WHERE level = 'L1' AND deleted = 0 ORDER BY sort_order`
+     FROM litemall_category WHERE level = 'L1' AND deleted = 0 AND enabled = 1 ORDER BY sort_order`
   )
   const season = getCurrentSeason()
   return response.ok(filterBySeason(rows, season).map(toCatCamel))
@@ -61,7 +61,7 @@ async function getSecondCategory(data) {
   const rows = await db.query(
     `SELECT id, name, keywords, \`desc\`, season_switch, enable_size, pid, icon_url, pic_url,
             \`level\`, sort_order
-     FROM litemall_category WHERE pid = ? AND deleted = 0 ORDER BY sort_order`,
+     FROM litemall_category WHERE pid = ? AND deleted = 0 AND enabled = 1 ORDER BY sort_order`,
     [id]
   )
   const season = getCurrentSeason()
@@ -77,7 +77,7 @@ async function index(data) {
   const categoryList = await db.query(
     `SELECT id, name, keywords, \`desc\`, season_switch, enable_size, pid, icon_url, pic_url,
             \`level\`, sort_order
-     FROM litemall_category WHERE level = 'L1' AND deleted = 0 ORDER BY sort_order`
+     FROM litemall_category WHERE level = 'L1' AND deleted = 0 AND enabled = 1 ORDER BY sort_order`
   )
   const season = getCurrentSeason()
   const filteredCategoryList = filterBySeason(categoryList, season)
@@ -88,7 +88,7 @@ async function index(data) {
     const rows = await db.query(
       `SELECT id, name, keywords, \`desc\`, season_switch, enable_size, pid, icon_url, pic_url,
               \`level\`, sort_order
-       FROM litemall_category WHERE id = ? AND deleted = 0`,
+       FROM litemall_category WHERE id = ? AND deleted = 0 AND enabled = 1`,
       [id]
     )
     if (rows.length > 0) currentCategory = rows[0]
@@ -100,7 +100,7 @@ async function index(data) {
     const subRows = await db.query(
       `SELECT id, name, keywords, \`desc\`, season_switch, enable_size, pid, icon_url, pic_url,
               \`level\`, sort_order
-       FROM litemall_category WHERE pid = ? AND deleted = 0 ORDER BY sort_order`,
+       FROM litemall_category WHERE pid = ? AND deleted = 0 AND enabled = 1 ORDER BY sort_order`,
       [currentCategory.id]
     )
     currentSubCategoryList = filterBySeason(subRows, season)
@@ -119,7 +119,7 @@ async function queryAll() {
   const l1Rows = await db.query(
     `SELECT id, name, keywords, \`desc\`, season_switch, enable_size, pid, icon_url, pic_url,
             \`level\`, sort_order
-     FROM litemall_category WHERE level = 'L1' AND deleted = 0 ORDER BY sort_order`
+     FROM litemall_category WHERE level = 'L1' AND deleted = 0 AND enabled = 1 ORDER BY sort_order`
   )
 
   // 查所有 L1 下的 L2 子分类
@@ -129,7 +129,7 @@ async function queryAll() {
     const l2Rows = await db.query(
       `SELECT id, name, keywords, \`desc\`, season_switch, enable_size, pid, icon_url, pic_url,
               \`level\`, sort_order
-       FROM litemall_category WHERE pid IN (${l1Ids.map(() => '?').join(',')}) AND deleted = 0 ORDER BY sort_order`,
+       FROM litemall_category WHERE pid IN (${l1Ids.map(() => '?').join(',')}) AND deleted = 0 AND enabled = 1 ORDER BY sort_order`,
       l1Ids
     )
     for (const row of l2Rows) {
@@ -155,7 +155,7 @@ async function current(data) {
   const catRows = await db.query(
     `SELECT id, name, keywords, \`desc\`, season_switch, enable_size, pid, icon_url, pic_url,
             \`level\`, sort_order
-     FROM litemall_category WHERE id = ? AND deleted = 0`,
+     FROM litemall_category WHERE id = ? AND deleted = 0 AND enabled = 1`,
     [id]
   )
   if (catRows.length === 0) return response.badArgument()
@@ -163,7 +163,7 @@ async function current(data) {
   const subRows = await db.query(
     `SELECT id, name, keywords, \`desc\`, season_switch, enable_size, pid, icon_url, pic_url,
             \`level\`, sort_order
-     FROM litemall_category WHERE pid = ? AND deleted = 0 ORDER BY sort_order`,
+     FROM litemall_category WHERE pid = ? AND deleted = 0 AND enabled = 1 ORDER BY sort_order`,
     [id]
   )
 

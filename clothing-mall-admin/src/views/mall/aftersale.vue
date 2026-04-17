@@ -103,9 +103,12 @@
           </template>
         </el-table-column>
 
-        <el-table-column :label="$t('mall_aftersale.table.user_id')" prop="userId" width="90">
+        <el-table-column label="用户" width="140">
           <template slot-scope="scope">
-            <span class="user-id">{{ scope.row.userId }}</span>
+            <div class="user-cell">
+              <el-avatar :src="imageUrl(scope.row.avatar)" :size="28" />
+              <span class="user-name">{{ scope.row.userName }}</span>
+            </div>
           </template>
         </el-table-column>
 
@@ -123,7 +126,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column :label="售后状态" width="110">
+        <el-table-column label="售后状态" width="110">
           <template slot-scope="scope">
             <span :class="['status-tag', 'aftersale-' + scope.row.status]">
               {{ aftersaleStatusMap[scope.row.status] }}
@@ -139,7 +142,7 @@
 
         <el-table-column :label="$t('mall_aftersale.table.add_time')" prop="addTime" min-width="100">
           <template slot-scope="scope">
-            <span class="time-text">{{ scope.row.addTime }}</span>
+            <span class="time-text">{{ scope.row.addTime | parseTime }}</span>
           </template>
         </el-table-column>
 
@@ -246,15 +249,15 @@
           <div class="info-grid cols-3">
             <div class="info-item">
               <span class="info-label">申请时间</span>
-              <span class="info-value">{{ aftersaleDetail.addTime || '—' }}</span>
+              <span class="info-value">{{ aftersaleDetail.addTime ? parseTime(aftersaleDetail.addTime) : '—' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">处理时间</span>
-              <span class="info-value">{{ aftersaleDetail.handleTime || '—' }}</span>
+              <span class="info-value">{{ aftersaleDetail.handleTime ? parseTime(aftersaleDetail.handleTime) : '—' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">更新时间</span>
-              <span class="info-value">{{ aftersaleDetail.updateTime || '—' }}</span>
+              <span class="info-value">{{ aftersaleDetail.updateTime ? parseTime(aftersaleDetail.updateTime) : '—' }}</span>
             </div>
           </div>
         </div>
@@ -270,6 +273,7 @@
 
 <script>
 import { listAftersale, listAftersaleCount, receptAftersale, batchReceptAftersale, rejectAftersale, batchRejectAftersale, shipAftersale, completeAftersale } from '@/api/aftersale'
+import { parseTime } from '@/utils'
 import BackToTop from '@/components/BackToTop'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import _ from 'lodash'
@@ -359,6 +363,7 @@ export default {
     this.getAftersaleCounts()
   },
   methods: {
+    parseTime,
     aftersaleTimeline(status) {
       const steps = [
         { label: '已申请', active: true, current: status === 1 },
@@ -881,10 +886,21 @@ $as-radius: 8px;
       color: $as-text;
     }
 
-    .order-id, .user-id {
+    .order-id {
       font-size: 13px;
       color: $as-text-secondary;
       font-family: 'SF Mono', monospace;
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .user-name {
+        font-size: 13px;
+        color: $as-text;
+      }
     }
 
     // Type Tags

@@ -61,7 +61,7 @@ import Hamburger from '@/components/Hamburger'
 import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Notice from '@/components/Notice'
-import xwjPng from '@/icons/png/xwj.png'
+import logoPng from '@/icons/png/logo.png'
 
 export default {
   components: {
@@ -73,7 +73,7 @@ export default {
   },
   data() {
     return {
-      customAvatar: xwjPng
+      customAvatar: logoPng
     }
   },
   computed: {

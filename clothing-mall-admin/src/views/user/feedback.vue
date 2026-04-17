@@ -29,7 +29,9 @@
         </template>
       </el-table-column>
 
-      <el-table-column align="center" :label="$t('user_feedback.table.add_time')" prop="addTime" />
+      <el-table-column align="center" :label="$t('user_feedback.table.add_time')">
+        <template slot-scope="scope">{{ scope.row.addTime | parseTime }}</template>
+      </el-table-column>
 
     </el-table>
 

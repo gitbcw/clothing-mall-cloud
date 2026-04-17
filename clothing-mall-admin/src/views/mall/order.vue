@@ -140,7 +140,7 @@
 
         <el-table-column :label="$t('mall_order.table.add_time')" min-width="100">
           <template slot-scope="scope">
-            <span class="time-text">{{ (scope.row.addTime || '').substring(0, 10) }}</span>
+            <span class="time-text">{{ scope.row.addTime | parseTime }}</span>
           </template>
         </el-table-column>
 
@@ -163,7 +163,7 @@
 
         <el-table-column :label="$t('mall_order.table.pay_time')" prop="payTime" min-width="100">
           <template slot-scope="scope">
-            <span class="time-text">{{ scope.row.payTime || '—' }}</span>
+            <span class="time-text">{{ scope.row.payTime ? parseTime(scope.row.payTime) : '—' }}</span>
           </template>
         </el-table-column>
 
@@ -317,7 +317,7 @@
             </div>
             <div class="info-item">
               <span class="info-label">支付时间</span>
-              <span class="info-value">{{ orderDetail.order.payTime || '—' }}</span>
+              <span class="info-value">{{ orderDetail.order.payTime ? parseTime(orderDetail.order.payTime) : '—' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">物流公司</span>
@@ -329,11 +329,11 @@
             </div>
             <div class="info-item">
               <span class="info-label">发货时间</span>
-              <span class="info-value">{{ orderDetail.order.shipTime || '—' }}</span>
+              <span class="info-value">{{ orderDetail.order.shipTime ? parseTime(orderDetail.order.shipTime) : '—' }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">收货时间</span>
-              <span class="info-value">{{ orderDetail.order.confirmTime || '—' }}</span>
+              <span class="info-value">{{ orderDetail.order.confirmTime ? parseTime(orderDetail.order.confirmTime) : '—' }}</span>
             </div>
           </div>
         </div>
@@ -356,7 +356,7 @@
             </div>
             <div class="info-item">
               <span class="info-label">退款时间</span>
-              <span class="info-value">{{ orderDetail.order.refundTime || '—' }}</span>
+              <span class="info-value">{{ orderDetail.order.refundTime ? parseTime(orderDetail.order.refundTime) : '—' }}</span>
             </div>
           </div>
         </div>
@@ -443,6 +443,7 @@
 
 <script>
 import { detailOrder, listOrder, listChannel, refundOrder, payOrder, deleteOrder, shipOrder, listOrderCount, verifyOrder } from '@/api/order'
+import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import checkPermission from '@/utils/permission' // 权限判断函数
 
@@ -586,6 +587,7 @@ export default {
     this.getOrderCounts()
   },
   methods: {
+    parseTime,
     checkPermission,
     getBadgeType(status) {
       // 红色: 201(已付款), 202(申请退款), 501(待核销) - 需要紧急处理

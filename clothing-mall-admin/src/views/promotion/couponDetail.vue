@@ -54,7 +54,9 @@
       <!-- 隐藏用户ID列 -->
       <!-- <el-table-column align="center" :label="$t('promotion_coupon_detail.table.user_id')" prop="userId" /> -->
 
-      <el-table-column align="center" :label="$t('promotion_coupon_detail.table.add_time')" prop="addTime" />
+      <el-table-column align="center" :label="$t('promotion_coupon_detail.table.add_time')">
+        <template slot-scope="scope">{{ scope.row.addTime | parseTime }}</template>
+      </el-table-column>
 
       <el-table-column align="center" :label="$t('promotion_coupon_detail.table.use_status')" prop="status">
         <template slot-scope="scope">{{ scope.row.status | formatUseStatus }}</template>
@@ -62,7 +64,9 @@
 
       <el-table-column align="center" :label="$t('promotion_coupon_detail.table.order_id')" prop="orderId" />
 
-      <el-table-column align="center" :label="$t('promotion_coupon_detail.table.used_time')" prop="usedTime" />
+      <el-table-column align="center" :label="$t('promotion_coupon_detail.table.used_time')">
+        <template slot-scope="scope">{{ scope.row.usedTime | parseTime }}</template>
+      </el-table-column>
 
     </el-table>
 
@@ -73,6 +77,7 @@
 
 <script>
 import { readCoupon, listCouponUser } from '@/api/coupon'
+import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 const defaultTypeOptions = [
@@ -207,7 +212,7 @@ export default {
       if (this.coupon.timeType === 0) {
         return '领取' + this.coupon.days + '天有效'
       } else if (this.coupon.timeType === 1) {
-        return '自' + this.coupon.startTime + '至' + this.coupon.endTime + '有效'
+        return '自' + parseTime(this.coupon.startTime) + '至' + parseTime(this.coupon.endTime) + '有效'
       } else {
         return '未知'
       }

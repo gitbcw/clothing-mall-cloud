@@ -38,7 +38,7 @@
       </el-table-column>
       <el-table-column align="center" label="添加时间" width="160">
         <template slot-scope="scope">
-          {{ scope.row.addTime ? scope.row.addTime.substring(0, 19).replace('T', ' ') : '-' }}
+          {{ scope.row.addTime | parseTime }}
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="150">

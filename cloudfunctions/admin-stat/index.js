@@ -11,7 +11,7 @@ const {
   statRevenueOverview, statRevenueScene, statRevenueCategory,
   statRevenueSeasonOverview, statRevenueSeasonHotGoods,
   statDashboardSales, statDashboardConversion,
-  statSalesGoodsTop, statCollect,
+  statSalesGoodsTop, statCollect, statFootprint, statSearchHistory,
 } = require('./service/stat')
 const { info: dashboardInfo } = require('./service/dashboard')
 const { list: historyList } = require('./service/history')
@@ -50,6 +50,8 @@ const routes = {
   statDashboardConversion: { handler: statDashboardConversion, permission: 'admin:stat:growth' },
   statSalesGoodsTop: { handler: statSalesGoodsTop, permission: 'admin:stat:order' },
   statCollect: { handler: statCollect, permission: 'admin:stat:order' },
+  statFootprint: { handler: statFootprint, permission: 'admin:stat:order' },
+  statSearchHistory: { handler: statSearchHistory, permission: 'admin:stat:order' },
 }
 
 exports.main = async (event, context) => {

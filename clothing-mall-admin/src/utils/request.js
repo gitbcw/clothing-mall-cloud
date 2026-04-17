@@ -111,6 +111,8 @@ const ROUTE_MAP = {
   'stat/dashboard/sales': ['admin-stat', 'statDashboardSales'],
   'stat/dashboard/conversion': ['admin-stat', 'statDashboardConversion'],
   'stat/collect': ['admin-stat', 'statCollect'],
+  'stat/footprint': ['admin-stat', 'statFootprint'],
+  'stat/search-history': ['admin-stat', 'statSearchHistory'],
   'dashboard': ['admin-stat', 'dashboardInfo'],
 
   // ---- admin-config (GET=list, POST=update) ----

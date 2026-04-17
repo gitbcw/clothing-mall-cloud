@@ -37,7 +37,7 @@
             <div v-if="!topList.length" class="empty-tip">暂无收藏数据</div>
             <div v-for="(item, idx) in topList" :key="idx" class="rank-item">
               <span :class="['rank-index', `rank-${idx + 1}`]">{{ idx + 1 }}</span>
-              <el-image v-if="item.picUrl" :src="item.picUrl" :preview-src-list="[item.picUrl]" class="rank-img" fit="cover" />
+              <el-image v-if="item.picUrl" :src="imageUrl(item.picUrl)" :preview-src-list="[imageUrl(item.picUrl)]" class="rank-img" fit="cover" />
               <div v-else class="rank-img rank-img-empty" />
               <div class="rank-text">
                 <div class="rank-name">{{ item.name }}</div>

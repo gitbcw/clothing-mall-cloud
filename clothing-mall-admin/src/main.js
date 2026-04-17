@@ -17,7 +17,7 @@ import router from './router'
 
 import './icons' // icon
 import './permission' // permission control
-import faviconPng from '@/icons/png/xwj.png'
+import faviconPng from '@/icons/png/logo.png'
 
 import * as filters from './filters' // global filters
 

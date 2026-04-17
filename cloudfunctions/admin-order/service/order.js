@@ -42,7 +42,7 @@ async function list(data) {
   const total = countRows[0] ? countRows[0].total : 0
 
   const sql = paginate.appendLimit(
-    `SELECT o.* FROM litemall_order o LEFT JOIN litemall_user u ON o.user_id = u.id WHERE ${whereClause} ORDER BY o.${sort} ${order}`,
+    `SELECT o.*, u.nickname AS userName, u.avatar FROM litemall_order o LEFT JOIN litemall_user u ON o.user_id = u.id WHERE ${whereClause} ORDER BY o.${sort} ${order}`,
     offset, limit
   )
   const listRows = await query(sql, params)
@@ -324,7 +324,7 @@ async function pay(data) {
 
 async function verify(data) {
   const { orderId, pickupCode } = data
-  if (!orderId || !pickupCode) return response.badArgument()
+  if (!orderId) return response.badArgument()
 
   const rows = await query('SELECT * FROM litemall_order WHERE id = ? AND deleted = 0', [orderId])
   if (rows.length === 0) return response.badArgument()
@@ -334,7 +334,8 @@ async function verify(data) {
     return response.fail(403, '订单状态不允许核销')
   }
 
-  if (order.pickup_code !== pickupCode) {
+  // 小程序端核销需要校验取货码，管理后台核销跳过取货码校验
+  if (pickupCode && order.pickup_code !== pickupCode) {
     return response.fail(400, '取货码错误')
   }
 
