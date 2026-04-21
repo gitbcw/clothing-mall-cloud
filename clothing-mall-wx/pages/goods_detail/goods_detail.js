@@ -101,8 +101,6 @@ Page({
       this.setData({ id: parseInt(options.id) })
       this.getGoodsInfo()
     }
-
-    // 权限在保存海报时按需请求，不提前授权
   },
 
   onShow() {
@@ -279,6 +277,7 @@ Page({
       if (res.errno === 0) {
         wx.setStorageSync('cartId', res.data)
         that.setData({ showSkuPicker: false })
+        tracker.trackBuyNow(that.data.goods.id, that.data.goods.name, that.data.goods.retailPrice, quantity)
         wx.navigateTo({
           url: '/pages/confirm_order/confirm_order'
         })
@@ -517,68 +516,6 @@ Page({
 
   closeAttr() {
     this.setData({ openAttr: false })
-  },
-
-  // 分享
-  shareFriendOrCircle() {
-    this.setData({ openShare: true })
-  },
-
-  closeShare() {
-    this.setData({ openShare: false })
-  },
-
-  // 保存分享图（按需请求权限）
-  saveShare() {
-    let that = this
-    wx.getSetting({
-      success: function(res) {
-        if (res.authSetting['scope.writePhotosAlbum'] === false) {
-          // 用户曾经拒绝过，引导去设置页开启
-          wx.showModal({
-            title: '提示',
-            content: '需要您授权保存图片到相册',
-            confirmText: '去设置',
-            confirmColor: '#FF8096',
-            success: function(modalRes) {
-              if (modalRes.confirm) {
-                wx.openSetting()
-              }
-            }
-          })
-        } else {
-          that.doSaveShare()
-        }
-      }
-    })
-  },
-
-  // 实际保存图片到相册
-  doSaveShare() {
-    let that = this
-    wx.downloadFile({
-      url: that.data.shareImage,
-      success: function(res) {
-        wx.saveImageToPhotosAlbum({
-          filePath: res.tempFilePath,
-          success: function() {
-            wx.showModal({
-              title: '生成海报成功',
-              content: '海报已成功保存到相册，可以分享到朋友圈了',
-              showCancel: false,
-              confirmText: '好的',
-              confirmColor: '#FF8096'
-            })
-          },
-          fail: function() {
-            wx.showToast({ title: '保存失败', icon: 'none' })
-          }
-        })
-      },
-      fail: function() {
-        wx.showToast({ title: '下载失败', icon: 'none' })
-      }
-    })
   },
 
   // 打开购物车页面

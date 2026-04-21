@@ -245,6 +245,21 @@ async function unpublishAll() {
   return response.ok()
 }
 
+/**
+ * 批量取消特价
+ */
+async function cancelSpecialPrice(data) {
+  const { ids } = data
+  if (!Array.isArray(ids) || ids.length === 0) return response.badArgument()
+
+  const placeholders = ids.map(() => '?').join(',')
+  await execute(
+    `UPDATE litemall_goods SET is_special_price = 0, special_price = NULL, update_time = NOW() WHERE id IN (${placeholders}) AND deleted = 0`,
+    ids
+  )
+  return response.ok()
+}
+
 // --- 内部辅助函数 ---
 
 async function _saveSpecs(goodsId, specs) {
@@ -280,4 +295,4 @@ async function _saveProducts(goodsId, products) {
   }
 }
 
-module.exports = { list, catAndBrand, detail, findBySn, create, update, delete: deleteFn, publish, unpublish, unpublishAll }
+module.exports = { list, catAndBrand, detail, findBySn, create, update, delete: deleteFn, publish, unpublish, unpublishAll, cancelSpecialPrice }

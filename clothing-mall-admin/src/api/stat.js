@@ -69,6 +69,23 @@ export function statTrackerPages(query) {
   })
 }
 
+// 埋点统计 - 转化漏斗
+export function statTrackerFunnel() {
+  return request({
+    url: '/stat/tracker/funnel',
+    method: 'get'
+  })
+}
+
+// 埋点统计 - 轮播图点击排行
+export function statTrackerBannerClicks(query) {
+  return request({
+    url: '/stat/tracker/banner-clicks',
+    method: 'get',
+    params: query
+  })
+}
+
 // 活跃用户统计 (WAU/MAU)
 export function statActiveUsers() {
   return request({
@@ -124,11 +141,30 @@ export function statRevenueSeasonHotGoods(query) {
   })
 }
 
+// 节日活动效果
+export function statRevenueHoliday(query) {
+  return request({
+    url: '/stat/revenue/holiday',
+    method: 'get',
+    params: query
+  })
+}
+
+// 特价商品效果
+export function statRevenueSpecialPrice(query) {
+  return request({
+    url: '/stat/revenue/special-price',
+    method: 'get',
+    params: query
+  })
+}
+
 // 仪表盘销售统计
-export function statDashboardSales() {
+export function statDashboardSales(query) {
   return request({
     url: '/stat/dashboard/sales',
-    method: 'get'
+    method: 'get',
+    params: query
   })
 }
 
@@ -171,5 +207,32 @@ export function statSearchHistory() {
   return request({
     url: '/stat/search-history',
     method: 'get'
+  })
+}
+
+// ==================== 埋点配置管理 API ====================
+
+// 埋点配置列表
+export function trackerConfigList() {
+  return request({
+    url: '/stat/tracker/config/list',
+    method: 'get'
+  })
+}
+
+// 更新埋点配置
+export function trackerConfigUpdate(data) {
+  return request({
+    url: '/stat/tracker/config/update',
+    method: 'post',
+    data
+  })
+}
+
+// 初始化预置数据
+export function trackerConfigInit() {
+  return request({
+    url: '/stat/tracker/config/init',
+    method: 'post'
   })
 }

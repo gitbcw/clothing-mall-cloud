@@ -11,16 +11,19 @@
 
   <!-- 子 Tab 切换 -->
   <view class="sub-tabs">
-    <view class="sub-tab-item {{activeSubTab === 'order' ? 'active' : ''}}" bindtap="onSubTabChange" data-tab="order">
-      订单{{pendingCount > 0 ? '(' + pendingCount + ')' : ''}}
+    <view class="sub-tab-item {{activeSubTab === 'express' ? 'active' : ''}}" bindtap="onSubTabChange" data-tab="express">
+      快递{{expressCount > 0 ? '(' + expressCount + ')' : ''}}
+    </view>
+    <view class="sub-tab-item {{activeSubTab === 'pickup' ? 'active' : ''}}" bindtap="onSubTabChange" data-tab="pickup">
+      自提{{pickupCount > 0 ? '(' + pickupCount + ')' : ''}}
     </view>
     <view class="sub-tab-item {{activeSubTab === 'aftersale' ? 'active' : ''}}" bindtap="onSubTabChange" data-tab="aftersale">
       售后{{aftersaleCount > 0 ? '(' + aftersaleCount + ')' : ''}}
     </view>
   </view>
 
-  <!-- 订单列表（订单 Tab） -->
-  <view class="order-list" wx:if="{{activeSubTab === 'order'}}">
+  <!-- 订单列表（快递/自提 Tab） -->
+  <view class="order-list" wx:if="{{activeSubTab === 'express' || activeSubTab === 'pickup'}}">
     <view class="order-item" wx:for="{{orderList}}" wx:key="id" bindtap="goOrderDetail" data-id="{{item.id}}">
       <view class="order-header">
         <text class="order-sn">{{item.orderSn}}</text>
@@ -105,7 +108,7 @@
 
   <!-- 空状态 -->
   <view class="empty" wx:if="{{!loading && orderList.length === 0}}">
-    <text>暂无{{activeSubTab === 'order' ? '待处理订单' : '售后订单'}}</text>
+    <text>暂无{{activeSubTab === 'aftersale' ? '售后订单' : (activeSubTab === 'express' ? '快递订单' : '自提订单')}}</text>
   </view>
 
   <!-- 加载状态 -->

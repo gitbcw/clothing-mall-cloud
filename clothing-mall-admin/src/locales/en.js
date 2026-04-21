@@ -59,6 +59,7 @@ export default {
       stat_growth: 'Growth',
       stat_sales: 'Sales',
       stat_tracker: 'Behavior',
+      stat_tracker_config: 'Tracker Config',
       external_link: 'External links',
       external_link_tencent_sms: 'Tencent cloud SMS',
       external_link_weixin_pay: 'WeChat Pay',

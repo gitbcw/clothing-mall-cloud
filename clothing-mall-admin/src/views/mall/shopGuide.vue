@@ -29,6 +29,21 @@
       </el-table-column>
       <el-table-column align="center" label="姓名" prop="name" />
       <el-table-column align="center" label="手机号" prop="phone" width="120" />
+      <el-table-column align="center" label="提成比例" width="100">
+        <template slot-scope="scope">
+          {{ (scope.row.commissionRate * 100).toFixed(1) }}%
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="当月销售额" width="120">
+        <template slot-scope="scope">
+          ¥{{ (scope.row.monthSales || 0).toFixed(2) }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="当月提成" width="120">
+        <template slot-scope="scope">
+          ¥{{ (scope.row.monthCommission || 0).toFixed(2) }}
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="状态" width="80">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status === 1 ? 'success' : 'info'" size="small">
@@ -63,6 +78,7 @@
         <el-form-item label="提成比例" prop="commissionRate">
           <el-slider v-model="dataForm.commissionRate" :min="0" :max="0.5" :step="0.01" :format-tooltip="formatPercent" style="width: 200px;" />
           <span style="margin-left: 15px;">{{ (dataForm.commissionRate * 100).toFixed(0) }}%</span>
+          <div style="font-size: 12px; color: #909399; margin-top: 4px;">当前仅计算核销订单（门店自提）的提成</div>
         </el-form-item>
         <el-form-item label="头像" prop="avatar">
           <el-upload

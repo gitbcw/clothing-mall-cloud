@@ -15,8 +15,12 @@ const EventType = {
   SEARCH: 'search',
   // 加购
   ADD_CART: 'add_cart',
+  // 立即购买
+  BUY_NOW: 'buy_now',
   // 收藏
   COLLECT: 'collect',
+  // 场景点击
+  SCENE_CLICK: 'scene_click',
   // 下单
   ORDER_CREATE: 'order_create',
   // 支付
@@ -210,6 +214,19 @@ function trackCollect(goodsId, goodsName, isCollect) {
 }
 
 /**
+ * 立即购买埋点
+ */
+function trackBuyNow(goodsId, goodsName, price, number, sku) {
+  track(EventType.BUY_NOW, {
+    goodsId,
+    goodsName,
+    price,
+    number,
+    sku
+  })
+}
+
+/**
  * 下单埋点
  */
 function trackOrderCreate(orderId, amount, goodsCount) {
@@ -254,6 +271,17 @@ function trackClick(element, page, data = {}) {
 }
 
 /**
+ * 场景点击埋点（含轮播图点击）
+ */
+function trackSceneClick(sceneId, sceneName, extra = {}) {
+  track(EventType.SCENE_CLICK, {
+    sceneId,
+    sceneName,
+    ...extra
+  })
+}
+
+/**
  * 获取统计数据
  */
 function getStats() {
@@ -289,11 +317,13 @@ module.exports = {
   trackGoodsView,
   trackSearch,
   trackAddCart,
+  trackBuyNow,
   trackCollect,
   trackOrderCreate,
   trackOrderPay,
   trackShare,
   trackClick,
+  trackSceneClick,
   getStats,
   clear,
   report

@@ -59,6 +59,7 @@ const COMPLETED_STATUSES = [
 
 async function list(data) {
   const status = data.status || 'pending'
+  const deliveryType = data.deliveryType || ''  // 'express' | 'pickup' | ''
   const page = data.page || 1
   const limit = data.limit || 20
   const offset = (page - 1) * limit
@@ -70,19 +71,28 @@ async function list(data) {
     default: return response.badArgumentValue()
   }
 
+  // 构建查询条件
+  const where = ['o.deleted = 0', `o.order_status IN (${statusCodes.map(() => '?').join(',')})`]
+  const params = [...statusCodes]
+  if (deliveryType) {
+    where.push('o.delivery_type = ?')
+    params.push(deliveryType)
+  }
+  const whereClause = where.join(' AND ')
+
   // 总数
   const countResult = await db.query(
-    `SELECT COUNT(*) as total FROM litemall_order WHERE deleted = 0 AND order_status IN (${statusCodes.map(() => '?').join(',')})`,
-    statusCodes
+    `SELECT COUNT(*) as total FROM litemall_order o WHERE ${whereClause}`,
+    params
   )
   const total = countResult[0].total
 
   // 列表
   const orderRows = await db.query(
-    `SELECT id, order_sn, order_status, actual_price, consignee, mobile, add_time, delivery_type
-     FROM litemall_order WHERE deleted = 0 AND order_status IN (${statusCodes.map(() => '?').join(',')})
-     ORDER BY add_time DESC LIMIT ${offset}, ${limit}`,
-    statusCodes
+    `SELECT o.id, o.order_sn, o.order_status, o.actual_price, o.consignee, o.mobile, o.add_time, o.delivery_type
+     FROM litemall_order o WHERE ${whereClause}
+     ORDER BY o.add_time DESC LIMIT ${offset}, ${limit}`,
+    params
   )
 
   const resultList = []
@@ -105,9 +115,11 @@ async function list(data) {
     })
   }
 
-  // 各 tab 统计
-  const [pendingCount, aftersaleCount, completedCount] = await Promise.all([
-    db.query(`SELECT COUNT(*) as c FROM litemall_order WHERE deleted = 0 AND order_status IN (${PENDING_STATUSES.map(() => '?').join(',')})`, PENDING_STATUSES),
+  // 各 tab 统计（按配送方式分别计数）
+  const pendingWhere = `deleted = 0 AND order_status IN (${PENDING_STATUSES.map(() => '?').join(',')})`
+  const [expressCount, pickupCount, aftersaleCount, completedCount] = await Promise.all([
+    db.query(`SELECT COUNT(*) as c FROM litemall_order WHERE ${pendingWhere} AND delivery_type = 'express'`, PENDING_STATUSES),
+    db.query(`SELECT COUNT(*) as c FROM litemall_order WHERE ${pendingWhere} AND delivery_type = 'pickup'`, PENDING_STATUSES),
     db.query(`SELECT COUNT(*) as c FROM litemall_aftersale WHERE deleted = 0 AND status IN (${AFTERSALE_PENDING_STATUSES.map(() => '?').join(',')})`, AFTERSALE_PENDING_STATUSES),
     db.query(`SELECT COUNT(*) as c FROM litemall_order WHERE deleted = 0 AND order_status IN (${COMPLETED_STATUSES.map(() => '?').join(',')})`, COMPLETED_STATUSES),
   ])
@@ -116,7 +128,8 @@ async function list(data) {
     list: resultList,
     total,
     pages: Math.ceil(total / limit),
-    pendingCount: pendingCount[0].c,
+    expressCount: expressCount[0].c,
+    pickupCount: pickupCount[0].c,
     aftersaleCount: aftersaleCount[0].c,
     completedCount: completedCount[0].c,
   })
@@ -359,8 +372,11 @@ async function verify(data) {
 // ==================== 统计数据 ====================
 
 async function stats() {
-  const [pendingRows, aftersaleRows, draftRows, pendingGoodsRows] = await Promise.all([
-    db.query(`SELECT COUNT(*) as c FROM litemall_order WHERE deleted = 0 AND order_status IN (${PENDING_STATUSES.map(() => '?').join(',')})`, PENDING_STATUSES),
+  const pendingWhere = `deleted = 0 AND order_status IN (${PENDING_STATUSES.map(() => '?').join(',')})`
+  const [pendingRows, expressRows, pickupRows, aftersaleRows, draftRows, pendingGoodsRows] = await Promise.all([
+    db.query(`SELECT COUNT(*) as c FROM litemall_order WHERE ${pendingWhere}`, PENDING_STATUSES),
+    db.query(`SELECT COUNT(*) as c FROM litemall_order WHERE ${pendingWhere} AND delivery_type = 'express'`, PENDING_STATUSES),
+    db.query(`SELECT COUNT(*) as c FROM litemall_order WHERE ${pendingWhere} AND delivery_type = 'pickup'`, PENDING_STATUSES),
     db.query(`SELECT COUNT(*) as c FROM litemall_aftersale WHERE deleted = 0 AND status IN (${AFTERSALE_PENDING_STATUSES.map(() => '?').join(',')})`, AFTERSALE_PENDING_STATUSES),
     db.query(`SELECT COUNT(*) as c FROM litemall_goods WHERE deleted = 0 AND status = 'draft'`),
     db.query(`SELECT COUNT(*) as c FROM litemall_goods WHERE deleted = 0 AND status = 'pending'`),
@@ -380,6 +396,8 @@ async function stats() {
 
   return response.ok({
     pendingOrderCount: pendingRows[0].c,
+    expressCount: expressRows[0].c,
+    pickupCount: pickupRows[0].c,
     aftersaleCount: aftersaleRows[0].c,
     pendingGoodsCount: draftRows[0].c + pendingGoodsRows[0].c,
     recentOrders,

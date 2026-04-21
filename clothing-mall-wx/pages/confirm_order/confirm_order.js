@@ -18,6 +18,7 @@ Page({
     goodsTotalPrice: 0.00,
     freightPrice: 0.00,
     couponPrice: 0.00,
+    newuserDiscount: 0.00,
     orderTotalPrice: 0.00,
     actualPrice: 0.00,
     // 优惠券
@@ -89,6 +90,7 @@ Page({
           availableCouponLength: res.data.availableCouponLength || 0,
           actualPrice: res.data.actualPrice || 0,
           couponPrice: res.data.couponPrice || 0,
+          newuserDiscount: res.data.newuserDiscount || 0,
           freightPrice: res.data.freightPrice || 0,
           goodsTotalPrice: res.data.goodsTotalPrice || 0,
           orderTotalPrice: res.data.orderTotalPrice || 0,

@@ -100,6 +100,10 @@
             <view class="arrow small-arrow selected" wx:if="{{availableCouponLength > 0 || couponPrice > 0}}"></view>
           </view>
         </view>
+        <view class="fee-item" wx:if="{{newuserDiscount > 0}}">
+          <text class="fee-label">新人立减</text>
+          <text class="fee-value theme-color">-￥{{newuserDiscount}}</text>
+        </view>
       </view>
 
       <!-- 合计 -->

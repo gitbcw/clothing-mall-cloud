@@ -429,7 +429,9 @@ export default {
         timeType: 0,
         days: 0,
         startTime: null,
-        endTime: null
+        endTime: null,
+        discountType: 0,
+        itemLimit: 0
       }
       this.couponCategoryList = []
       this.couponGoodsList = []
@@ -528,20 +530,26 @@ export default {
       })
     },
     handleDelete(row) {
-      deleteCoupon(row)
-        .then(response => {
-          this.$notify.success({
-            title: '成功',
-            message: '删除优惠券成功'
+      this.$confirm('确定删除优惠券「' + row.name + '」？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteCoupon(row)
+          .then(response => {
+            this.$notify.success({
+              title: '成功',
+              message: '删除优惠券成功'
+            })
+            this.getList()
           })
-          this.getList()
-        })
-        .catch(response => {
-          this.$notify.error({
-            title: '失败',
-            message: response.data.errmsg
+          .catch(response => {
+            this.$notify.error({
+              title: '失败',
+              message: response.data.errmsg
+            })
           })
-        })
+      }).catch(() => {})
     },
     handleDetail(row) {
       this.$router.push({ path: '/promotion/couponDetail', query: { id: row.id }})

@@ -285,15 +285,17 @@ async function submit(data, context) {
     couponPrice = calculateDiscount(coupon, checkedGoodsPrice)
   }
 
-  // 新人首单立减
+  // 新人首单立减（仅统计有效订单，排除取消和已退款）
   let newuserDiscount = 0
+  const cancelStatuses = [STATUS.CANCEL, STATUS.AUTO_CANCEL, STATUS.ADMIN_CANCEL, STATUS.REFUND_CONFIRM]
   const countRows = await db.query(
-    `SELECT COUNT(*) as total FROM litemall_order WHERE user_id = ? AND deleted = 0`,
-    [userId]
+    `SELECT COUNT(*) as total FROM litemall_order
+     WHERE user_id = ? AND deleted = 0 AND order_status NOT IN (${cancelStatuses.map(() => '?').join(',')})`,
+    [userId, ...cancelStatuses]
   )
   if (countRows[0].total === 0) {
     const discount = parseFloat(getConfig('litemall_newuser_first_order_discount')) || 0
-    if (discount > 0) newuserDiscount = discount
+    if (discount > 0) newuserDiscount = Math.min(discount, checkedGoodsPrice + freightPrice - couponPrice)
   }
 
   // 运费

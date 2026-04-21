@@ -9,7 +9,7 @@ const { loadConfigs, getConfig } = require('layer-base').systemConfig
 const { adminAuth } = require('layer-auth')
 const { recognizeTag: aiRecognizeTag, recognizeImage: aiRecognizeImage } = require('layer-wechat/lib/ai')
 
-const { list, catAndBrand, detail, findBySn, create, update, delete: goodsDelete, publish, unpublish, unpublishAll } = require('./service/goods')
+const { list, catAndBrand, detail, findBySn, create, update, delete: goodsDelete, publish, unpublish, unpublishAll, cancelSpecialPrice } = require('./service/goods')
 const { list: brandList, create: brandCreate, read: brandRead, update: brandUpdate, delete: brandDelete } = require('./service/brand')
 const { list: categoryList, l1: categoryL1, read: categoryRead, create: categoryCreate, update: categoryUpdate, delete: categoryDelete } = require('./service/category')
 const { list: shipperList, create: shipperCreate, read: shipperRead, update: shipperUpdate, delete: shipperDelete, toggle: shipperToggle } = require('./service/shipper')
@@ -76,6 +76,7 @@ const routes = {
   goodsPublish:     { handler: publish,      permission: 'admin:goods:update' },
   goodsUnpublish:   { handler: unpublish,    permission: 'admin:goods:update' },
   goodsUnpublishAll:{ handler: unpublishAll, permission: 'admin:goods:update' },
+  goodsCancelSpecialPrice: { handler: cancelSpecialPrice, permission: 'admin:goods:update' },
 
   // AI 识别
   goodsRecognizeImage: { handler: recognizeImage, permission: 'admin:goods:create' },

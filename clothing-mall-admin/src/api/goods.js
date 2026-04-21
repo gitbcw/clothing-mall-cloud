@@ -86,6 +86,14 @@ export function unpublishAllGoods() {
   })
 }
 
+export function cancelSpecialPriceBatch(data) {
+  return request({
+    url: '/goods/cancelSpecialPrice',
+    method: 'post',
+    data
+  })
+}
+
 export function recognizeImage(data) {
   return request({
     url: '/goods/recognizeImage',

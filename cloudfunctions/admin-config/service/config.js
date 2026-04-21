@@ -12,12 +12,12 @@ const { query, execute } = db
 
 // 配置模块定义：key 前缀 → 权限
 const CONFIG_MODULES = {
-  mall:         { prefix: 'litemall_mall_%',            listPerm: 'admin:config:mall:list',       updatePerm: 'admin:config:mall:updateConfigs' },
-  express:      { prefix: 'litemall_express_%',         listPerm: 'admin:config:express:list',    updatePerm: 'admin:config:express:updateConfigs' },
-  order:        { prefix: 'litemall_order_%',           listPerm: 'admin:config:order:list',      updatePerm: 'admin:config:order:updateConfigs' },
-  wx:           { prefix: 'litemall_wx_%',              listPerm: 'admin:config:wx:list',         updatePerm: 'admin:config:wx:updateConfigs' },
-  promotion:    { prefix: null,                          listPerm: 'admin:config:promotion:list',   updatePerm: 'admin:config:promotion:updateConfigs' },
-  homeActivity: { prefix: 'litemall_home_activity_%',   listPerm: 'admin:config:promotion:list',   updatePerm: 'admin:config:promotion:updateConfigs' },
+  mall:         { prefix: 'litemall_mall_%',            prefixes: null,                                                                listPerm: 'admin:config:mall:list',       updatePerm: 'admin:config:mall:updateConfigs' },
+  express:      { prefix: 'litemall_express_%',         prefixes: null,                                                                listPerm: 'admin:config:express:list',    updatePerm: 'admin:config:express:updateConfigs' },
+  order:        { prefix: null,                          prefixes: ['litemall_order_%', 'litemall_presale_%'],                          listPerm: 'admin:config:order:list',      updatePerm: 'admin:config:order:updateConfigs' },
+  wx:           { prefix: 'litemall_wx_%',              prefixes: null,                                                                listPerm: 'admin:config:wx:list',         updatePerm: 'admin:config:wx:updateConfigs' },
+  promotion:    { prefix: null,                          prefixes: ['litemall_newuser_%', 'litemall_birthday_%', 'litemall_wework_%'],  listPerm: 'admin:config:promotion:list',   updatePerm: 'admin:config:promotion:updateConfigs' },
+  homeActivity: { prefix: 'litemall_home_activity_%',   prefixes: null,                                                                listPerm: 'admin:config:promotion:list',   updatePerm: 'admin:config:promotion:updateConfigs' },
 }
 
 /**
@@ -29,17 +29,17 @@ async function listConfig(module) {
   if (!mod) return response.badArgument()
 
   let rows
-  if (module === 'promotion') {
-    // 促销配置：多个前缀 OR 查询
+  const prefixes = mod.prefixes || (mod.prefix ? [mod.prefix] : null)
+
+  if (prefixes && prefixes.length > 0) {
+    const conditions = prefixes.map(() => 'key_name LIKE ?').join(' OR ')
     rows = await query(
-      `SELECT key_name, key_value FROM litemall_system
-       WHERE deleted = 0
-         AND (key_name LIKE 'litemall_newuser_%' OR key_name LIKE 'litemall_birthday_%' OR key_name LIKE 'litemall_wework_%')`
+      `SELECT key_name, key_value FROM litemall_system WHERE deleted = 0 AND (${conditions})`,
+      prefixes
     )
   } else {
     rows = await query(
-      'SELECT key_name, key_value FROM litemall_system WHERE key_name LIKE ? AND deleted = 0',
-      [mod.prefix]
+      'SELECT key_name, key_value FROM litemall_system WHERE deleted = 0'
     )
   }
 
@@ -63,9 +63,9 @@ async function updateConfig(module, data) {
   if (!data || typeof data !== 'object') return response.badArgument()
 
   // 只允许更新对应前缀的 key
-  const allowedPrefixes = module === 'promotion'
-    ? ['litemall_newuser_', 'litemall_birthday_', 'litemall_wework_']
-    : [mod.prefix]
+  const allowedPrefixes = mod.prefixes
+    ? mod.prefixes.map(p => p.replace(/%$/, ''))
+    : (mod.prefix ? [mod.prefix.replace(/%$/, '')] : [])
 
   for (const [key, value] of Object.entries(data)) {
     const isAllowed = allowedPrefixes.some(p => key.startsWith(p))

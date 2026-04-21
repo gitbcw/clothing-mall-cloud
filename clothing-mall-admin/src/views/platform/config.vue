@@ -10,9 +10,10 @@
       <el-tab-pane label="优惠券管理" name="promotion">
         <promotion-index v-if="loadedTabs.promotion" />
       </el-tab-pane>
-      <el-tab-pane label="搜索关键词" name="keyword">
+      <!-- 搜索关键词：隐藏，小程序搜索用搜索历史自动生成热门词，无需手动管理 -->
+      <!-- <el-tab-pane label="搜索关键词" name="keyword">
         <keyword-manage v-if="loadedTabs.keyword" />
-      </el-tab-pane>
+      </el-tab-pane> -->
       <el-tab-pane label="通用问题" name="issue">
         <issue-manage v-if="loadedTabs.issue" />
       </el-tab-pane>

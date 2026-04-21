@@ -41,10 +41,6 @@
   <view class="info-section">
     <view class="title-share-wrap">
       <view class="goods-title">【川着】{{goods.name}}</view>
-      <view class="share-btn" bindtap="shareFriendOrCircle" wx:if="{{shareImage}}">
-        <view class="share-icon"></view>
-        <text>分享</text>
-      </view>
     </view>
     <view class="goods-brief" wx:if="{{goods.brief}}">{{goods.brief}}</view>
 

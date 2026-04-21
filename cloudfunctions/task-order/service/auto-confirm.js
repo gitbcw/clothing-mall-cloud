@@ -12,7 +12,7 @@ const BATCH_SIZE = 100
 
 async function autoConfirm() {
   await systemConfig.loadConfigs()
-  const unconfirmDays = systemConfig.getOrderUnconfirm()
+  const unconfirmDays = Math.max(systemConfig.getOrderUnconfirm(), 1)
 
   const orders = await query(
     `SELECT id, update_time FROM litemall_order

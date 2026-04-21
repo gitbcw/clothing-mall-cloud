@@ -29,7 +29,7 @@
               </div>
               <div class="stat-card__sub">
                 <span class="sub-label">周新增</span>
-                <span class="sub-value purple">{{ formatNumber(growthData.weekNewUsers || 186) }}</span>
+                <span class="sub-value purple">{{ formatNumber(growthData.weekNewUsers) }}</span>
               </div>
             </div>
           </div>
@@ -69,8 +69,8 @@
               <span class="cell-value accent">{{ conversionData.pushViewRate }}%</span>
             </div>
             <div class="grid-cell">
-              <span class="cell-label">场景点击率</span>
-              <span class="cell-value accent">{{ conversionData.sceneClickRate }}%</span>
+              <span class="cell-label">支付转化率</span>
+              <span class="cell-value accent">{{ conversionData.payRate }}%</span>
             </div>
             <div class="grid-cell">
               <span class="cell-label">收藏量</span>
@@ -124,6 +124,27 @@
 
     <!-- 销售视图 -->
     <div v-show="activeView === 'sales'" class="sales-view">
+      <!-- 时间筛选器 -->
+      <div class="toolbar">
+        <span class="toolbar-label">统计时间范围</span>
+        <div class="time-pills">
+          <button :class="['pill', { active: salesDays === 7 }]" @click="selectSalesDays(7)">7天</button>
+          <button :class="['pill', { active: salesDays === 30 }]" @click="selectSalesDays(30)">1个月</button>
+          <button :class="['pill', { active: salesDays === 90 }]" @click="selectSalesDays(90)">3个月</button>
+        </div>
+        <el-date-picker
+          v-model="salesDateRange"
+          type="daterange"
+          size="mini"
+          range-separator="—"
+          start-placeholder="开始"
+          end-placeholder="结束"
+          value-format="yyyy-MM-dd"
+          :picker-options="pickerOptions"
+          @change="handleSalesDateChange"
+        />
+      </div>
+
       <!-- 核心指标卡片 -->
       <el-row :gutter="20" class="panel-group">
         <el-col :xs="12" :sm="8" class="card-panel-col">
@@ -186,7 +207,7 @@
             <div slot="header" class="clearfix">
               <span>商品销售 Top</span>
             </div>
-            <div class="rank-list">
+            <div v-if="salesData.salesTop && salesData.salesTop.length > 0" class="rank-list">
               <div
                 v-for="(item, index) in salesData.salesTop"
                 :key="index"
@@ -210,6 +231,10 @@
                 <div class="rank-value">{{ item.value }}</div>
               </div>
             </div>
+            <div v-else class="empty-tip">
+              <i class="el-icon-info" />
+              <span>暂无商品销售数据</span>
+            </div>
           </el-card>
         </el-col>
 
@@ -218,7 +243,7 @@
             <div slot="header" class="clearfix">
               <span>商品复购 Top</span>
             </div>
-            <div class="rank-list">
+            <div v-if="salesData.repurchaseTop && salesData.repurchaseTop.length > 0" class="rank-list">
               <div
                 v-for="(item, index) in salesData.repurchaseTop"
                 :key="index"
@@ -242,6 +267,10 @@
                 <div class="rank-value">{{ item.value }}</div>
               </div>
             </div>
+            <div v-else class="empty-tip">
+              <i class="el-icon-info" />
+              <span>暂无商品复购数据</span>
+            </div>
           </el-card>
         </el-col>
       </el-row>
@@ -250,12 +279,34 @@
         <el-col :xs="24" :sm="24" :lg="12" style="margin-bottom: 20px">
           <el-card class="box-card">
             <div slot="header" class="clearfix">
-              <span>分享海报 Top</span>
-              <el-tag size="mini" type="info" style="margin-left: 8px">需开启分享埋点</el-tag>
+              <span>首页轮播海报点击 Top</span>
             </div>
-            <div class="empty-tip">
+            <div v-if="salesData.bannerTop && salesData.bannerTop.length > 0" class="rank-list">
+              <div
+                v-for="(item, index) in salesData.bannerTop"
+                :key="index"
+                class="rank-item"
+              >
+                <div class="rank-index" :class="'rank-' + (index + 1)">
+                  {{ index + 1 }}
+                </div>
+                <div class="rank-info">
+                  <div class="rank-text">
+                    <div class="rank-name">{{ item.name }}</div>
+                    <el-progress
+                      :percentage="item.percentage"
+                      :show-text="false"
+                      :stroke-width="6"
+                      color="#E6A23C"
+                    />
+                  </div>
+                </div>
+                <div class="rank-value">{{ item.value }}</div>
+              </div>
+            </div>
+            <div v-else class="empty-tip">
               <i class="el-icon-info" />
-              <span>暂无数据，需在小程序端开启分享埋点后采集</span>
+              <span>暂无轮播图点击数据</span>
             </div>
           </el-card>
         </el-col>
@@ -265,7 +316,7 @@
             <div slot="header" class="clearfix">
               <span>商品售后 Top</span>
             </div>
-            <div class="rank-list">
+            <div v-if="salesData.afterSalesTop && salesData.afterSalesTop.length > 0" class="rank-list">
               <div
                 v-for="(item, index) in salesData.afterSalesTop"
                 :key="index"
@@ -288,6 +339,10 @@
                 </div>
                 <div class="rank-value">{{ item.value }}</div>
               </div>
+            </div>
+            <div v-else class="empty-tip">
+              <i class="el-icon-info" />
+              <span>暂无商品售后数据</span>
             </div>
           </el-card>
         </el-col>
@@ -350,7 +405,7 @@ export default {
       },
       conversionData: {
         pushViewRate: 0,
-        sceneClickRate: 0,
+        payRate: 0,
         favoriteCount: 0,
         orderCount: 0
       },
@@ -382,12 +437,15 @@ export default {
         }
       },
       // 销售视图数据
+      salesDays: 7,
+      salesDateRange: null,
       salesData: {
         revenue: 0,
         orders: 0,
         avgPrice: 0,
         salesTop: [],
         repurchaseTop: [],
+        bannerTop: [],
         afterSalesTop: []
       }
     }
@@ -500,21 +558,22 @@ export default {
         const data = response.data.data
         this.conversionData = {
           pushViewRate: data.pushViewRate || 0,
-          sceneClickRate: data.sceneClickRate || 0,
+          payRate: data.payRate || 0,
           favoriteCount: data.favoriteCount || 0,
           orderCount: data.orderCount || 0
         }
       }).catch(() => {
         this.conversionData = {
           pushViewRate: 0,
-          sceneClickRate: 0,
+          payRate: 0,
           favoriteCount: 0,
           orderCount: 0
         }
       })
     },
     fetchSalesData() {
-      statDashboardSales().then(response => {
+      const { startDate, endDate } = this.getSalesDateRange()
+      statDashboardSales({ startDate, endDate }).then(response => {
         const data = response.data.data
         this.salesData = {
           revenue: data.revenue || 0,
@@ -522,6 +581,7 @@ export default {
           avgPrice: data.avgPrice || 0,
           salesTop: data.salesTop || [],
           repurchaseTop: data.repurchaseTop || [],
+          bannerTop: data.bannerTop || [],
           afterSalesTop: data.afterSalesTop || []
         }
       }).catch(() => {
@@ -531,9 +591,32 @@ export default {
           avgPrice: 0,
           salesTop: [],
           repurchaseTop: [],
+          bannerTop: [],
           afterSalesTop: []
         }
       })
+    },
+    getSalesDateRange() {
+      if (this.salesDateRange && this.salesDateRange.length === 2) {
+        return { startDate: this.salesDateRange[0], endDate: this.salesDateRange[1] }
+      }
+      const days = this.salesDays || 7
+      const end = new Date()
+      const start = new Date()
+      start.setDate(end.getDate() - days + 1)
+      const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      return { startDate: fmt(start), endDate: fmt(end) }
+    },
+    selectSalesDays(days) {
+      this.salesDays = days
+      this.salesDateRange = null
+      this.fetchSalesData()
+    },
+    handleSalesDateChange(val) {
+      if (val) {
+        this.salesDays = null
+        this.fetchSalesData()
+      }
     }
   }
 }

@@ -136,9 +136,9 @@
       <el-button @click="handleCancel">{{ $t('app.button.cancel') }}</el-button>
       <!-- 已上架商品：仅保存修改 -->
       <el-button v-if="goods.status === 'published'" type="primary" :loading="saving" @click="handleSave">保存修改</el-button>
-      <!-- 草稿/待上架商品：三种操作 -->
+      <!-- 草稿/待上架商品：操作 -->
       <template v-else>
-        <el-button type="info" :loading="saving" @click="handleSaveDraft">暂存草稿</el-button>
+        <!-- <el-button type="info" :loading="saving" @click="handleSaveDraft">暂存草稿</el-button> -->
         <el-button type="success" :loading="saving" @click="handleSavePending">转为待上架</el-button>
         <el-button type="primary" :loading="saving" @click="handlePublish">直接上架</el-button>
       </template>

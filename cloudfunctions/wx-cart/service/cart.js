@@ -508,12 +508,27 @@ async function checkout(data, context) {
     }
   }
 
-  // ---------- 5. 运费 ----------
+  // ---------- 5. 新人首单立减 ----------
+  let newuserDiscount = 0
+  const cancelStatuses = [102, 103, 104, 203] // CANCEL, AUTO_CANCEL, ADMIN_CANCEL, REFUND_CONFIRM
+  const orderCountRows = await db.query(
+    `SELECT COUNT(*) as total FROM litemall_order
+     WHERE user_id = ? AND deleted = 0 AND order_status NOT IN (${cancelStatuses.map(() => '?').join(',')})`,
+    [userId, ...cancelStatuses]
+  )
+  if (orderCountRows[0].total === 0) {
+    const { getConfig } = require('layer-base').systemConfig
+    const discount = parseFloat(getConfig('litemall_newuser_first_order_discount')) || 0
+    if (discount > 0) newuserDiscount = discount
+  }
+
+  // ---------- 6. 运费 ----------
   const totalPieceCount = checkedGoodsList.reduce((sum, c) => sum + c.number, 0)
   const freightPrice = (deliveryType === 'pickup') ? 0 : calculateFreight(checkedGoodsPrice, totalPieceCount)
 
-  // ---------- 6. 订单价格 ----------
-  const orderTotalPrice = Math.max(0, checkedGoodsPrice + freightPrice - finalCouponPrice)
+  // ---------- 7. 订单价格 ----------
+  const clampedNewuserDiscount = Math.min(newuserDiscount, Math.max(0, checkedGoodsPrice + freightPrice - finalCouponPrice))
+  const orderTotalPrice = Math.max(0, checkedGoodsPrice + freightPrice - finalCouponPrice - clampedNewuserDiscount)
   const actualPrice = orderTotalPrice
 
   // ---------- 7. 组装返回 ----------
@@ -527,6 +542,7 @@ async function checkout(data, context) {
     goodsTotalPrice: checkedGoodsPrice.toFixed(2),
     freightPrice: freightPrice.toFixed(2),
     couponPrice: finalCouponPrice.toFixed(2),
+    newuserDiscount: clampedNewuserDiscount.toFixed(2),
     orderTotalPrice: orderTotalPrice.toFixed(2),
     actualPrice: actualPrice.toFixed(2),
     checkedGoodsList: checkedGoodsList.map(formatCartItem),

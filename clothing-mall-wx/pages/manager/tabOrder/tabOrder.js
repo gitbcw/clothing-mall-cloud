@@ -5,12 +5,13 @@ Page({
   data: {
     statusBarHeight: 20,
     navBarHeight: 44,
-    activeSubTab: 'order',  // 'order' | 'aftersale'
+    activeSubTab: 'express',  // 'express' | 'pickup' | 'aftersale'
     orderList: [],
     page: 1,
     limit: 10,
     total: 0,
-    pendingCount: 0,
+    expressCount: 0,
+    pickupCount: 0,
     aftersaleCount: 0,
     pendingGoodsCount: 0,
     loading: false
@@ -76,7 +77,8 @@ Page({
     util.request(api.ManagerStats).then(function(res) {
       if (res.errno === 0) {
         that.setData({
-          pendingCount: res.data.pendingOrderCount || 0,
+          expressCount: res.data.expressCount || 0,
+          pickupCount: res.data.pickupCount || 0,
           aftersaleCount: res.data.aftersaleCount || 0,
           pendingGoodsCount: res.data.pendingGoodsCount || 0
         });
@@ -95,8 +97,12 @@ Page({
       return;
     }
 
+    // 快递/自提传 deliveryType
+    const deliveryType = this.data.activeSubTab; // 'express' | 'pickup'
+
     util.request(api.ManagerOrderList, {
       status: 'pending',
+      deliveryType: deliveryType,
       page: this.data.page,
       limit: this.data.limit
     }).then(function(res) {
@@ -117,7 +123,8 @@ Page({
         that.setData({
           orderList: that.data.page === 1 ? newList : that.data.orderList.concat(newList),
           total: data.total || 0,
-          pendingCount: data.pendingCount || 0,
+          expressCount: data.expressCount || 0,
+          pickupCount: data.pickupCount || 0,
           aftersaleCount: data.aftersaleCount || 0,
           loading: false
         });

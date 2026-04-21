@@ -27,6 +27,40 @@ async function list(data) {
   const selectFields = `id, name, phone, avatar, store_id AS storeId, qrcode_url AS qrcodeUrl, commission_rate AS commissionRate, status, add_time AS addTime, update_time AS updateTime`
   const sql = paginate.appendLimit(`SELECT ${selectFields} FROM clothing_guide WHERE ${whereClause} ORDER BY ${sort} ${order}`, offset, limit)
   const listRows = await query(sql, params)
+
+  // 追加当月核销订单提成统计
+  if (listRows.length > 0) {
+    const storeIds = [...new Set(listRows.map(r => r.storeId).filter(Boolean))]
+    if (storeIds.length > 0) {
+      const placeholders = storeIds.map(() => '?').join(',')
+      const salesRows = await query(
+        `SELECT pickup_store_id AS storeId, SUM(actual_price) AS monthSales
+         FROM litemall_order
+         WHERE pickup_store_id IN (${placeholders})
+           AND order_status = 401
+           AND delivery_type = 'pickup'
+           AND update_time >= DATE_FORMAT(NOW(), '%Y-%m-01')
+           AND deleted = 0
+         GROUP BY pickup_store_id`,
+        storeIds
+      )
+      const salesMap = {}
+      for (const row of salesRows) {
+        salesMap[row.storeId] = Number(row.monthSales) || 0
+      }
+      for (const guide of listRows) {
+        const sales = salesMap[guide.storeId] || 0
+        guide.monthSales = sales
+        guide.monthCommission = Math.round(sales * guide.commissionRate * 100) / 100
+      }
+    } else {
+      for (const guide of listRows) {
+        guide.monthSales = 0
+        guide.monthCommission = 0
+      }
+    }
+  }
+
   return response.okList(listRows, total, page, limit)
 }
 

@@ -36,6 +36,7 @@ export default {
       stat_growth: '增长分析',
       stat_sales: '销售分析',
       stat_tracker: '行为分析',
+      stat_tracker_config: '埋点管理',
       stat_overview: '总报表',
       stat_category: '分类报表',
       stat_season: '季节分析',

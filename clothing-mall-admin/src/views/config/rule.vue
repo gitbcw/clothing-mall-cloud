@@ -19,6 +19,13 @@
         <span class="form-tip">发货后未确认收货，则自动确认</span>
       </el-form-item>
 
+      <el-form-item label="预售发货天数" prop="litemall_presale_ship_days">
+        <el-input v-model="dataForm.litemall_presale_ship_days" style="width: 200px;">
+          <template slot="append">天</template>
+        </el-input>
+        <span class="form-tip">预售商品预计发货天数，0表示不启用预售</span>
+      </el-form-item>
+
       <!-- 运费规则 -->
       <el-divider content-position="left">运费规则</el-divider>
 
@@ -86,14 +93,35 @@
 <script>
 import { listOrder, updateOrder, listExpress, updateExpress } from '@/api/config'
 
+// 数值校验器工厂
+function numericValidator(field, { min, minLabel, integer } = {}) {
+  return (rule, value, callback) => {
+    const num = Number(value)
+    if (value === '' || value === null || value === undefined) {
+      return callback(new Error('不能为空'))
+    }
+    if (isNaN(num)) {
+      return callback(new Error('请输入有效数字'))
+    }
+    if (integer && !Number.isInteger(num)) {
+      return callback(new Error('请输入整数'))
+    }
+    if (min !== undefined && num < min) {
+      return callback(new Error(`${minLabel || '值'}不能小于${min}`))
+    }
+    callback()
+  }
+}
+
 export default {
   name: 'ConfigRule',
   data() {
     return {
       dataForm: {
-        // 订单规则
-        litemall_order_unpaid: 0,
-        litemall_order_unconfirm: 0,
+        // 订单规则（默认值须与后端 system-config.js 一致）
+        litemall_order_unpaid: 30,
+        litemall_order_unconfirm: 7,
+        litemall_presale_ship_days: 2,
         // 运费规则
         litemall_express_freight_type: '0',
         litemall_express_freight_min: 0,
@@ -104,16 +132,28 @@ export default {
       },
       rules: {
         litemall_order_unpaid: [
-          { required: true, message: '不能为空', trigger: 'blur' }
+          { validator: numericValidator('unpaid', { min: 1, minLabel: '分钟数', integer: true }), trigger: 'blur' }
         ],
         litemall_order_unconfirm: [
-          { required: true, message: '不能为空', trigger: 'blur' }
+          { validator: numericValidator('unconfirm', { min: 1, minLabel: '天数', integer: true }), trigger: 'blur' }
+        ],
+        litemall_presale_ship_days: [
+          { validator: numericValidator('presale_days', { min: 0, integer: true }), trigger: 'blur' }
         ],
         litemall_express_freight_min: [
-          { required: true, message: '不能为空', trigger: 'blur' }
+          { validator: numericValidator('freight_min', { min: 0 }), trigger: 'blur' }
         ],
         litemall_express_freight_value: [
-          { required: true, message: '不能为空', trigger: 'blur' }
+          { validator: numericValidator('freight_value', { min: 0 }), trigger: 'blur' }
+        ],
+        litemall_express_freight_first_unit: [
+          { validator: numericValidator('first_unit', { min: 1, minLabel: '件数', integer: true }), trigger: 'blur' }
+        ],
+        litemall_express_freight_additional_unit: [
+          { validator: numericValidator('additional_unit', { min: 1, minLabel: '件数', integer: true }), trigger: 'blur' }
+        ],
+        litemall_express_freight_additional: [
+          { validator: numericValidator('additional', { min: 0 }), trigger: 'blur' }
         ]
       }
     }
@@ -123,10 +163,12 @@ export default {
   },
   methods: {
     init() {
-      // 加载订单配置
+      // 加载订单配置（空值使用与后端一致的默认值）
       listOrder().then(response => {
-        this.dataForm.litemall_order_unpaid = response.data.data.litemall_order_unpaid || 0
-        this.dataForm.litemall_order_unconfirm = response.data.data.litemall_order_unconfirm || 0
+        const d = response.data.data
+        this.dataForm.litemall_order_unpaid = d.litemall_order_unpaid || 30
+        this.dataForm.litemall_order_unconfirm = d.litemall_order_unconfirm || 7
+        this.dataForm.litemall_presale_ship_days = d.litemall_presale_ship_days != null ? d.litemall_presale_ship_days : 2
       })
       // 加载运费配置
       listExpress().then(response => {
@@ -154,7 +196,8 @@ export default {
       // 保存订单配置
       const orderData = {
         litemall_order_unpaid: this.dataForm.litemall_order_unpaid,
-        litemall_order_unconfirm: this.dataForm.litemall_order_unconfirm
+        litemall_order_unconfirm: this.dataForm.litemall_order_unconfirm,
+        litemall_presale_ship_days: this.dataForm.litemall_presale_ship_days
       }
       // 保存运费配置
       const expressData = {

@@ -14,8 +14,8 @@
         <el-switch v-model="birthdayCouponEnabled" active-value="1" inactive-value="0" />
       </el-form-item>
       <el-form-item label="生日券模板ID" prop="litemall_birthday_coupon_id">
-        <el-select v-model="dataForm.litemall_birthday_coupon_id" placeholder="请选择优惠券模板" class="input-width" :disabled="birthdayCouponEnabled !== '1'">
-          <el-option v-for="item in couponList" :key="item.id" :label="item.name + ' (满' + item.min + '减' + item.discount + ')'" :value="String(item.id)" />
+        <el-select v-model="dataForm.litemall_birthday_coupon_id" placeholder="请选择优惠券模板" class="input-width" :disabled="birthdayCouponEnabled !== '1'" clearable>
+          <el-option v-for="item in couponList" :key="item.id" :label="item.name + ' (满' + item.min + '减' + item.discount + '，有效期' + (item.days || 0) + '天)'" :value="String(item.id)" />
         </el-select>
         <span class="info">用户生日当天自动发放的优惠券</span>
       </el-form-item>
@@ -81,6 +81,11 @@ export default {
       this.init()
     },
     update() {
+      const discount = parseFloat(this.dataForm.litemall_newuser_first_order_discount)
+      if (isNaN(discount) || discount < 0) {
+        this.$notify.error({ title: '校验失败', message: '首单立减金额不能为负数' })
+        return
+      }
       updatePromotion(this.dataForm)
         .then(() => {
           this.$notify.success({ title: '成功', message: '促销规则保存成功' })

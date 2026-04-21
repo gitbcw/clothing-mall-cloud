@@ -34,8 +34,8 @@
       bind:preview="onGoodsFormPreview"
     />
 
-    <!-- 草稿提示 -->
-    <view class="draft-tip" wx:if="{{showDraftTip}}">
+    <!-- 草稿提示（隐藏） -->
+    <!-- <view class="draft-tip" wx:if="{{showDraftTip}}">
       <view class="draft-tip-left">
         <text class="draft-icon">📋</text>
         <text>有未提交的草稿</text>
@@ -45,7 +45,7 @@
         <view class="draft-tip-btn" bindtap="onContinueDraft">继续编辑</view>
         <view class="draft-tip-btn draft-tip-btn-danger" bindtap="onClearDraft">清除</view>
       </view>
-    </view>
+    </view> -->
   </view>
 
   <!-- ========== 商品列表 ========== -->
@@ -58,9 +58,10 @@
       <view class="list-tab-item {{listTab === 'pending' ? 'active' : ''}}" bindtap="onListTabChange" data-tab="pending">
         待上架{{tabCounts.pendingCount > 0 ? '(' + tabCounts.pendingCount + ')' : ''}}
       </view>
-      <view class="list-tab-item {{listTab === 'draft' ? 'active' : ''}}" bindtap="onListTabChange" data-tab="draft">
+      <!-- 草稿 Tab（隐藏） -->
+      <!-- <view class="list-tab-item {{listTab === 'draft' ? 'active' : ''}}" bindtap="onListTabChange" data-tab="draft">
         草稿{{tabCounts.draftCount > 0 ? '(' + tabCounts.draftCount + ')' : ''}}
-      </view>
+      </view> -->
     </view>
 
     <!-- 搜索栏 -->
@@ -108,8 +109,8 @@
         <view class="goods-actions">
           <view class="goods-btn" catchtap="onEditGoods" data-id="{{item.id}}">编辑</view>
           <view class="goods-btn btn-warning" wx:if="{{listTab === 'on_sale'}}" catchtap="onUnpublishGoods" data-id="{{item.id}}">下架</view>
-          <view class="goods-btn btn-primary" wx:if="{{listTab === 'pending' || listTab === 'draft'}}" catchtap="onPublishGoods" data-id="{{item.id}}">上架</view>
-          <view class="goods-btn btn-danger" wx:if="{{listTab === 'draft'}}" catchtap="onDeleteGoods" data-id="{{item.id}}">删除</view>
+          <view class="goods-btn btn-primary" wx:if="{{listTab === 'pending'}}" catchtap="onPublishGoods" data-id="{{item.id}}">上架</view>
+          <!-- <view class="goods-btn btn-danger" wx:if="{{listTab === 'draft'}}" catchtap="onDeleteGoods" data-id="{{item.id}}">删除</view> -->
         </view>
       </view>
     </view>
@@ -117,7 +118,7 @@
     <!-- 空状态 -->
     <view class="empty" wx:if="{{!loading && goodsList.length === 0}}">
       <view class="empty-icon">📦</view>
-      <text class="empty-text">暂无{{listTab === 'on_sale' ? '在售' : listTab === 'draft' ? '草稿' : '待上架'}}商品</text>
+      <text class="empty-text">暂无{{listTab === 'on_sale' ? '在售' : '待上架'}}商品</text>
     </view>
 
     <!-- 加载状态 -->

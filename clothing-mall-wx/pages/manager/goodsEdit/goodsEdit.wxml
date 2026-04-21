@@ -12,11 +12,11 @@
   <!-- 占位符 -->
   <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight}}px;"></view>
 
-  <!-- 草稿提示（仅新建模式） -->
-  <view class="draft-tip" wx:if="{{hasDraft && !isEdit}}">
+  <!-- 草稿提示（隐藏） -->
+  <!-- <view class="draft-tip" wx:if="{{hasDraft && !isEdit}}">
     <text class="draft-icon">📋</text>
     <text>有未提交的草稿</text>
-  </view>
+  </view> -->
 
   <goods-form
     wx:if="{{!loading}}"

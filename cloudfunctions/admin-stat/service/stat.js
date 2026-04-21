@@ -125,17 +125,21 @@ async function statTrackerOverview() {
   const rows = await query(
     "SELECT event_type AS type, COUNT(*) AS total FROM litemall_tracker_event WHERE server_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY event_type"
   )
-  let pageView = 0, addCart = 0, orderPay = 0
+  let goodsView = 0, addCart = 0, buyNow = 0, orderCreate = 0, orderPay = 0
   for (const r of rows) {
-    if (r.type === 'page_view') pageView = r.total
+    if (r.type === 'goods_view') goodsView = r.total
     else if (r.type === 'add_cart') addCart = r.total
+    else if (r.type === 'buy_now') buyNow = r.total
+    else if (r.type === 'order_create') orderCreate = r.total
     else if (r.type === 'order_pay') orderPay = r.total
   }
+  const purchaseIntent = addCart + buyNow
   return response.ok({
     byType: rows,
-    pageView, addCart, orderPay,
-    addCartRate: pageView > 0 ? (addCart * 100 / pageView).toFixed(2) : 0,
-    payRate: addCart > 0 ? (orderPay * 100 / addCart).toFixed(2) : 0,
+    goodsView, purchaseIntent, orderCreate, orderPay,
+    intentRate: goodsView > 0 ? (purchaseIntent * 100 / goodsView).toFixed(2) : 0,
+    orderRate: purchaseIntent > 0 ? (orderCreate * 100 / purchaseIntent).toFixed(2) : 0,
+    payRate: orderCreate > 0 ? (orderPay * 100 / orderCreate).toFixed(2) : 0,
   })
 }
 
@@ -147,53 +151,142 @@ async function statTrackerTrend() {
   return response.ok(rows)
 }
 
-// 埋点页面排行
-async function statTrackerPages(data) {
-  const eventType = data.eventType || 'page_view'
-  const limit = Math.min(data.limit || 10, 50)
+// 页面访问排行
+async function statTrackerPages() {
   const rows = await query(
-    `SELECT page_route AS pageRoute, COUNT(*) AS \`count\`, COUNT(DISTINCT user_id) AS uniqueUsers FROM litemall_tracker_event WHERE event_type = ? AND server_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY page_route ORDER BY count DESC LIMIT ${limit}`,
-    [eventType]
+    "SELECT page_route, COUNT(*) AS count FROM litemall_tracker_event WHERE event_type = 'page_view' AND server_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY page_route ORDER BY count DESC LIMIT 20"
   )
   return response.ok(rows)
 }
 
+// 转化漏斗
+async function statTrackerFunnel() {
+  const rows = await query(
+    "SELECT event_type, COUNT(*) AS count FROM litemall_tracker_event WHERE server_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY event_type"
+  )
+  const map = {}
+  for (const r of rows) { map[r.event_type] = Number(r.count) }
+
+  const funnel = [
+    { stage: 'goods_view', name: '商品浏览', count: map['goods_view'] || 0 },
+    { stage: 'purchase_intent', name: '购买意向', count: (map['add_cart'] || 0) + (map['buy_now'] || 0) },
+    { stage: 'order_create', name: '提交订单', count: map['order_create'] || 0 },
+    { stage: 'order_pay', name: '完成支付', count: map['order_pay'] || 0 },
+  ]
+  return response.ok(funnel)
+}
+
+// 场景点击排行（含轮播图）
+async function statTrackerBannerClicks(data) {
+  const days = Math.min(data.days || 30, 90)
+  try {
+    const rows = await query(
+      `SELECT JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.sceneId')) AS sceneId,
+              MAX(JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.sceneName'))) AS sceneName,
+              MAX(CAST(JSON_EXTRACT(event_data, '$.position') AS SIGNED)) AS pos,
+              COUNT(*) AS clickCount,
+              COUNT(DISTINCT user_id) AS uniqueUsers
+       FROM litemall_tracker_event
+       WHERE event_type = 'scene_click'
+         AND server_time >= DATE_SUB(NOW(), INTERVAL ? DAY)
+       GROUP BY JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.sceneId'))
+       ORDER BY clickCount DESC`,
+      [days]
+    )
+    // 统一字段名
+    const result = rows.map(r => ({
+      sceneId: r.sceneId,
+      sceneName: r.sceneName,
+      position: Number(r.pos),
+      clickCount: Number(r.clickCount),
+      uniqueUsers: Number(r.uniqueUsers)
+    }))
+    return response.ok(result)
+  } catch (e) {
+    // 表无 click 数据时安全降级
+    console.error('[statTrackerBannerClicks] error:', e.message)
+    return response.ok([])
+  }
+}
+
 // 营收总览
 async function statRevenueOverview(data) {
-  const startMonth = (data && data.startMonth) || new Date(Date.now() - 11 * 30 * 86400000).toISOString().slice(0, 7)
-  const endMonth = (data && data.endMonth) || new Date().toISOString().slice(0, 7)
+  const granularity = (data && data.granularity) || 'month'
 
-  // 按月营收（已支付订单）
-  const revenueRows = await query(
-    `SELECT DATE_FORMAT(pay_time, '%Y-%m') AS month,
-            COUNT(*) AS orders,
-            COALESCE(SUM(actual_price), 0) AS revenue
-     FROM litemall_order
-     WHERE deleted = 0 AND order_status IN (301, 401, 402, 502)
-       AND DATE_FORMAT(pay_time, '%Y-%m') BETWEEN ? AND ?
-     GROUP BY DATE_FORMAT(pay_time, '%Y-%m') ORDER BY month ASC`,
-    [startMonth, endMonth]
-  )
+  let revenueRows, refundRows, customerRows, periodField, periodAlias
 
-  // 按月退款
-  const refundRows = await query(
-    `SELECT DATE_FORMAT(update_time, '%Y-%m') AS month,
-            COALESCE(SUM(amount), 0) AS refund
-     FROM litemall_aftersale
-     WHERE deleted = 0 AND type = 1 AND status = 2
-       AND DATE_FORMAT(update_time, '%Y-%m') BETWEEN ? AND ?
-     GROUP BY DATE_FORMAT(update_time, '%Y-%m')`,
-    [startMonth, endMonth]
-  )
-  const refundMap = new Map(refundRows.map(r => [r.month, parseFloat(r.refund)]))
+  if (granularity === 'day') {
+    // 按日聚合
+    const startDate = (data && data.startDate) || new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10)
+    const endDate = (data && data.endDate) || new Date().toISOString().slice(0, 10)
+    periodField = "DATE(pay_time)"
+    periodAlias = "period"
 
-  // 消费客户数
-  const customerRows = await query(
-    `SELECT COUNT(DISTINCT user_id) AS c FROM litemall_order
-     WHERE deleted = 0 AND order_status IN (301, 401, 402, 502)
-       AND DATE_FORMAT(pay_time, '%Y-%m') BETWEEN ? AND ?`,
-    [startMonth, endMonth]
-  )
+    revenueRows = await query(
+      `SELECT DATE(pay_time) AS period,
+              COUNT(*) AS orders,
+              COALESCE(SUM(actual_price), 0) AS revenue
+       FROM litemall_order
+       WHERE deleted = 0 AND order_status IN (301, 401, 402, 502)
+         AND DATE(pay_time) BETWEEN ? AND ?
+       GROUP BY DATE(pay_time) ORDER BY period ASC`,
+      [startDate, endDate]
+    )
+
+    refundRows = await query(
+      `SELECT DATE(update_time) AS period,
+              COALESCE(SUM(amount), 0) AS refund
+       FROM litemall_aftersale
+       WHERE deleted = 0 AND type = 1 AND status = 2
+         AND DATE(update_time) BETWEEN ? AND ?
+       GROUP BY DATE(update_time)`,
+      [startDate, endDate]
+    )
+
+    customerRows = await query(
+      `SELECT COUNT(DISTINCT user_id) AS c FROM litemall_order
+       WHERE deleted = 0 AND order_status IN (301, 401, 402, 502)
+         AND DATE(pay_time) BETWEEN ? AND ?`,
+      [startDate, endDate]
+    )
+  } else {
+    // 按月聚合（默认）
+    const startDate = (data && data.startDate) || new Date(Date.now() - 11 * 30 * 86400000).toISOString().slice(0, 7) + '-01'
+    const endDate = (data && data.endDate) || new Date().toISOString().slice(0, 10)
+    // 从 startDate 提取 startMonth，从 endDate 提取 endMonth
+    const startMonth = startDate.slice(0, 7)
+    const endMonth = endDate.slice(0, 7)
+
+    revenueRows = await query(
+      `SELECT DATE_FORMAT(pay_time, '%Y-%m') AS period,
+              COUNT(*) AS orders,
+              COALESCE(SUM(actual_price), 0) AS revenue
+       FROM litemall_order
+       WHERE deleted = 0 AND order_status IN (301, 401, 402, 502)
+         AND DATE_FORMAT(pay_time, '%Y-%m') BETWEEN ? AND ?
+       GROUP BY DATE_FORMAT(pay_time, '%Y-%m') ORDER BY period ASC`,
+      [startMonth, endMonth]
+    )
+
+    refundRows = await query(
+      `SELECT DATE_FORMAT(update_time, '%Y-%m') AS period,
+              COALESCE(SUM(amount), 0) AS refund
+       FROM litemall_aftersale
+       WHERE deleted = 0 AND type = 1 AND status = 2
+         AND DATE_FORMAT(update_time, '%Y-%m') BETWEEN ? AND ?
+       GROUP BY DATE_FORMAT(update_time, '%Y-%m')`,
+      [startMonth, endMonth]
+    )
+
+    customerRows = await query(
+      `SELECT COUNT(DISTINCT user_id) AS c FROM litemall_order
+       WHERE deleted = 0 AND order_status IN (301, 401, 402, 502)
+         AND DATE_FORMAT(pay_time, '%Y-%m') BETWEEN ? AND ?`,
+      [startMonth, endMonth]
+    )
+  }
+
+  const refundMap = new Map(refundRows.map(r => [r.period, parseFloat(r.refund)]))
 
   // 组装 trend 和 detail
   const trend = []
@@ -201,9 +294,9 @@ async function statRevenueOverview(data) {
   for (const r of revenueRows) {
     const revenue = parseFloat(r.revenue)
     const orders = Number(r.orders)
-    const refund = refundMap.get(r.month) || 0
-    trend.push({ month: r.month, revenue, orders })
-    detail.push({ month: r.month, orders, revenue, refund })
+    const refund = refundMap.get(r.period) || 0
+    trend.push({ period: r.period, revenue, orders })
+    detail.push({ period: r.period, orders, revenue, refund })
   }
 
   // 汇总 KPI
@@ -287,6 +380,185 @@ async function statRevenueCategory(data) {
   return response.ok(rows)
 }
 
+// 节日活动效果
+async function statRevenueHoliday(data) {
+  const start = (data && data.startDate) || new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
+  const end = (data && data.endDate) || new Date().toISOString().slice(0, 10)
+
+  // 查所有启用的节日活动
+  const holidays = await query(
+    `SELECT id, name, start_date, end_date FROM clothing_holiday WHERE deleted = 0 AND enabled = 1 ORDER BY start_date DESC`
+  )
+
+  const result = []
+  for (const h of holidays) {
+    // 活动时间窗口与筛选时间窗口取交集
+    const windowStart = h.start_date > start ? h.start_date : start
+    const windowEnd = h.end_date < end ? h.end_date : end
+    if (windowStart > windowEnd) continue
+
+    // 关联商品数
+    const goodsRows = await query(
+      'SELECT COUNT(*) AS cnt FROM clothing_holiday_goods WHERE holiday_id = ?', [h.id]
+    )
+    const goodsCount = goodsRows[0].cnt
+
+    // 活动期间，已支付订单中包含节日关联商品的统计
+    const statRows = await query(
+      `SELECT COUNT(DISTINCT o.id) AS orders, COALESCE(SUM(og.price * og.number), 0) AS gmv
+       FROM litemall_order_goods og
+       INNER JOIN litemall_order o ON og.order_id = o.id
+       INNER JOIN clothing_holiday_goods hg ON og.goods_id = hg.goods_id AND hg.holiday_id = ?
+       WHERE og.deleted = 0 AND o.deleted = 0
+         AND o.order_status IN (301, 401, 402, 502)
+         AND DATE(o.add_time) BETWEEN ? AND ?`,
+      [h.id, windowStart, windowEnd]
+    )
+    const orders = statRows[0].orders
+    const gmv = parseFloat(statRows[0].gmv)
+    const avgPrice = orders > 0 ? Math.round(gmv / orders * 100) / 100 : 0
+
+    // Top 5 热销商品
+    const topRows = await query(
+      `SELECT g.name, SUM(og.number) AS sales, SUM(og.price * og.number) AS amount
+       FROM litemall_order_goods og
+       INNER JOIN litemall_order o ON og.order_id = o.id
+       INNER JOIN litemall_goods g ON og.goods_id = g.id
+       INNER JOIN clothing_holiday_goods hg ON og.goods_id = hg.goods_id AND hg.holiday_id = ?
+       WHERE og.deleted = 0 AND o.deleted = 0 AND g.deleted = 0
+         AND o.order_status IN (301, 401, 402, 502)
+         AND DATE(o.add_time) BETWEEN ? AND ?
+       GROUP BY g.id ORDER BY amount DESC LIMIT 5`,
+      [h.id, windowStart, windowEnd]
+    )
+
+    result.push({
+      name: h.name,
+      startDate: h.start_date,
+      endDate: h.end_date,
+      goodsCount,
+      orders,
+      gmv,
+      avgPrice,
+      topGoods: topRows.map(r => ({
+        name: r.name,
+        sales: parseInt(r.sales),
+        amount: parseFloat(r.amount)
+      }))
+    })
+  }
+
+  return response.ok(result)
+}
+
+// 特价商品效果
+async function statRevenueSpecialPrice(data) {
+  const start = (data && data.startDate) || new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10)
+  const end = (data && data.endDate) || new Date().toISOString().slice(0, 10)
+
+  // 特价商品总数
+  const countRows = await query(
+    "SELECT COUNT(*) AS cnt FROM litemall_goods WHERE deleted = 0 AND is_special_price = 1"
+  )
+  const specialCount = countRows[0].cnt
+
+  // 特价商品在时间窗口内的销售统计
+  const specialStatRows = await query(
+    `SELECT COUNT(DISTINCT og.order_id) AS orders, COALESCE(SUM(og.price * og.number), 0) AS amount
+     FROM litemall_order_goods og
+     INNER JOIN litemall_goods g ON og.goods_id = g.id
+     INNER JOIN litemall_order o ON og.order_id = o.id
+     WHERE og.deleted = 0 AND o.deleted = 0 AND g.deleted = 0
+       AND g.is_special_price = 1
+       AND o.order_status IN (301, 401, 402, 502)
+       AND DATE(o.add_time) BETWEEN ? AND ?`,
+    [start, end]
+  )
+  const soldOrders = parseInt(specialStatRows[0].orders)
+  const totalAmount = parseFloat(specialStatRows[0].amount)
+
+  // 原价商品同期销售统计（用于对比）
+  const normalStatRows = await query(
+    `SELECT COUNT(DISTINCT og.order_id) AS orders, COALESCE(SUM(og.price * og.number), 0) AS amount,
+            COALESCE(SUM(og.number), 0) AS qty
+     FROM litemall_order_goods og
+     INNER JOIN litemall_goods g ON og.goods_id = g.id
+     INNER JOIN litemall_order o ON og.order_id = o.id
+     WHERE og.deleted = 0 AND o.deleted = 0 AND g.deleted = 0
+       AND (g.is_special_price = 0 OR g.is_special_price IS NULL)
+       AND o.order_status IN (301, 401, 402, 502)
+       AND DATE(o.add_time) BETWEEN ? AND ?`,
+    [start, end]
+  )
+  const normalOrders = parseInt(normalStatRows[0].orders)
+  const normalAmount = parseFloat(normalStatRows[0].amount)
+  const normalQty = parseInt(normalStatRows[0].qty)
+
+  // 特价商品件数
+  const specialQtyRows = await query(
+    `SELECT COALESCE(SUM(og.number), 0) AS qty
+     FROM litemall_order_goods og
+     INNER JOIN litemall_goods g ON og.goods_id = g.id
+     INNER JOIN litemall_order o ON og.order_id = o.id
+     WHERE og.deleted = 0 AND o.deleted = 0 AND g.deleted = 0
+       AND g.is_special_price = 1
+       AND o.order_status IN (301, 401, 402, 502)
+       AND DATE(o.add_time) BETWEEN ? AND ?`,
+    [start, end]
+  )
+  const specialQty = parseInt(specialQtyRows[0].qty)
+
+  // 平均折扣率：特价商品平均售价 vs 其原价
+  const avgPriceRows = await query(
+    `SELECT COALESCE(AVG(og.price), 0) AS avgSpecial,
+            COALESCE(AVG(g.retail_price), 0) AS avgRetail
+     FROM litemall_order_goods og
+     INNER JOIN litemall_goods g ON og.goods_id = g.id
+     INNER JOIN litemall_order o ON og.order_id = o.id
+     WHERE og.deleted = 0 AND o.deleted = 0 AND g.deleted = 0
+       AND g.is_special_price = 1 AND g.special_price IS NOT NULL
+       AND o.order_status IN (301, 401, 402, 502)
+       AND DATE(o.add_time) BETWEEN ? AND ?`,
+    [start, end]
+  )
+  const avgSpecial = parseFloat(avgPriceRows[0].avgSpecial)
+  const avgRetail = parseFloat(avgPriceRows[0].avgRetail)
+  const discountRate = avgRetail > 0 ? Math.round((1 - avgSpecial / avgRetail) * 1000) / 10 : 0
+
+  // Top 5 热销特价商品
+  const topRows = await query(
+    `SELECT g.name, SUM(og.number) AS sales, SUM(og.price * og.number) AS amount,
+            g.retail_price, g.special_price
+     FROM litemall_order_goods og
+     INNER JOIN litemall_goods g ON og.goods_id = g.id
+     INNER JOIN litemall_order o ON og.order_id = o.id
+     WHERE og.deleted = 0 AND o.deleted = 0 AND g.deleted = 0
+       AND g.is_special_price = 1
+       AND o.order_status IN (301, 401, 402, 502)
+       AND DATE(o.add_time) BETWEEN ? AND ?
+     GROUP BY g.id ORDER BY amount DESC LIMIT 5`,
+    [start, end]
+  )
+
+  return response.ok({
+    specialCount,
+    soldOrders,
+    specialQty,
+    totalAmount,
+    discountRate,
+    normalOrders,
+    normalAmount,
+    normalQty,
+    topGoods: topRows.map(r => ({
+      name: r.name,
+      sales: parseInt(r.sales),
+      amount: parseFloat(r.amount),
+      retailPrice: parseFloat(r.retail_price),
+      specialPrice: parseFloat(r.special_price)
+    }))
+  })
+}
+
 // 季节概览
 async function statRevenueSeasonOverview(data) {
   const year = data.year || new Date().getFullYear()
@@ -358,13 +630,20 @@ async function statRevenueSeasonHotGoods(data) {
 }
 
 // 仪表盘销售统计
-async function statDashboardSales() {
+async function statDashboardSales(data) {
+  const today = new Date().toISOString().slice(0, 10)
+  const weekAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10)
+  const startDate = (data && data.startDate) || weekAgo
+  const endDate = (data && data.endDate) || today
+
   // 核心指标：已支付订单
   const paidStatus = '301, 401, 402, 502'
   const summaryRows = await query(
     `SELECT COUNT(*) AS orders, COALESCE(SUM(actual_price), 0) AS revenue
      FROM litemall_order
-     WHERE deleted = 0 AND order_status IN (${paidStatus})`
+     WHERE deleted = 0 AND order_status IN (${paidStatus})
+       AND DATE(pay_time) BETWEEN ? AND ?`,
+    [startDate, endDate]
   )
   const summary = summaryRows[0]
   const orders = Number(summary.orders)
@@ -378,8 +657,10 @@ async function statDashboardSales() {
      FROM litemall_order_goods og
      INNER JOIN litemall_order o ON og.order_id = o.id
      WHERE og.deleted = 0 AND o.deleted = 0 AND o.order_status IN (${paidStatus})
+       AND DATE(o.pay_time) BETWEEN ? AND ?
      GROUP BY og.goods_id
-     ORDER BY amount DESC LIMIT 5`
+     ORDER BY amount DESC LIMIT 5`,
+    [startDate, endDate]
   )
   const salesTopMax = salesTop.length > 0 ? Number(salesTop[0].amount) : 1
 
@@ -390,9 +671,11 @@ async function statDashboardSales() {
      FROM litemall_order_goods og
      INNER JOIN litemall_order o ON og.order_id = o.id
      WHERE og.deleted = 0 AND o.deleted = 0 AND o.order_status IN (${paidStatus})
+       AND DATE(o.pay_time) BETWEEN ? AND ?
      GROUP BY og.goods_id
      HAVING COUNT(DISTINCT o.user_id) > 1
-     ORDER BY buyerCount DESC, buyTimes DESC LIMIT 5`
+     ORDER BY buyerCount DESC, buyTimes DESC LIMIT 5`,
+    [startDate, endDate]
   )
   const repurchaseTopMax = repurchaseTop.length > 0 ? Number(repurchaseTop[0].buyerCount) : 1
 
@@ -403,10 +686,38 @@ async function statDashboardSales() {
      FROM litemall_order_goods og
      INNER JOIN litemall_aftersale a ON a.order_id = og.order_id
      WHERE og.deleted = 0 AND a.deleted = 0
+       AND DATE(a.update_time) BETWEEN ? AND ?
      GROUP BY og.goods_id
-     ORDER BY count DESC LIMIT 5`
+     ORDER BY count DESC LIMIT 5`,
+    [startDate, endDate]
   )
   const afterSalesTopMax = afterSalesTop.length > 0 ? Number(afterSalesTop[0].count) : 1
+
+  // 首页轮播海报点击 Top5（仅 source=banner 的 scene_click 事件）
+  let bannerTop = []
+  try {
+    const bannerRows = await query(
+      `SELECT MAX(JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.sceneName'))) AS sceneName,
+              CAST(MAX(JSON_EXTRACT(event_data, '$.position')) AS SIGNED) AS pos,
+              COUNT(*) AS clickCount,
+              COUNT(DISTINCT user_id) AS uniqueUsers
+       FROM litemall_tracker_event
+       WHERE event_type = 'scene_click'
+         AND JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.source')) = 'banner'
+         AND DATE(server_time) BETWEEN ? AND ?
+       GROUP BY JSON_UNQUOTE(JSON_EXTRACT(event_data, '$.sceneId'))
+       ORDER BY clickCount DESC LIMIT 5`,
+      [startDate, endDate]
+    )
+    const bannerMax = bannerRows.length > 0 ? Number(bannerRows[0].clickCount) : 1
+    bannerTop = bannerRows.map(r => ({
+      name: r.sceneName || '未知场景',
+      value: Number(r.clickCount) + '次点击',
+      percentage: bannerMax > 0 ? Math.round(Number(r.clickCount) / bannerMax * 100) : 0,
+    }))
+  } catch (e) {
+    console.error('[statDashboardSales] bannerTop error:', e.message)
+  }
 
   const formatTop = (list, maxVal, valueKey, valueFormat) =>
     list.map(r => ({
@@ -422,6 +733,7 @@ async function statDashboardSales() {
     avgPrice,
     salesTop: formatTop(salesTop, salesTopMax, 'amount', r => Math.round(Number(r.amount))),
     repurchaseTop: formatTop(repurchaseTop, repurchaseTopMax, 'buyerCount', r => Number(r.buyerCount) + '人复购'),
+    bannerTop,
     afterSalesTop: formatTop(afterSalesTop, afterSalesTopMax, 'count'),
   })
 }
@@ -437,11 +749,9 @@ async function statDashboardConversion() {
     'SELECT COUNT(*) AS c FROM litemall_order WHERE deleted = 0'
   )
 
-  // 埋点转化率（推送查看率、场景点击率）
+  // 推送查看率：push_view / push_send（从埋点事件计算）
   let pushViewRate = 0
-  let sceneClickRate = 0
   try {
-    // 推送查看率：push_view 事件 / push_send 事件
     const pushSendRows = await query(
       "SELECT COUNT(*) AS c FROM litemall_tracker_event WHERE event_type = 'push_send'"
     )
@@ -450,25 +760,27 @@ async function statDashboardConversion() {
     )
     const pushSend = Number(pushSendRows[0]?.c || 0)
     const pushView = Number(pushViewRows[0]?.c || 0)
-    pushViewRate = pushSend > 0 ? (pushView * 100 / pushSend).toFixed(1) : 0
-
-    // 场景点击率：scene_click / scene_view
-    const sceneViewRows = await query(
-      "SELECT COUNT(*) AS c FROM litemall_tracker_event WHERE event_type = 'scene_view'"
-    )
-    const sceneClickRows = await query(
-      "SELECT COUNT(*) AS c FROM litemall_tracker_event WHERE event_type = 'scene_click'"
-    )
-    const sceneView = Number(sceneViewRows[0]?.c || 0)
-    const sceneClick = Number(sceneClickRows[0]?.c || 0)
-    sceneClickRate = sceneView > 0 ? (sceneClick * 100 / sceneView).toFixed(1) : 0
+    pushViewRate = pushSend > 0 ? Number((pushView * 100 / pushSend).toFixed(1)) : 0
   } catch (e) {
     // tracker_event 表可能无数据，保持默认 0
   }
 
+  // 支付转化率：已支付订单 / 总订单
+  let payRate = 0
+  try {
+    const paidRows = await query(
+      "SELECT COUNT(*) AS c FROM litemall_order WHERE deleted = 0 AND order_status >= 201"
+    )
+    const orderTotal = Number(orderRows[0]?.c || 0)
+    const paidCount = Number(paidRows[0]?.c || 0)
+    payRate = orderTotal > 0 ? Number((paidCount * 100 / orderTotal).toFixed(1)) : 0
+  } catch (e) {
+    // 保持默认 0
+  }
+
   return response.ok({
-    pushViewRate: Number(pushViewRate),
-    sceneClickRate: Number(sceneClickRate),
+    pushViewRate,
+    payRate,
     favoriteCount: Number(collectRows[0]?.c || 0),
     orderCount: Number(orderRows[0]?.c || 0),
   })
@@ -710,11 +1022,97 @@ async function statSalesGoodsTop(data) {
   return response.ok(rows)
 }
 
+// ========== 埋点配置管理 ==========
+
+// 分类中文映射
+const CATEGORY_MAP = { browse: '浏览', goods: '商品', trade: '交易', social: '社交', push: '推送' }
+
+// 预置事件配置
+const PRESET_EVENTS = [
+  { event_type: 'page_view', event_name: '页面浏览', category: 'browse', description: '用户浏览页面的记录', page_routes: '["pages/index/index","pages/category/category","pages/cart/cart","pages/mine/mine","pages/search/search","pages/goods_detail/goods_detail","pages/confirm_order/confirm_order","pages/payResult/payResult","pages/order/order","pages/ucenter/orderDetail/orderDetail","pages/ucenter/footprint/footprint","pages/ucenter/couponList/couponList","pages/ucenter/collect/collect","pages/scene/scene"]' },
+  { event_type: 'goods_view', event_name: '商品浏览', category: 'goods', description: '用户查看商品详情', page_routes: '["pages/goods_detail/goods_detail"]' },
+  { event_type: 'add_cart', event_name: '加购', category: 'goods', description: '用户加入购物车', page_routes: '["pages/goods_detail/goods_detail"]' },
+  { event_type: 'collect', event_name: '收藏', category: 'goods', description: '用户收藏/取消收藏商品', page_routes: '["pages/goods_detail/goods_detail"]' },
+  { event_type: 'search', event_name: '搜索', category: 'browse', description: '用户搜索商品', page_routes: '["pages/search/search"]' },
+  { event_type: 'order_create', event_name: '下单', category: 'trade', description: '用户提交订单', page_routes: '["pages/confirm_order/confirm_order"]' },
+  { event_type: 'order_pay', event_name: '支付', category: 'trade', description: '用户完成支付', page_routes: '["pages/payResult/payResult"]' },
+  { event_type: 'share', event_name: '分享', category: 'social', description: '用户分享内容（已定义未启用）', page_routes: null },
+  { event_type: 'click', event_name: '点击', category: 'social', description: '用户点击元素（已定义未启用）', page_routes: null },
+  { event_type: 'push_send', event_name: '推送发送', category: 'push', description: '系统推送消息发送', page_routes: null },
+  { event_type: 'push_view', event_name: '推送查看', category: 'push', description: '用户查看推送消息', page_routes: null },
+  { event_type: 'scene_view', event_name: '场景浏览', category: 'browse', description: '用户浏览场景穿搭', page_routes: '["pages/scene/scene"]' },
+  { event_type: 'scene_click', event_name: '场景点击', category: 'browse', description: '用户点击场景穿搭中的商品', page_routes: '["pages/scene/scene"]' },
+]
+
+// 埋点配置列表（含近7天事件量）
+async function trackerConfigList() {
+  const configs = await query('SELECT event_type, event_name, category, description, page_routes, enabled, updated_at FROM litemall_tracker_config ORDER BY FIELD(category, "browse","goods","trade","social","push"), event_type')
+
+  // 近7天事件量
+  const counts = await query(
+    "SELECT event_type, COUNT(*) AS count FROM litemall_tracker_event WHERE server_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) GROUP BY event_type"
+  )
+  const countMap = new Map(counts.map(r => [r.event_type, Number(r.count)]))
+
+  // 最后触发时间
+  const lastTimes = await query(
+    "SELECT event_type, MAX(server_time) AS lastTime FROM litemall_tracker_event GROUP BY event_type"
+  )
+  const timeMap = new Map(lastTimes.map(r => [r.event_type, r.lastTime]))
+
+  const list = configs.map(r => ({
+    eventType: r.event_type,
+    eventName: r.event_name,
+    category: r.category,
+    categoryName: CATEGORY_MAP[r.category] || r.category,
+    description: r.description || '',
+    pageRoutes: r.page_routes ? JSON.parse(r.page_routes) : [],
+    enabled: r.enabled === 1,
+    last7Days: countMap.get(r.event_type) || 0,
+    lastTime: timeMap.get(r.event_type) || null,
+    updatedAt: r.updated_at,
+  }))
+
+  return response.ok(list)
+}
+
+// 更新埋点配置
+async function trackerConfigUpdate(data) {
+  const { eventType, enabled, description } = data
+  if (!eventType) return response.badArgument()
+
+  const sets = []
+  const params = []
+  if (enabled !== undefined) { sets.push('enabled = ?'); params.push(enabled ? 1 : 0) }
+  if (description !== undefined) { sets.push('description = ?'); params.push(description) }
+  if (sets.length === 0) return response.badArgument()
+
+  params.push(eventType)
+  await query(`UPDATE litemall_tracker_config SET ${sets.join(', ')} WHERE event_type = ?`, params)
+  return response.ok()
+}
+
+// 初始化预置数据（INSERT IGNORE，已存在则跳过）
+async function trackerConfigInit() {
+  let inserted = 0
+  for (const evt of PRESET_EVENTS) {
+    const result = await query(
+      'INSERT IGNORE INTO litemall_tracker_config (event_type, event_name, category, description, page_routes, enabled) VALUES (?, ?, ?, ?, ?, 1)',
+      [evt.event_type, evt.event_name, evt.category, evt.description, evt.page_routes]
+    )
+    if (result.affectedRows > 0) inserted++
+  }
+  return response.ok({ inserted, total: PRESET_EVENTS.length })
+}
+
 module.exports = {
   statUser, statOrder, statGoods, statGrowth, statRetention, statActiveUsers,
-  statTrackerOverview, statTrackerTrend, statTrackerPages,
+  statTrackerOverview, statTrackerTrend, statTrackerPages, statTrackerFunnel,
   statRevenueOverview, statRevenueScene, statRevenueCategory,
   statRevenueSeasonOverview, statRevenueSeasonHotGoods,
+  statRevenueHoliday, statRevenueSpecialPrice,
   statDashboardSales, statDashboardConversion,
   statSalesGoodsTop, statCollect, statFootprint, statSearchHistory,
+  trackerConfigList, trackerConfigUpdate, trackerConfigInit,
+  statTrackerBannerClicks,
 }

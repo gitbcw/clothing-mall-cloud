@@ -13,10 +13,21 @@ async function report(data, context) {
     return response.ok()
   }
 
+  // 查询禁用的事件类型，服务端过滤
+  let disabledTypes = new Set()
+  try {
+    const rows = await db.query('SELECT event_type FROM litemall_tracker_config WHERE enabled = 0')
+    disabledTypes = new Set(rows.map(r => r.event_type))
+  } catch (e) {
+    // 配置表不存在时不过滤，全量写入
+  }
+
   const userId = context._userId || null
-  const values = []
 
   for (const e of events) {
+    // 跳过已禁用的事件类型
+    if (disabledTypes.has(e.type)) continue
+
     await db.query(
       `INSERT INTO litemall_tracker_event (user_id, event_type, event_data, page_route, device_info, timestamp, server_time)
        VALUES (?, ?, ?, ?, ?, ?, NOW())`,

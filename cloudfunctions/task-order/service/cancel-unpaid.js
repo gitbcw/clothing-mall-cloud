@@ -12,7 +12,7 @@ const BATCH_SIZE = 100
 
 async function cancelUnpaid() {
   await systemConfig.loadConfigs()
-  const unpaidMinutes = systemConfig.getOrderUnpaid()
+  const unpaidMinutes = Math.max(systemConfig.getOrderUnpaid(), 1)
 
   const orders = await query(
     `SELECT id, update_time FROM litemall_order

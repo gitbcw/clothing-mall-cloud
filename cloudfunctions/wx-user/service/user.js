@@ -6,7 +6,7 @@
  */
 
 const { db, response } = require('layer-base')
-const { getConfig } = require('layer-base').systemConfig
+const { getConfig, getConfigInt } = require('layer-base').systemConfig
 
 // 订单状态常量
 const STATUS = {
@@ -37,13 +37,25 @@ async function index(data, context) {
     ),
   ])
 
-  return response.ok({
+  // 生日券自动发放：每年生日当天打开小程序时触发
+  let birthdayCoupon = null
+  const birthdayEnabled = getConfig('litemall_birthday_coupon_status')
+  if (birthdayEnabled === 'true' || birthdayEnabled === '1') {
+    birthdayCoupon = await trySendBirthdayCoupon(userId)
+  }
+
+  const result = {
     order: {
       unpaid: unpaidRows[0].total,
       unship: unshipRows[0].total,
       unrecv: unrecvRows[0].total,
     },
-  })
+  }
+  if (birthdayCoupon) {
+    result.birthdayCoupon = birthdayCoupon
+  }
+
+  return response.ok(result)
 }
 
 // ==================== 用户信息 ====================
@@ -110,46 +122,6 @@ async function profile(data, context) {
 
   if (fields.length === 0) return response.ok()
 
-  // 生日首填检测
-  let couponResult = null
-  if (birthday && !user.birthday) {
-    const birthdayCouponEnabled = getConfig('litemall_birthday_coupon_status')
-    if (birthdayCouponEnabled === 'true' || birthdayCouponEnabled === '1') {
-      const couponId = parseInt(getConfig('litemall_birthday_coupon_id'))
-      const days = parseInt(getConfig('litemall_birthday_coupon_days')) || 30
-
-      if (couponId) {
-        // 检查是否已有该生日券
-        const existRows = await db.query(
-          `SELECT id FROM litemall_coupon_user WHERE user_id = ? AND coupon_id = ? AND deleted = 0 LIMIT 1`,
-          [userId, couponId]
-        )
-        if (existRows.length === 0) {
-          // 发放生日券
-          await db.query(
-            `INSERT INTO litemall_coupon_user (user_id, coupon_id, status, start_time, end_time, add_time, update_time, deleted)
-             VALUES (?, ?, 0, NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), NOW(), NOW(), 0)`,
-            [userId, couponId, days]
-          )
-          // 查询券信息返回
-          const couponRows = await db.query(
-            `SELECT id, name, discount, discount_type, description FROM litemall_coupon WHERE id = ? AND deleted = 0 LIMIT 1`,
-            [couponId]
-          )
-          if (couponRows.length > 0) {
-            couponResult = {
-              name: couponRows[0].name,
-              discount: couponRows[0].discount,
-              discountType: couponRows[0].discount_type,
-              desc: couponRows[0].description,
-              tag: '生日',
-            }
-          }
-        }
-      }
-    }
-  }
-
   fields.push('update_time = NOW()')
   params.push(userId)
 
@@ -158,9 +130,6 @@ async function profile(data, context) {
     params
   )
 
-  if (couponResult) {
-    return response.ok({ coupon: couponResult })
-  }
   return response.ok()
 }
 
@@ -205,3 +174,67 @@ async function isManager(data, context) {
 }
 
 module.exports = { index, info, profile, role, isManager }
+
+// ==================== 生日券发放 ====================
+
+/**
+ * 检查并发放生日券
+ * 条件：用户生日 = 今天（月日匹配），且今年未发过该生日券
+ * 返回券信息或 null
+ */
+async function trySendBirthdayCoupon(userId) {
+  // 查询用户生日
+  const rows = await db.query(
+    `SELECT birthday FROM litemall_user WHERE id = ? AND deleted = 0 LIMIT 1`,
+    [userId]
+  )
+  if (rows.length === 0 || !rows[0].birthday) return null
+
+  const birthday = rows[0].birthday
+  // birthday 格式为 YYYY-MM-DD，检查月日是否匹配今天
+  const now = new Date()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const bdMonth = birthday.substring(5, 7)
+  const bdDay = birthday.substring(8, 10)
+
+  if (bdMonth !== month || bdDay !== day) return null
+
+  const couponId = getConfigInt('litemall_birthday_coupon_id')
+  const days = getConfigInt('litemall_birthday_coupon_days', 30)
+  if (!couponId) return null
+
+  // 检查今年是否已发放（按年份+coupon_id 去重）
+  const year = now.getFullYear()
+  const existRows = await db.query(
+    `SELECT id FROM litemall_coupon_user
+     WHERE user_id = ? AND coupon_id = ? AND deleted = 0
+       AND YEAR(add_time) = ?
+     LIMIT 1`,
+    [userId, couponId, year]
+  )
+  if (existRows.length > 0) return null
+
+  // 发放生日券
+  await db.query(
+    `INSERT INTO litemall_coupon_user (user_id, coupon_id, status, start_time, end_time, add_time, update_time, deleted)
+     VALUES (?, ?, 0, NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), NOW(), NOW(), 0)`,
+    [userId, couponId, days]
+  )
+
+  // 返回券信息
+  const couponRows = await db.query(
+    `SELECT id, name, discount, discount_type, description FROM litemall_coupon WHERE id = ? AND deleted = 0 LIMIT 1`,
+    [couponId]
+  )
+  if (couponRows.length > 0) {
+    return {
+      name: couponRows[0].name,
+      discount: couponRows[0].discount,
+      discountType: couponRows[0].discount_type,
+      desc: couponRows[0].description,
+      tag: '生日',
+    }
+  }
+  return null
+}

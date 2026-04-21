@@ -39,6 +39,8 @@ Page({
     showSkuPicker: false,
     skuGoods: {},
 
+    bannerHeightPx: 225,
+
     // 鏾屏加载
     loading: true
   },
@@ -60,11 +62,15 @@ Page({
   onLoad() {
     // 初始化导航栏
     const { system } = wx.getDeviceInfo()
-    const { statusBarHeight } = wx.getWindowInfo()
+    const { statusBarHeight, windowWidth } = wx.getWindowInfo()
     const isIOS = system.indexOf('iOS') > -1
+    const navBarHeight = isIOS ? 44 : 48
+    const bannerRpx = 450
+    const bannerHeightPx = bannerRpx / 750 * windowWidth + statusBarHeight + navBarHeight
     this.setData({
       statusBarHeight,
-      navBarHeight: isIOS ? 44 : 48
+      navBarHeight,
+      bannerHeightPx
     })
 
     this.loadData()
@@ -97,7 +103,7 @@ Page({
         this.setData({
           hotSales,
           hotSalesScroll: [...hotSales, ...hotSales],
-          hotScrollDuration: Math.max(hotSales.length * 6, 80)
+          hotScrollDuration: Math.max(hotSales.length * 10, 120)
         })
 
         // 活动位数据
@@ -194,6 +200,9 @@ Page({
   // 跳转场景商品页
   goToScene(e) {
     const sceneId = e.currentTarget.dataset.sceneId
+    const sceneName = e.currentTarget.dataset.sceneName
+    const position = e.currentTarget.dataset.index
+    tracker.trackSceneClick(sceneId, sceneName, { source: 'banner', position: Number(position) })
     wx.navigateTo({ url: `/pages/scene/scene?id=${sceneId}` })
   },
 

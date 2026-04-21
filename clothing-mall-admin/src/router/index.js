@@ -377,16 +377,10 @@ export const asyncRoutes = [
         },
         hidden: true
       },
-      // 平台规则（已移至 /platform/config，保留路由兼容）
+      // 平台规则（已移至 /platform/config，重定向）
       {
         path: 'rule',
-        component: () => import('@/views/config/rule'),
-        name: 'systemRule',
-        meta: {
-          perms: ['GET /admin/config/order', 'POST /admin/config/order', 'GET /admin/config/express', 'POST /admin/config/express'],
-          title: 'app.menu.platform_rule',
-          noCache: true
-        },
+        redirect: '/platform/config',
         hidden: true
       },
       // 搜索关键词（已移至 /platform/config，保留路由兼容）
@@ -462,28 +456,16 @@ export const asyncRoutes = [
         },
         hidden: true
       },
-      // 隐藏的原运费配置（保留路由兼容）
+      // 隐藏的原运费配置（已移至 /platform/config，重定向）
       {
         path: 'config-express',
-        component: () => import('@/views/config/express'),
-        name: 'systemConfigExpress',
-        meta: {
-          perms: ['GET /admin/config/express', 'POST /admin/config/express'],
-          title: 'app.menu.config_express',
-          noCache: true
-        },
+        redirect: '/platform/config',
         hidden: true
       },
-      // 隐藏的原订单配置（保留路由兼容）
+      // 隐藏的原订单配置（已移至 /platform/config，重定向）
       {
         path: 'config-order',
-        component: () => import('@/views/config/order'),
-        name: 'systemConfigOrder',
-        meta: {
-          perms: ['GET /admin/config/order', 'POST /admin/config/order'],
-          title: 'app.menu.config_order',
-          noCache: true
-        },
+        redirect: '/platform/config',
         hidden: true
       },
       // 隐藏的原管理员（保留路由兼容）
@@ -623,7 +605,8 @@ export const asyncRoutes = [
           perms: ['GET /admin/stat/order'],
           title: 'app.menu.stat_season',
           noCache: true
-        }
+        },
+        hidden: true
       },
       {
         path: 'tracker',
@@ -632,6 +615,16 @@ export const asyncRoutes = [
         meta: {
           perms: ['GET /admin/stat/tracker/overview'],
           title: 'app.menu.stat_tracker',
+          noCache: true
+        }
+      },
+      {
+        path: 'trackerConfig',
+        component: () => import('@/views/stat/trackerConfig'),
+        name: 'statTrackerConfig',
+        meta: {
+          perms: ['GET /admin/stat/tracker/overview'],
+          title: 'app.menu.stat_tracker_config',
           noCache: true
         }
       }

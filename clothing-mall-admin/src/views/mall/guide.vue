@@ -29,6 +29,16 @@
           {{ (scope.row.commissionRate * 100).toFixed(1) }}%
         </template>
       </el-table-column>
+      <el-table-column align="center" label="当月销售额" width="120">
+        <template slot-scope="scope">
+          ¥{{ (scope.row.monthSales || 0).toFixed(2) }}
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="当月提成" width="120">
+        <template slot-scope="scope">
+          ¥{{ (scope.row.monthCommission || 0).toFixed(2) }}
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="状态" prop="status" width="80">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'">

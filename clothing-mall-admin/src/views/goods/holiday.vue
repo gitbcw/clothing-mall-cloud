@@ -89,7 +89,7 @@
         <el-input v-model="goodsSearchName" placeholder="搜索商品名称" style="width: 220px;" clearable prefix-icon="el-icon-search" @keyup.enter.native="loadGoodsList" />
         <el-button type="primary" size="small" @click="loadGoodsList">搜索</el-button>
       </div>
-      <el-table v-loading="goodsLoading" :data="goodsList" border max-height="400" @selection-change="handleGoodsSelectionChange">
+      <el-table ref="goodsTable" v-loading="goodsLoading" :data="goodsList" border max-height="400" @selection-change="handleGoodsSelectionChange">
         <el-table-column type="selection" width="55" :reserve-selection="true" />
         <!-- 隐藏商品ID列 -->
         <!-- <el-table-column align="center" label="ID" prop="id" width="80" /> -->
@@ -353,6 +353,16 @@ export default {
         this.goodsList = res.data.data.list || []
         this.goodsTotal = res.data.data.total || 0
         this.goodsLoading = false
+        // 恢复当前页已选项的勾选状态
+        this.$nextTick(() => {
+          if (this.goodsList.length > 0) {
+            this.goodsList.forEach(row => {
+              if (this.selectedGoodsIds.includes(row.id)) {
+                this.$refs.goodsTable.toggleRowSelection(row, true)
+              }
+            })
+          }
+        })
       }).catch(() => {
         this.goodsList = []
         this.goodsTotal = 0
@@ -360,7 +370,11 @@ export default {
       })
     },
     handleGoodsSelectionChange(selection) {
-      this.selectedGoodsIds = selection.map(item => item.id)
+      const currentPageIds = this.goodsList.map(item => item.id)
+      const selectedPageIds = selection.map(item => item.id)
+      // 保留非当前页的选中项 + 当前页实际选中的
+      const otherPageSelected = this.selectedGoodsIds.filter(id => !currentPageIds.includes(id))
+      this.selectedGoodsIds = [...otherPageSelected, ...selectedPageIds]
     },
     confirmHolidayGoods() {
       updateHolidayGoods({ holidayId: this.currentHolidayId, goodsIds: this.selectedGoodsIds }).then(() => {

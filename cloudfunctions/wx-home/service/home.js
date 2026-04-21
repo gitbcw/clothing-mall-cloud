@@ -77,11 +77,9 @@ async function index(data, context) {
     }
   }
 
-  // 第二优先：特价商品（补充不足8条）
-  if (activityGoods.length < ACTIVITY_LIMIT && activityGoods.length > 0) {
-    // 已有节日商品，用特价补充
-  } else if (activityGoods.length === 0 && specialPriceRows.length > 0) {
-    titleType = 'special'
+  // 第二优先：特价商品（补足或独立填充）
+  if (activityGoods.length < ACTIVITY_LIMIT && specialPriceRows.length > 0) {
+    if (activityGoods.length === 0) titleType = 'special'
     for (const goods of specialPriceRows) {
       if (activityGoods.length >= ACTIVITY_LIMIT) break
       if (addedIds.has(goods.id)) continue
@@ -90,22 +88,26 @@ async function index(data, context) {
     }
   }
 
-  // 第三优先：随机商品（完全没数据时）
+  // 第三优先：每周上新轮动（无节日、无特价时）
   if (activityGoods.length === 0) {
     titleType = 'weekly'
     const allGoods = await db.query(
-      `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price, category_id
+      `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price, special_price, category_id
        FROM litemall_goods
        WHERE status = 'published' AND deleted = 0
-       ORDER BY add_time DESC LIMIT ${ACTIVITY_LIMIT * 2}`
+       ORDER BY id ASC`
     )
-    // 随机打乱
-    for (let i = allGoods.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[allGoods[i], allGoods[j]] = [allGoods[j], allGoods[i]]
-    }
-    for (const goods of allGoods.slice(0, ACTIVITY_LIMIT)) {
-      activityGoods.push(pickGoodsFields(goods))
+    if (allGoods.length > 0) {
+      const total = allGoods.length
+      // 当前年内的周数 (0-51)
+      const now = new Date()
+      const startOfYear = new Date(now.getFullYear(), 0, 1)
+      const weekNum = Math.floor((now - startOfYear) / (7 * 24 * 60 * 60 * 1000))
+      // 滑动窗口：每周偏移 ACTIVITY_LIMIT，环绕取商品
+      const offset = (weekNum * ACTIVITY_LIMIT) % total
+      for (let i = 0; i < Math.min(ACTIVITY_LIMIT, total); i++) {
+        activityGoods.push(pickGoodsFields(allGoods[(offset + i) % total]))
+      }
     }
   }
 

@@ -43,6 +43,7 @@
           <div class="batch-bar__actions">
             <el-button size="mini" type="success" @click="handleBatchPublish">批量上架</el-button>
             <el-button size="mini" type="warning" @click="handleBatchUnpublish">批量下架</el-button>
+            <el-button size="mini" type="info" @click="handleBatchCancelSpecialPrice">批量取消特价</el-button>
             <el-button size="mini" type="danger" @click="handleDeleteRows">批量删除</el-button>
           </div>
         </div>
@@ -124,19 +125,6 @@
             fit="cover"
           />
           <span v-else class="no-img">-</span>
-        </template>
-      </el-table-column>
-
-      <el-table-column align="center" property="shareUrl" label="分享海报" width="82">
-        <template slot-scope="scope">
-          <el-image
-            v-if="scope.row.shareUrl"
-            :src="thumbnail(imageUrl(scope.row.shareUrl))"
-            :preview-src-list="[imageUrl(scope.row.shareUrl)]"
-            class="goods-thumb goods-thumb--sm"
-            fit="cover"
-          />
-          <el-button v-else type="text" size="mini" class="text-btn" @click="handleGenerateShareImage(scope.row)">生成</el-button>
         </template>
       </el-table-column>
 
@@ -566,12 +554,10 @@
 </style>
 
 <script>
-import { listGoods, deleteGoods, editGoods, publishGoodsBatch, unpublishGoodsBatch, unpublishAllGoods, listCatAndBrand } from '@/api/goods'
+import { listGoods, deleteGoods, editGoods, publishGoodsBatch, unpublishGoodsBatch, unpublishAllGoods, cancelSpecialPriceBatch, listCatAndBrand } from '@/api/goods'
 import BackToTop from '@/components/BackToTop'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import { thumbnail, toPreview } from '@/utils/index'
-import { generateGoodsPoster } from '@/utils/poster'
-import { cloudUploadFile } from '@/utils/upload'
 
 export default {
   name: 'GoodsList',
@@ -582,7 +568,7 @@ export default {
       activeTab: 'all',
       statusTabs: [
         { key: 'all', label: '全部', count: 0 },
-        { key: 'draft', label: '草稿', count: 0 },
+        // { key: 'draft', label: '草稿', count: 0 }, // 草稿状态隐藏
         { key: 'pending', label: '待上架', count: 0 },
         { key: 'published', label: '已上架', count: 0 }
       ],
@@ -632,9 +618,9 @@ export default {
         // 更新 tab 计数
         if (res.allCount !== undefined) {
           this.statusTabs[0].count = res.allCount
-          this.statusTabs[1].count = res.draftCount
-          this.statusTabs[2].count = res.pendingCount
-          this.statusTabs[3].count = res.publishedCount
+          // this.statusTabs[1].count = res.draftCount // 草稿状态隐藏
+          this.statusTabs[1].count = res.pendingCount
+          this.statusTabs[2].count = res.publishedCount
         }
       }).catch(() => {
         this.list = []
@@ -701,33 +687,6 @@ export default {
         })
       })
     },
-    handleGenerateShareImage(row) {
-      this.$set(row, '_generating', true)
-      generateGoodsPoster({
-        picUrl: row.picUrl,
-        name: row.name,
-        retailPrice: row.retailPrice,
-        specialPrice: row.specialPrice,
-      })
-        .then(blob => {
-          blob.name = `poster_${row.id}.jpg`
-          return cloudUploadFile(blob)
-        })
-        .then(cloudPath => {
-          return editGoods({ goods: { id: row.id, share_url: cloudPath } }).then(() => cloudPath)
-        })
-        .then(cloudPath => {
-          row.shareUrl = cloudPath
-          this.$notify.success({ title: '成功', message: '分享海报生成成功' })
-        })
-        .catch(error => {
-          console.error('[海报生成] error:', error)
-          this.$notify.error({ title: '失败', message: error?.message || '生成分享海报失败' })
-        })
-        .finally(() => {
-          this.$set(row, '_generating', false)
-        })
-    },
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
@@ -778,6 +737,21 @@ export default {
       }).catch(error => {
         this.$notify.error({ title: '失败', message: error?.response?.data?.errmsg || error?.message || '批量下架失败' })
       })
+    },
+    handleBatchCancelSpecialPrice() {
+      const ids = this.batchDeleteArr.map(r => r.id)
+      this.$confirm(`确定要取消选中的 ${ids.length} 件商品的特价状态吗？`, '批量取消特价', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        cancelSpecialPriceBatch({ ids }).then(() => {
+          this.$notify.success({ title: '成功', message: '批量取消特价成功' })
+          this.getList()
+        }).catch(error => {
+          this.$notify.error({ title: '失败', message: error?.response?.data?.errmsg || error?.message || '批量取消特价失败' })
+        })
+      }).catch(() => {})
     },
     handleUnpublishAll() {
       this.$confirm('确定要下架全部商品吗？此操作不可撤销。', '危险操作', {

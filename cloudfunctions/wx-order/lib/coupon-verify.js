@@ -35,13 +35,13 @@ async function checkCoupon(userId, couponId, userCouponId, checkedGoodsPrice) {
   // 检查是否过期
   const now = new Date()
   if (coupon.time_type === 0) {
-    // 固定时间段
-    if (now < coupon.start_time || now > coupon.end_time) return null
-  } else if (coupon.time_type === 1) {
     // 领取后 N 天
     const expired = new Date(couponUser.add_time)
     expired.setDate(expired.getDate() + coupon.days)
     if (now > expired) return null
+  } else if (coupon.time_type === 1) {
+    // 固定时间段
+    if (now < coupon.start_time || now > coupon.end_time) return null
   } else {
     return null
   }
@@ -70,27 +70,21 @@ async function checkCoupon(userId, couponId, userCouponId, checkedGoodsPrice) {
  */
 function calculateDiscount(coupon, checkedGoodsPrice) {
   const discountType = coupon.discount_type
+  let result = 0
 
   if (!discountType || discountType === 0) {
     // 固定金额
-    return parseFloat(coupon.discount) || 0
-  }
-
-  if (discountType === 1) {
+    result = parseFloat(coupon.discount) || 0
+  } else if (discountType === 1) {
     // 百分比折扣
     const percent = parseFloat(coupon.discount) || 0
-    const itemLimit = coupon.item_limit
-
-    if (itemLimit === 1) {
-      // 仅最高价单品（简化：直接用 checkedGoodsPrice 比例计算）
-      // 完整实现需要 cartList 来找最高价单品
-      return checkedGoodsPrice * percent / 100
-    }
-
-    return checkedGoodsPrice * percent / 100
+    result = checkedGoodsPrice * percent / 100
+  } else {
+    result = parseFloat(coupon.discount) || 0
   }
 
-  return parseFloat(coupon.discount) || 0
+  // 折扣不能超过商品总价
+  return Math.min(result, checkedGoodsPrice)
 }
 
 module.exports = { checkCoupon, calculateDiscount }

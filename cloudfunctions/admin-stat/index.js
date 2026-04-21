@@ -7,11 +7,13 @@ const { query } = require('layer-base').db
 
 const {
   statUser, statOrder, statGoods, statGrowth, statRetention, statActiveUsers,
-  statTrackerOverview, statTrackerTrend, statTrackerPages,
+  statTrackerOverview, statTrackerTrend, statTrackerPages, statTrackerFunnel, statTrackerBannerClicks,
   statRevenueOverview, statRevenueScene, statRevenueCategory,
   statRevenueSeasonOverview, statRevenueSeasonHotGoods,
+  statRevenueHoliday, statRevenueSpecialPrice,
   statDashboardSales, statDashboardConversion,
   statSalesGoodsTop, statCollect, statFootprint, statSearchHistory,
+  trackerConfigList, trackerConfigUpdate, trackerConfigInit,
 } = require('./service/stat')
 const { info: dashboardInfo } = require('./service/dashboard')
 const { list: historyList } = require('./service/history')
@@ -39,11 +41,18 @@ const routes = {
   statTrackerOverview: { handler: statTrackerOverview, permission: 'admin:stat:tracker' },
   statTrackerTrend: { handler: statTrackerTrend, permission: 'admin:stat:tracker' },
   statTrackerPages: { handler: statTrackerPages, permission: 'admin:stat:tracker' },
+  statTrackerFunnel: { handler: statTrackerFunnel, permission: 'admin:stat:tracker' },
+  trackerConfigList: { handler: trackerConfigList, permission: 'admin:stat:tracker' },
+  trackerConfigUpdate: { handler: trackerConfigUpdate, permission: 'admin:stat:tracker' },
+  trackerConfigInit: { handler: trackerConfigInit, permission: 'admin:stat:tracker' },
+  statTrackerBannerClicks: { handler: statTrackerBannerClicks, permission: 'admin:stat:tracker' },
   statRevenueOverview: { handler: statRevenueOverview, permission: 'admin:stat:order' },
   statRevenueScene: { handler: statRevenueScene, permission: 'admin:stat:order' },
   statRevenueCategory: { handler: statRevenueCategory, permission: 'admin:stat:order' },
   statRevenueSeasonOverview: { handler: statRevenueSeasonOverview, permission: 'admin:stat:order' },
   statRevenueSeasonHotGoods: { handler: statRevenueSeasonHotGoods, permission: 'admin:stat:order' },
+  statRevenueHoliday: { handler: statRevenueHoliday, permission: 'admin:stat:order' },
+  statRevenueSpecialPrice: { handler: statRevenueSpecialPrice, permission: 'admin:stat:order' },
   dashboardInfo: { handler: dashboardInfo, permission: null },
   historyList: { handler: historyList, permission: 'admin:history:list' },
   statDashboardSales: { handler: statDashboardSales, permission: 'admin:stat:order' },

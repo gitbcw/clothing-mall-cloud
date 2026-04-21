@@ -141,7 +141,7 @@
     <!-- create 模式 -->
     <block wx:if="{{mode === 'create'}}">
       <view class="action-btn btn-preview" bindtap="onPreview">预览</view>
-      <view class="action-btn btn-save" bindtap="onSaveDraft">暂存草稿</view>
+      <!-- <view class="action-btn btn-save" bindtap="onSaveDraft">暂存草稿</view> -->
       <view class="action-btn btn-publish" bindtap="onPublish">立即上架</view>
     </block>
     <!-- edit 模式 -->

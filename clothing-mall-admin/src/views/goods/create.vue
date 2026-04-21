@@ -1,8 +1,8 @@
 <template>
   <div class="app-container goods-create-page">
 
-    <!-- 草稿恢复提示 -->
-    <el-alert
+    <!-- 草稿恢复提示（隐藏） -->
+    <!-- <el-alert
       v-if="draftInfo.hasDraft"
       type="info"
       show-icon
@@ -14,7 +14,7 @@
         <el-button type="text" size="mini" @click="restoreDraft">恢复草稿</el-button>
         <el-button type="text" size="mini" style="color: #f56c6c;" @click="clearDraft">清除</el-button>
       </template>
-    </el-alert>
+    </el-alert> -->
 
     <!-- 商品信息 -->
     <el-card class="box-card">
@@ -158,7 +158,7 @@
     <!-- 操作按钮 -->
     <div class="op-container">
       <el-button @click="handleCancel">取消</el-button>
-      <el-button type="info" :loading="submitting" @click="handleSaveDraft">暂存草稿</el-button>
+      <!-- <el-button type="info" :loading="submitting" @click="handleSaveDraft">暂存草稿</el-button> -->
       <el-button type="primary" :loading="submitting" @click="handlePublish">上架</el-button>
     </div>
 
