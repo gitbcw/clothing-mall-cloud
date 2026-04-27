@@ -1,7 +1,6 @@
 /**
- * admin-marketing/service/coupon.js — 优惠券管理 + 用户优惠券 + 手动发放
- *
- * 接口：list, listuser, create, read, update, delete, assign
+ * wx-manager-marketing/service/coupon.js — 优惠券管理 + 用户优惠券 + 手动发放
+ * 复制自 admin-marketing/service/coupon.js
  */
 const { db, response, paginate } = require('layer-base')
 const { query, execute } = db
@@ -12,8 +11,6 @@ function safeSort(sort, order) {
   const o = order === 'asc' ? 'ASC' : 'DESC'
   return { sort: s, order: o }
 }
-
-// ==================== 优惠券列表 ====================
 
 async function list(data) {
   const { page, limit, offset } = paginate.parsePage({ data })
@@ -38,8 +35,6 @@ async function list(data) {
 
   return response.okList(listRows, total, page, limit)
 }
-
-// ==================== 用户优惠券列表 ====================
 
 async function listuser(data) {
   const { page, limit, offset } = paginate.parsePage({ data })
@@ -70,8 +65,6 @@ async function listuser(data) {
   return response.okList(listRows, total, page, limit)
 }
 
-// ==================== 创建优惠券 ====================
-
 async function create(data) {
   const { name, type, desc, tag, total, discount, min, limit, status,
     timeType, days, startTime, endTime,
@@ -96,8 +89,6 @@ async function create(data) {
   return response.ok({ id: result.insertId })
 }
 
-// ==================== 优惠券详情 ====================
-
 async function read(data) {
   const { id } = data
   if (!id) return response.badArgument()
@@ -107,8 +98,6 @@ async function read(data) {
 
   return response.ok(rows[0])
 }
-
-// ==================== 更新优惠券 ====================
 
 async function update(data) {
   const { id, name, type, desc, tag, total, discount, min, limit, status,
@@ -144,8 +133,6 @@ async function update(data) {
   return response.ok()
 }
 
-// ==================== 删除优惠券 ====================
-
 async function deleteFn(data) {
   const { id } = data
   if (!id) return response.badArgument()
@@ -154,23 +141,18 @@ async function deleteFn(data) {
   return response.ok()
 }
 
-// ==================== 手动发放优惠券 ====================
-
 async function assign(data) {
   const { userId, couponId } = data
   if (!userId || !couponId) return response.badArgument()
 
-  // 校验用户
   const userRows = await query('SELECT id FROM litemall_user WHERE id = ? AND deleted = 0', [userId])
   if (userRows.length === 0) return response.badArgumentValue()
 
-  // 校验优惠券
   const couponRows = await query('SELECT * FROM litemall_coupon WHERE id = ? AND deleted = 0 AND status = 0', [couponId])
   if (couponRows.length === 0) return response.badArgumentValue()
 
   const coupon = couponRows[0]
 
-  // 计算有效期（time_type=0: 领取后N天, time_type=1: 固定日期）
   let startTime = coupon.start_time || new Date()
   let endTime = coupon.end_time
   if (coupon.time_type === 0 && coupon.days > 0) {
@@ -180,7 +162,7 @@ async function assign(data) {
   }
   if (!endTime) {
     const d = new Date()
-    endTime = new Date(d.getTime() + 30 * 86400000) // 默认 30 天
+    endTime = new Date(d.getTime() + 30 * 86400000)
   }
 
   await execute(
