@@ -329,6 +329,42 @@ async function exchange(data, context) {
   return response.ok()
 }
 
+// ==================== 弹窗推荐券（公开） ====================
+
+async function popup() {
+  const now = new Date()
+  const nowStr = now.toISOString().slice(0, 19).replace('T', ' ')
+
+  const rows = await db.query(
+    `SELECT c.id, c.name, c.\`desc\`, c.tag, c.discount, c.discount_type, c.min,
+            c.days, c.start_time, c.end_time, c.time_type,
+            (SELECT COUNT(*) FROM litemall_coupon_user cu WHERE cu.coupon_id = c.id AND cu.deleted = 0) AS received
+     FROM litemall_coupon c
+     WHERE c.type = ? AND c.status = ? AND c.popup = 1 AND c.deleted = 0
+       AND (c.total = 0 OR c.total > (SELECT COUNT(*) FROM litemall_coupon_user cu2 WHERE cu2.coupon_id = c.id AND cu2.deleted = 0))
+       AND (c.time_type = 0 OR (c.start_time IS NULL OR c.start_time <= ?) AND (c.end_time IS NULL OR c.end_time >= ?))
+     ORDER BY c.add_time DESC
+     LIMIT 3`,
+    [TYPE.COMMON, STATUS.NORMAL, nowStr, nowStr]
+  )
+
+  const list = rows.map(r => ({
+    id: r.id,
+    name: r.name,
+    desc: r.desc,
+    tag: r.tag,
+    discount: r.discount,
+    discountType: r.discount_type,
+    min: r.min,
+    days: r.days,
+    startTime: r.start_time,
+    endTime: r.end_time,
+    timeType: r.time_type,
+  }))
+
+  return response.ok(list)
+}
+
 // ==================== 内部工具方法 ====================
 
 /**
@@ -387,6 +423,17 @@ async function checkCouponAvailable(userId, coupon, couponUser, checkedGoodsPric
     if (today < thisYearBirthday || today > sevenDaysAfter) return false
   }
 
+  // 新人券首单校验
+  if (coupon.type === TYPE.REGISTER) {
+    const cancelStatuses = [102, 103, 104, 203]
+    const placeholders = cancelStatuses.map(() => '?').join(',')
+    const orderCountRows = await db.query(
+      `SELECT COUNT(*) as total FROM litemall_order WHERE user_id = ? AND deleted = 0 AND order_status NOT IN (${placeholders})`,
+      [userId, ...cancelStatuses]
+    )
+    if (orderCountRows[0].total > 0) return false
+  }
+
   // 商品类型限制
   if (coupon.goods_type === 1 || coupon.goods_type === 2) {
     // goods_value 是逗号分隔的 ID 列表
@@ -410,4 +457,4 @@ async function checkCouponAvailable(userId, coupon, couponUser, checkedGoodsPric
   return true
 }
 
-module.exports = { list, mylist, selectlist, receive, exchange }
+module.exports = { list, mylist, selectlist, receive, exchange, popup }
