@@ -14,6 +14,11 @@ const CONFIG_GROUPS = {
   home: [
     'litemall_home_activity_bg_image',
   ],
+  promotion: [
+    'litemall_birthday_coupon_coupon_status',
+    'litemall_birthday_coupon_id',
+    'litemall_birthday_coupon_days',
+  ],
 }
 
 // ==================== 读取配置 ====================

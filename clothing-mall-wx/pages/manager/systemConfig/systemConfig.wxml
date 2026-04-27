@@ -14,13 +14,34 @@
 
   <!-- 表单 -->
   <view class="form-section">
-    <!-- 活动位背景图 -->
+    <!-- 活动位背景 -->
     <view class="form-card">
-      <view class="form-label">活动位背景图</view>
-      <view class="field-hint" style="margin-bottom: 20rpx;">首页活动区域的背景图片，建议使用宽图</view>
+      <view class="form-label">活动位背景</view>
+      <view class="field-hint" style="margin-bottom: 24rpx;">选择内置背景或上传自定义图片</view>
+
+      <!-- 内置背景选择 -->
+      <view class="section-subtitle">内置背景</view>
+      <view class="builtin-grid">
+        <view class="builtin-item {{form.activityBgImage === item.value ? 'builtin-item-active' : ''}}"
+              wx:for="{{builtInBgs}}" wx:key="id"
+              bindtap="onSelectBuiltIn" data-value="{{item.value}}">
+          <view class="builtin-preview {{item.value ? '' : 'builtin-preview-none'}}" style="{{item.value ? 'background: ' + item.value : ''}}">
+            <text wx:if="{{!item.value}}" class="builtin-none-icon">—</text>
+          </view>
+          <text class="builtin-name">{{item.name}}</text>
+          <view class="builtin-check" wx:if="{{form.activityBgImage === item.value}}"></view>
+        </view>
+      </view>
+
+      <!-- 分隔线 -->
+      <view class="section-divider">
+        <view class="divider-line"></view>
+        <text class="divider-text">或上传自定义图片</text>
+        <view class="divider-line"></view>
+      </view>
 
       <!-- 上传区域 -->
-      <view class="poster-upload" wx:if="{{!form.activityBgImage}}" bindtap="onChooseBgImage">
+      <view class="poster-upload" wx:if="{{!isCustomImage}}" bindtap="onChooseBgImage">
         <view class="upload-placeholder" wx:if="{{!uploading}}">
           <view class="upload-icon"></view>
           <text class="upload-text">上传背景图</text>
@@ -32,13 +53,44 @@
       </view>
 
       <!-- 预览 -->
-      <view class="poster-preview" wx:if="{{form.activityBgImage}}">
+      <view class="poster-preview" wx:if="{{isCustomImage}}">
         <image class="poster-image" src="{{img.url(form.activityBgImage)}}" mode="aspectFill" />
         <view class="poster-overlay">
           <view class="poster-btn" bindtap="onChooseBgImage">更换</view>
           <view class="poster-btn poster-btn-delete" bindtap="onRemoveBgImage">删除</view>
         </view>
       </view>
+    </view>
+  </view>
+
+  <!-- 生日券配置 -->
+  <view class="config-section">
+    <view class="section-header">
+      <view class="section-accent"></view>
+      <text class="section-title">生日券配置</text>
+    </view>
+    <view class="config-card">
+      <view class="form-row" bindtap="onToggleBirthday">
+        <text class="form-label-inline">启用生日券</text>
+        <view class="toggle-switch {{birthdayEnabled ? 'switch-on' : 'switch-off'}}">
+          <view class="switch-dot"></view>
+        </view>
+      </view>
+      <block wx:if="{{birthdayEnabled}}">
+        <view class="form-row">
+          <text class="form-label-inline">关联优惠券</text>
+          <picker class="form-picker" range="{{birthdayCouponList}}" range-key="name" value="{{birthdayCouponPickerIndex}}" bindchange="onBirthdayCouponChange">
+            <view class="picker-value">
+              <text class="{{birthdayCouponId ? '' : 'form-placeholder'}}">{{birthdayCouponName || '请选择优惠券（需先在优惠券管理中创建生日券）'}}</text>
+              <text class="form-arrow">></text>
+            </view>
+          </picker>
+        </view>
+        <view class="form-row">
+          <text class="form-label-inline">发放后有效天数</text>
+          <input class="form-input" type="number" placeholder="30" value="{{birthdayDays}}" bindinput="onBirthdayDaysInput" />
+        </view>
+      </block>
     </view>
   </view>
 

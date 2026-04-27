@@ -68,6 +68,106 @@
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
 }
 
+/* ---- 内置背景 ---- */
+.section-subtitle {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 16rpx;
+}
+
+.builtin-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.builtin-item {
+  position: relative;
+  width: calc(25% - 12rpx);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.builtin-preview {
+  width: 100%;
+  height: 100rpx;
+  border-radius: 12rpx;
+  border: 2rpx solid #e8e8e8;
+  margin-bottom: 8rpx;
+}
+
+.builtin-preview-none {
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.builtin-none-icon {
+  font-size: 28rpx;
+  color: #ccc;
+}
+
+.builtin-name {
+  font-size: 20rpx;
+  color: #666;
+}
+
+.builtin-item-active .builtin-preview {
+  border-color: #FF8096;
+  border-width: 3rpx;
+}
+
+.builtin-item-active .builtin-name {
+  color: #FF8096;
+  font-weight: 500;
+}
+
+.builtin-check {
+  position: absolute;
+  top: 4rpx;
+  right: 4rpx;
+  width: 28rpx;
+  height: 28rpx;
+  background: #FF8096;
+  border-radius: 50%;
+}
+
+.builtin-check::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%) rotate(45deg);
+  width: 12rpx;
+  height: 6rpx;
+  border-bottom: 3rpx solid #fff;
+  border-right: 3rpx solid #fff;
+}
+
+/* ---- 分隔线 ---- */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1rpx;
+  background: #e8e8e8;
+}
+
+.divider-text {
+  font-size: 22rpx;
+  color: #bbb;
+  white-space: nowrap;
+}
+
 /* ---- 图片上传 ---- */
 .form-label {
   font-size: 26rpx;
@@ -234,4 +334,119 @@
 
 .save-btn-disabled {
   opacity: 0.5;
+}
+
+/* ---- 生日券配置区块 ---- */
+.config-section {
+  padding: 20rpx 24rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.section-accent {
+  width: 6rpx;
+  height: 28rpx;
+  background: #FF8096;
+  border-radius: 3rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.config-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 8rpx 32rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 88rpx;
+  border-bottom: 1rpx solid #f2f2f2;
+}
+
+.form-row:last-child {
+  border-bottom: none;
+}
+
+.form-label-inline {
+  font-size: 26rpx;
+  color: #333;
+  flex-shrink: 0;
+}
+
+/* ---- Toggle Switch ---- */
+.toggle-switch {
+  width: 88rpx;
+  height: 48rpx;
+  border-radius: 24rpx;
+  position: relative;
+  transition: background 0.3s;
+}
+
+.switch-off {
+  background: #e0e0e0;
+}
+
+.switch-on {
+  background: #FF8096;
+}
+
+.switch-dot {
+  width: 40rpx;
+  height: 40rpx;
+  background: #FFFFFF;
+  border-radius: 50%;
+  position: absolute;
+  top: 4rpx;
+  transition: left 0.3s;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.15);
+}
+
+.switch-off .switch-dot {
+  left: 4rpx;
+}
+
+.switch-on .switch-dot {
+  left: 44rpx;
+}
+
+/* ---- Picker & Input ---- */
+.form-picker {
+  flex: 1;
+  text-align: right;
+}
+
+.picker-value {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.form-placeholder {
+  color: #bbb;
+  font-size: 24rpx;
+}
+
+.form-arrow {
+  color: #ccc;
+  font-size: 24rpx;
+}
+
+.form-input {
+  width: 160rpx;
+  text-align: right;
+  font-size: 26rpx;
+  color: #333;
 }
