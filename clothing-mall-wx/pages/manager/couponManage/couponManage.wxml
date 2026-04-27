@@ -1,0 +1,94 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-back" bindtap="onBack">
+        <view class="nav-back-icon"></view>
+      </view>
+      <view class="nav-title">优惠券管理</view>
+      <view class="nav-action" bindtap="onAddCoupon">
+        <view class="nav-add-icon"></view>
+      </view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- Tab 筛选 -->
+  <scroll-view class="tab-scroll" scroll-x>
+    <view class="tab-list">
+      <view class="tab-item {{activeTab === item.key ? 'active' : ''}}"
+            wx:for="{{tabs}}" wx:key="key"
+            bindtap="onTabChange" data-key="{{item.key}}">
+        {{item.label}}
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 优惠券列表 -->
+  <view class="coupon-list" wx:if="{{!loading || couponList.length > 0}}">
+    <view class="coupon-card coupon-type-{{item.type}} {{item.status === 1 ? 'coupon-expired' : item.status === 2 ? 'coupon-off' : ''}}" wx:for="{{couponList}}" wx:key="id">
+      <view class="coupon-notch-top"></view>
+      <view class="coupon-notch-bottom"></view>
+      <view class="coupon-separator"></view>
+      <view class="coupon-left" bindtap="onEditCoupon" data-id="{{item.id}}">
+        <view class="coupon-amount">
+          <text class="amount-symbol" wx:if="{{item.discount_type === 0}}">¥</text>
+          <text class="amount-value">{{item.discount_type === 0 ? item.discount : ((100 - item.discount) / 10)}}</text>
+          <text class="amount-unit" wx:if="{{item.discount_type === 1}}">折</text>
+        </view>
+        <text class="coupon-condition">{{item.min > 0 ? '满' + item.min + '可用' : '无门槛'}}</text>
+      </view>
+      <view class="coupon-right" bindtap="onEditCoupon" data-id="{{item.id}}">
+        <text class="coupon-name">{{item.name}}</text>
+        <view class="coupon-tags">
+          <text class="coupon-type-tag tag-type-{{item.type}}">{{item.type === 0 ? '通用' : item.type === 1 ? '新人' : item.type === 2 ? '兑换' : item.type === 4 ? '生日' : '其他'}}</text>
+          <text class="coupon-status-tag {{item.status === 0 ? 'tag-normal' : item.status === 1 ? 'tag-expired' : 'tag-off'}}">{{item.status === 0 ? '正常' : item.status === 1 ? '已过期' : '已下架'}}</text>
+        </view>
+        <text class="coupon-limit" wx:if="{{item.limit > 0}}">每人限领{{item.limit}}张</text>
+        <text class="coupon-stock">{{item.total > 0 ? '剩余 ' + item.total + ' 张' : '不限量'}}</text>
+        <text class="coupon-time" wx:if="{{item.timeText}}">{{item.timeText}}</text>
+      </view>
+      <view class="coupon-actions">
+        <view class="action-btn" catchtap="onDeleteCoupon" data-id="{{item.id}}">
+          <view class="delete-icon"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{hasMore}}" bindtap="onReachBottom">
+      <text class="load-more-text">{{loading ? '加载中...' : '加载更多'}}</text>
+    </view>
+    <view class="list-end" wx:if="{{!hasMore && couponList.length > 0}}">
+      <text class="list-end-text">共 {{total}} 张优惠券</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && couponList.length === 0}}">
+    <view class="empty-icon"></view>
+    <text class="empty-text">暂无优惠券</text>
+    <text class="empty-hint">创建优惠券，吸引更多顾客</text>
+    <view class="empty-add-btn" bindtap="onAddCoupon">
+      <view class="empty-add-icon"></view>
+      <text>创建优惠券</text>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading && couponList.length === 0}}">
+    <view class="loading-dots">
+      <view class="dot"></view>
+      <view class="dot"></view>
+      <view class="dot"></view>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="bottom-bar" wx:if="{{!loading}}">
+    <view class="add-btn" bindtap="onAddCoupon">
+      <view class="add-btn-icon"></view>
+      <text>新建优惠券</text>
+    </view>
+  </view>
+</view>
