@@ -1,0 +1,178 @@
+<view class="container">
+  <!-- 自定义导航栏 -->
+  <view class="custom-nav" style="padding-top: {{statusBarHeight + 16}}px; height: {{navBarHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-back" bindtap="onBack">
+        <view class="nav-back-icon"></view>
+      </view>
+      <view class="nav-title">{{isEdit ? '编辑优惠券' : '新建优惠券'}}</view>
+      <view class="nav-action" bindtap="onSave">
+        <text class="nav-save-text">保存</text>
+      </view>
+    </view>
+  </view>
+  <view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight + 16}}px;"></view>
+
+  <!-- 优惠券预览 -->
+  <view class="coupon-preview" wx:if="{{form.name || form.discount}}">
+    <view class="preview-left preview-type-{{form.type}}">
+      <view class="preview-amount">
+        <text class="preview-symbol" wx:if="{{form.discountType === 0}}">¥</text>
+        <text class="preview-value">{{form.discountType === 0 ? (form.discount || '?') : (form.discount ? ((100 - form.discount) / 10) : '?')}}</text>
+        <text class="preview-unit" wx:if="{{form.discountType === 1}}">折</text>
+      </view>
+      <text class="preview-condition">{{form.min > 0 ? '满' + form.min + '可用' : '无门槛'}}</text>
+    </view>
+    <view class="preview-right">
+      <text class="preview-name">{{form.name || '优惠券名称'}}</text>
+      <text class="preview-tag">{{typeName}}{{form.tag ? ' · ' + form.tag : ''}}</text>
+    </view>
+  </view>
+
+  <!-- 表单 -->
+  <view class="form-section">
+    <view class="form-card">
+      <!-- 名称 -->
+      <view class="form-item">
+        <text class="form-label">名称</text>
+        <input class="form-input" placeholder="优惠券名称" value="{{form.name}}" bindinput="onInputName" />
+      </view>
+
+      <!-- 类型 -->
+      <view class="form-item" bindtap="onShowTypePicker">
+        <text class="form-label">类型</text>
+        <text class="form-value">{{typeName}}</text>
+        <text class="form-arrow">></text>
+      </view>
+
+      <!-- 描述 -->
+      <view class="form-item">
+        <text class="form-label">描述</text>
+        <input class="form-input" placeholder="优惠券描述" value="{{form.desc}}" bindinput="onInputDesc" />
+      </view>
+
+      <!-- 标签 -->
+      <view class="form-item">
+        <text class="form-label">标签</text>
+        <input class="form-input" placeholder="如：满减" value="{{form.tag}}" bindinput="onInputTag" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 折扣设置 -->
+  <view class="form-section">
+    <view class="section-header">
+      <view class="section-accent"></view>
+      <text class="section-title">折扣设置</text>
+    </view>
+    <view class="form-card">
+      <!-- 折扣类型 -->
+      <view class="form-item" bindtap="onToggleDiscountType">
+        <text class="form-label">折扣类型</text>
+        <text class="form-value">{{form.discountType === 0 ? '固定金额' : '百分比折扣'}}</text>
+        <view class="toggle-switch {{form.discountType === 0 ? 'switch-on' : 'switch-off'}}">
+          <view class="switch-dot"></view>
+        </view>
+      </view>
+
+      <!-- 折扣值 -->
+      <view class="form-item">
+        <text class="form-label">{{form.discountType === 0 ? '优惠金额' : '折扣(减X%)'}}</text>
+        <input class="form-input" type="digit" placeholder="{{form.discountType === 0 ? '输入金额' : '输入百分比'}}" value="{{form.discount}}" bindinput="onInputDiscount" />
+      </view>
+
+      <!-- 最低消费 -->
+      <view class="form-item">
+        <text class="form-label">最低消费</text>
+        <input class="form-input" type="digit" placeholder="0 表示无门槛" value="{{form.min}}" bindinput="onInputMin" />
+      </view>
+
+      <!-- 每人限领 -->
+      <view class="form-item">
+        <text class="form-label">每人限领</text>
+        <input class="form-input" type="number" placeholder="0 表示不限" value="{{form.limit}}" bindinput="onInputLimit" />
+      </view>
+    </view>
+  </view>
+
+  <!-- 发行设置 -->
+  <view class="form-section">
+    <view class="section-header">
+      <view class="section-accent"></view>
+      <text class="section-title">发行设置</text>
+    </view>
+    <view class="form-card">
+      <!-- 发行总量 -->
+      <view class="form-item">
+        <text class="form-label">发行总量</text>
+        <input class="form-input" type="number" placeholder="0 表示不限量" value="{{form.total}}" bindinput="onInputTotal" />
+      </view>
+
+      <!-- 弹窗推荐（仅通用券） -->
+      <view class="form-item" wx:if="{{form.type === 0}}" bindtap="onTogglePopup">
+        <text class="form-label">弹窗推荐</text>
+        <text class="form-value">{{form.popup === 1 ? '已开启' : '已关闭'}}</text>
+        <view class="toggle-switch {{form.popup === 1 ? 'switch-on' : 'switch-off'}}">
+          <view class="switch-dot"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 有效期 -->
+  <view class="form-section">
+    <view class="section-header">
+      <view class="section-accent"></view>
+      <text class="section-title">有效期</text>
+    </view>
+    <view class="form-card">
+      <!-- 有效期类型 -->
+      <view class="form-item" bindtap="onToggleTimeType">
+        <text class="form-label">有效期类型</text>
+        <text class="form-value">{{form.timeType === 0 ? '领取后N天' : '固定日期'}}</text>
+        <view class="toggle-switch {{form.timeType === 0 ? 'switch-on' : 'switch-off'}}">
+          <view class="switch-dot"></view>
+        </view>
+      </view>
+
+      <!-- 领取后N天 -->
+      <view class="form-item" wx:if="{{form.timeType === 0}}">
+        <text class="form-label">有效天数</text>
+        <input class="form-input" type="number" placeholder="领取后有效天数" value="{{form.days}}" bindinput="onInputDays" />
+      </view>
+
+      <!-- 固定日期 -->
+      <block wx:if="{{form.timeType === 1}}">
+        <view class="form-item">
+          <text class="form-label">开始日期</text>
+          <picker mode="date" value="{{form.startDate}}" bindchange="onStartDateChange">
+            <text class="{{form.startDate ? 'form-value' : 'form-placeholder'}}">{{form.startDate || '选择日期'}}</text>
+          </picker>
+        </view>
+        <view class="form-item">
+          <text class="form-label">结束日期</text>
+          <picker mode="date" value="{{form.endDate}}" bindchange="onEndDateChange">
+            <text class="{{form.endDate ? 'form-value' : 'form-placeholder'}}">{{form.endDate || '选择日期'}}</text>
+          </picker>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <!-- 保存按钮 -->
+  <view class="save-bar">
+    <view class="save-btn {{saving ? 'btn-disabled' : ''}}" bindtap="onSave">
+      <text>{{saving ? '保存中...' : '保存'}}</text>
+    </view>
+  </view>
+
+  <!-- 类型选择弹窗 -->
+  <view class="picker-mask" wx:if="{{showTypePicker}}" bindtap="onTypeCancel"></view>
+  <view class="picker-popup" wx:if="{{showTypePicker}}">
+    <picker-view class="picker-view" value="[pickerIndex]" bindchange="onTypeConfirm">
+      <picker-view-column>
+        <view class="picker-item" wx:for="{{typeOptions}}" wx:key="index">{{item}}</view>
+      </picker-view-column>
+    </picker-view>
+  </view>
+</view>
