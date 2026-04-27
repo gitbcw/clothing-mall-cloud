@@ -76,6 +76,33 @@ async function ensureUser(openId) {
     'SELECT * FROM litemall_user WHERE weixin_openid = ? LIMIT 1',
     [openId]
   )
+
+  // ---------- 注册成功：自动发放新人券 (type=1) ----------
+  try {
+    var coupons = await db.query(
+      'SELECT id, days, time_type, start_time, end_time FROM litemall_coupon WHERE type = 1 AND status = 0 AND deleted = 0'
+    )
+    for (var i = 0; i < coupons.length; i++) {
+      var coupon = coupons[i]
+      var startTime = new Date()
+      var endTime = new Date()
+      if (coupon.time_type === 0 && coupon.days > 0) {
+        endTime.setDate(endTime.getDate() + coupon.days)
+      } else if (coupon.time_type === 1 && coupon.start_time) {
+        startTime = new Date(coupon.start_time)
+        endTime = coupon.end_time ? new Date(coupon.end_time) : new Date(startTime.getTime() + 365 * 24 * 3600 * 1000)
+      } else {
+        endTime.setFullYear(endTime.getFullYear() + 1)
+      }
+      await db.query(
+        'INSERT INTO litemall_coupon_user (coupon_id, user_id, status, start_time, end_time, add_time, update_time, deleted) VALUES (?, ?, 0, ?, ?, NOW(), NOW(), 0)',
+        [coupon.id, rows[0].id, startTime, endTime]
+      )
+    }
+  } catch (e) {
+    console.error('register auto coupon error:', e)
+  }
+
   return rows[0] || null
 }
 
