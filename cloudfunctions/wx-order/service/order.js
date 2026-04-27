@@ -6,7 +6,6 @@
  */
 
 const { db, response } = require('layer-base')
-const { getConfig } = require('layer-base').systemConfig
 const { STATUS, orderStatusText, buildHandleOption, orderStatusFilter } = require('../lib/order-util')
 const { calculateFreight } = require('../lib/freight')
 const { checkCoupon, calculateDiscount } = require('../lib/coupon-verify')
@@ -285,19 +284,6 @@ async function submit(data, context) {
     couponPrice = calculateDiscount(coupon, checkedGoodsPrice)
   }
 
-  // 新人首单立减（仅统计有效订单，排除取消和已退款）
-  let newuserDiscount = 0
-  const cancelStatuses = [STATUS.CANCEL, STATUS.AUTO_CANCEL, STATUS.ADMIN_CANCEL, STATUS.REFUND_CONFIRM]
-  const countRows = await db.query(
-    `SELECT COUNT(*) as total FROM litemall_order
-     WHERE user_id = ? AND deleted = 0 AND order_status NOT IN (${cancelStatuses.map(() => '?').join(',')})`,
-    [userId, ...cancelStatuses]
-  )
-  if (countRows[0].total === 0) {
-    const discount = parseFloat(getConfig('litemall_newuser_first_order_discount')) || 0
-    if (discount > 0) newuserDiscount = Math.min(discount, checkedGoodsPrice + freightPrice - couponPrice)
-  }
-
   // 运费
   let freightPrice = 0
   if (dt === 'express') {
@@ -306,7 +292,7 @@ async function submit(data, context) {
   }
 
   // 订单费用
-  const orderTotalPrice = Math.max(0, checkedGoodsPrice + freightPrice - couponPrice - newuserDiscount)
+  const orderTotalPrice = Math.max(0, checkedGoodsPrice + freightPrice - couponPrice)
   const actualPrice = orderTotalPrice
 
   // 生成订单编号
