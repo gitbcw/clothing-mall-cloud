@@ -73,5 +73,11 @@ docker/litemall/
 docker/admin-dist/
 docker/.env
 
+### 构建产物与素材 ###
+*.tar.gz
+*.rar
+icon+watermark/
+qa/
+
 ### 小程序备份 ###
 clothing-mall-wx.bak/
