@@ -10,6 +10,8 @@
 const { db, response } = require('layer-base')
 const { query, execute, getConnection } = db
 
+const ACCESSORY_CATEGORY_CONDITION = `(c.id IS NOT NULL AND (c.name = '饰品' OR c.name LIKE '%首饰%' OR c.keywords LIKE '%饰品%' OR c.keywords LIKE '%首饰%'))`
+
 // snake_case → camelCase 转换
 function toSceneCamel(r) {
   return {
@@ -28,7 +30,14 @@ function toSceneCamel(r) {
 
 async function list() {
   const rows = await db.query(
-    `SELECT s.*, (SELECT COUNT(*) FROM clothing_goods_scene gs WHERE gs.scene_id = s.id) AS goods_count
+    `SELECT s.*, (
+       SELECT COUNT(DISTINCT g.id)
+       FROM clothing_goods_scene gs
+       JOIN litemall_goods g ON g.id = gs.goods_id AND g.deleted = 0
+       LEFT JOIN litemall_category c ON c.id = g.category_id AND c.deleted = 0
+       WHERE gs.scene_id = s.id AND gs.deleted = 0
+         AND NOT (${ACCESSORY_CATEGORY_CONDITION})
+     ) AS goods_count
      FROM clothing_scene s ORDER BY s.sort_order ASC`
   )
   return response.ok({ list: rows.map(toSceneCamel) })
@@ -122,11 +131,14 @@ async function goods(data) {
   if (!sceneId) return response.badArgument()
 
   const rows = await query(
-    `SELECT g.id, g.name, g.pic_url, g.retail_price
+    `SELECT g.id, g.name, g.pic_url, g.retail_price, MAX(gs.add_time) AS latest_add_time
      FROM clothing_goods_scene gs
      JOIN litemall_goods g ON g.id = gs.goods_id
-     WHERE gs.scene_id = ? AND g.deleted = 0
-     ORDER BY gs.add_time DESC`,
+     LEFT JOIN litemall_category c ON c.id = g.category_id AND c.deleted = 0
+     WHERE gs.scene_id = ? AND gs.deleted = 0 AND g.deleted = 0
+       AND NOT (${ACCESSORY_CATEGORY_CONDITION})
+     GROUP BY g.id, g.name, g.pic_url, g.retail_price
+     ORDER BY latest_add_time DESC`,
     [sceneId]
   )
 
@@ -143,23 +155,27 @@ async function goodsUpdate(data) {
   const { sceneId, goodsIds } = data
   if (!sceneId) return response.badArgument()
 
+  // 先获取该场景原来的关联商品ID（用于后续同步 scene_tags）
+  const oldRows = await db.query('SELECT goods_id FROM clothing_goods_scene WHERE scene_id = ? AND deleted = 0', [sceneId])
+  const oldGoodsIds = oldRows.map(r => r.goods_id)
+  const nextGoodsIds = await filterSceneGoodsIds(goodsIds || [])
+
   const conn = await getConnection()
   try {
     await conn.beginTransaction()
 
     await conn.query('DELETE FROM clothing_goods_scene WHERE scene_id = ?', [sceneId])
 
-    if (Array.isArray(goodsIds) && goodsIds.length > 0) {
-      for (const goodsId of goodsIds) {
+    if (nextGoodsIds.length > 0) {
+      for (const goodsId of nextGoodsIds) {
         await conn.query(
-          'INSERT INTO clothing_goods_scene (scene_id, goods_id, add_time) VALUES (?, ?, NOW())',
+          'INSERT IGNORE INTO clothing_goods_scene (scene_id, goods_id, add_time, deleted) VALUES (?, ?, NOW(), 0)',
           [sceneId, goodsId]
         )
       }
     }
 
     await conn.commit()
-    return response.ok()
   } catch (err) {
     await conn.rollback()
     console.error('[admin-clothing] sceneGoodsUpdate error:', err)
@@ -167,6 +183,55 @@ async function goodsUpdate(data) {
   } finally {
     conn.release()
   }
+
+  // 异步同步受影响商品的 scene_tags（不阻塞响应）
+  _syncGoodsSceneTags(oldGoodsIds, nextGoodsIds).catch(() => {})
+
+  return response.ok()
+}
+
+/**
+ * 同步受影响商品的 scene_tags（从关联表反查）
+ * 合并新旧商品ID，逐个重算 scene_tags
+ */
+async function _syncGoodsSceneTags(oldGoodsIds, newGoodsIds) {
+  const allIds = [...new Set([...oldGoodsIds, ...newGoodsIds])].filter(Boolean)
+  if (allIds.length === 0) return
+
+  for (const goodsId of allIds) {
+    try {
+      // 查该商品关联的所有场景名称
+      const rows = await db.query(
+        `SELECT cs.name FROM clothing_goods_scene cgs
+         JOIN clothing_scene cs ON cs.id = cgs.scene_id AND cs.deleted = 0
+         WHERE cgs.goods_id = ? AND cgs.deleted = 0`,
+        [goodsId]
+      )
+      const tags = rows.map(r => r.name)
+      await db.query(
+        'UPDATE litemall_goods SET scene_tags = ? WHERE id = ?',
+        [tags.length > 0 ? JSON.stringify(tags) : null, goodsId]
+      )
+    } catch (e) {
+      console.error(`[scene] syncGoodsSceneTags goodsId=${goodsId} error:`, e)
+    }
+  }
+}
+
+async function filterSceneGoodsIds(goodsIds) {
+  const ids = [...new Set((Array.isArray(goodsIds) ? goodsIds : []).map(id => Number(id)).filter(Boolean))]
+  if (ids.length === 0) return []
+
+  const rows = await db.query(
+    `SELECT g.id
+     FROM litemall_goods g
+     LEFT JOIN litemall_category c ON c.id = g.category_id AND c.deleted = 0
+     WHERE g.id IN (${ids.map(() => '?').join(',')})
+       AND g.deleted = 0
+       AND NOT (${ACCESSORY_CATEGORY_CONDITION})`,
+    ids
+  )
+  return rows.map(r => r.id)
 }
 
 module.exports = { list, read, create, update, delete: deleteFn, enable, goods, goodsUpdate }

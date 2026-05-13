@@ -8,6 +8,7 @@ const { db, response, paginate } = require('layer-base')
 const { query, execute } = db
 
 const BIT_FIELDS = ['is_new', 'is_hot', 'is_on_sale', 'is_special_price', 'deleted']
+const ACCESSORY_CATEGORY_CONDITION = `(c.id IS NOT NULL AND (c.name = '饰品' OR c.name LIKE '%首饰%' OR c.keywords LIKE '%饰品%' OR c.keywords LIKE '%首饰%'))`
 
 function normalizeBitFields(row) {
   for (const key of BIT_FIELDS) {
@@ -38,6 +39,7 @@ async function list(data) {
   if (data.goodsSn) { where.push('g.goods_sn LIKE ?'); params.push(`%${data.goodsSn}%`) }
   if (data.name) { where.push('g.name LIKE ?'); params.push(`%${data.name}%`) }
   if (data.status !== undefined && data.status !== '') { where.push('g.status = ?'); params.push(data.status) }
+  if (data.is_special_price) { where.push('g.is_special_price = 1') }
   where.push('g.deleted = 0')
   const whereClause = where.join(' AND ')
 
@@ -137,15 +139,16 @@ async function create(data) {
   const retailPrice = goods.retail_price || 0
 
   const result = await execute(
-    'INSERT INTO litemall_goods (name, goods_sn, cat_id, brand_id, gallery, pic_url, detail, keywords, brief, status, is_new, is_hot, sort_order, price, retail_price, special_price, is_special_price, scene_tags, goods_params, add_time, update_time, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 0)',
+    'INSERT INTO litemall_goods (name, goods_sn, category_id, brand_id, gallery, pic_url, detail, keywords, brief, status, is_new, is_hot, sort_order, retail_price, counter_price, special_price, is_special_price, scene_tags, goods_params, add_time, update_time, deleted) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 0)',
     [
-      goods.name, goods.goods_sn || '', goods.cat_id || 0, goods.brand_id || 0,
+      goods.name, goods.goods_sn || '', goods.category_id || 0, goods.brand_id || 0,
       JSON.stringify(goods.gallery || []), goods.pic_url || '', goods.detail || '',
       goods.keywords || '', goods.brief || '',
       status,
       goods.is_new ? 1 : 0, goods.is_hot ? 1 : 0,
-      goods.sort_order || 100, goods.price || 0,
+      goods.sort_order || 100,
       retailPrice,
+      goods.counter_price || null,
       goods.special_price || null, goods.special_price ? 1 : 0,
       goods.scene_tags ? JSON.stringify(goods.scene_tags) : null,
       goods.goods_params ? JSON.stringify(goods.goods_params) : null,
@@ -156,6 +159,7 @@ async function create(data) {
   await _saveSpecs(goodsId, specifications)
   await _saveAttrs(goodsId, attributes)
   await _saveProducts(goodsId, products)
+  await _syncSceneTags(goodsId, goods.scene_tags)
 
   return response.ok({ id: goodsId })
 }
@@ -171,7 +175,7 @@ async function update(data) {
   const params = []
   if (goods.name !== undefined) { sets.push('name = ?'); params.push(goods.name) }
   if (goods.goods_sn !== undefined) { sets.push('goods_sn = ?'); params.push(goods.goods_sn) }
-  if (goods.cat_id !== undefined) { sets.push('cat_id = ?'); params.push(goods.cat_id) }
+  if (goods.category_id !== undefined) { sets.push('category_id = ?'); params.push(goods.category_id) }
   if (goods.brand_id !== undefined) { sets.push('brand_id = ?'); params.push(goods.brand_id) }
   if (goods.gallery !== undefined) { sets.push('gallery = ?'); params.push(JSON.stringify(goods.gallery)) }
   if (goods.pic_url !== undefined) { sets.push('pic_url = ?'); params.push(goods.pic_url) }
@@ -183,8 +187,8 @@ async function update(data) {
   if (goods.is_new !== undefined) { sets.push('is_new = ?'); params.push(goods.is_new ? 1 : 0) }
   if (goods.is_hot !== undefined) { sets.push('is_hot = ?'); params.push(goods.is_hot ? 1 : 0) }
   if (goods.sort_order !== undefined) { sets.push('sort_order = ?'); params.push(goods.sort_order) }
-  if (goods.price !== undefined) { sets.push('price = ?'); params.push(goods.price) }
   if (goods.retail_price !== undefined) { sets.push('retail_price = ?'); params.push(goods.retail_price) }
+  if (goods.counter_price !== undefined) { sets.push('counter_price = ?'); params.push(goods.counter_price) }
   if (goods.special_price !== undefined) { sets.push('special_price = ?'); params.push(goods.special_price) }
   if (goods.is_special_price !== undefined) { sets.push('is_special_price = ?'); params.push(goods.is_special_price ? 1 : 0) }
   if (goods.scene_tags !== undefined) { sets.push('scene_tags = ?'); params.push(JSON.stringify(goods.scene_tags)) }
@@ -198,6 +202,14 @@ async function update(data) {
   if (specifications) await _saveSpecs(goods.id, specifications)
   if (attributes) await _saveAttrs(goods.id, attributes)
   if (products) await _saveProducts(goods.id, products)
+  if (goods.scene_tags !== undefined || goods.category_id !== undefined) {
+    let sceneTags = goods.scene_tags
+    if (sceneTags === undefined) {
+      const sceneRows = await query('SELECT scene_tags FROM litemall_goods WHERE id = ? AND deleted = 0', [goods.id])
+      sceneTags = parseSceneTags(sceneRows[0] ? sceneRows[0].scene_tags : null)
+    }
+    await _syncSceneTags(goods.id, sceneTags)
+  }
 
   return response.ok()
 }
@@ -242,6 +254,28 @@ async function unpublish(data) {
  */
 async function unpublishAll() {
   await execute("UPDATE litemall_goods SET status = 'pending', update_time = NOW() WHERE deleted = 0 AND status = 'published'")
+  return response.ok()
+}
+
+/**
+ * 批量设置特价
+ */
+async function setSpecialPrice(data) {
+  const { ids, specialPrice } = data
+  if (!Array.isArray(ids) || ids.length === 0) return response.badArgument()
+
+  const placeholders = ids.map(() => '?').join(',')
+  if (specialPrice !== undefined && specialPrice !== null) {
+    await execute(
+      `UPDATE litemall_goods SET is_special_price = 1, special_price = ?, update_time = NOW() WHERE id IN (${placeholders}) AND deleted = 0`,
+      [specialPrice, ...ids]
+    )
+  } else {
+    await execute(
+      `UPDATE litemall_goods SET is_special_price = 1, update_time = NOW() WHERE id IN (${placeholders}) AND deleted = 0`,
+      ids
+    )
+  }
   return response.ok()
 }
 
@@ -295,4 +329,60 @@ async function _saveProducts(goodsId, products) {
   }
 }
 
-module.exports = { list, catAndBrand, detail, findBySn, create, update, delete: deleteFn, publish, unpublish, unpublishAll, cancelSpecialPrice }
+/**
+ * 同步场景标签到 clothing_goods_scene 关联表
+ * sceneTags: 场景名称数组，如 ['日常通勤', '约会聚餐']
+ */
+async function _syncSceneTags(goodsId, sceneTags) {
+  // 先清除该商品的所有场景关联
+  await execute('DELETE FROM clothing_goods_scene WHERE goods_id = ?', [goodsId])
+
+  if (await _isAccessoryGoods(goodsId)) {
+    await execute('UPDATE litemall_goods SET scene_tags = NULL WHERE id = ?', [goodsId])
+    return
+  }
+
+  // 没有 sceneTags 则仅清除
+  if (!sceneTags || !Array.isArray(sceneTags) || sceneTags.length === 0) return
+
+  // 查找场景名称对应的 scene_id
+  const names = [...new Set(sceneTags.map(tag => String(tag || '').trim()).filter(Boolean))]
+  if (names.length === 0) return
+
+  const placeholders = names.map(() => '?').join(',')
+  const scenes = await db.query(
+    `SELECT id, name FROM clothing_scene WHERE name IN (${placeholders}) AND deleted = 0`,
+    names
+  )
+
+  if (scenes.length === 0) return
+
+  // 批量插入关联
+  const values = scenes.map(s => `(${goodsId}, ${s.id}, NOW(), 0)`).join(',')
+  await execute(`INSERT IGNORE INTO clothing_goods_scene (goods_id, scene_id, add_time, deleted) VALUES ${values}`)
+}
+
+async function _isAccessoryGoods(goodsId) {
+  const rows = await query(
+    `SELECT g.id
+     FROM litemall_goods g
+     JOIN litemall_category c ON c.id = g.category_id AND c.deleted = 0
+     WHERE g.id = ? AND ${ACCESSORY_CATEGORY_CONDITION}
+     LIMIT 1`,
+    [goodsId]
+  )
+  return rows.length > 0
+}
+
+function parseSceneTags(value) {
+  if (Array.isArray(value)) return value
+  if (!value) return []
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed : []
+  } catch (e) {
+    return []
+  }
+}
+
+module.exports = { list, catAndBrand, detail, findBySn, create, update, delete: deleteFn, publish, unpublish, unpublishAll, cancelSpecialPrice, setSpecialPrice }

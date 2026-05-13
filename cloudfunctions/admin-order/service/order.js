@@ -23,13 +23,13 @@ async function list(data) {
 
   if (data.nickname) { where.push('(u.nickname LIKE ? OR u.username LIKE ?)'); params.push(`%${data.nickname}%`, `%${data.nickname}%`) }
   if (data.consignee) { where.push('o.consignee LIKE ?'); params.push(`%${data.consignee}%`) }
-  if (data.orderSn) { where.push('o.order_sn = ?'); params.push(data.orderSn) }
+  if (data.order_sn) { where.push('o.order_sn = ?'); params.push(data.order_sn) }
   if (data.start && data.end) { where.push('o.add_time BETWEEN ? AND ?'); params.push(data.start, data.end) }
-  if (data.deliveryType) { where.push('o.delivery_type = ?'); params.push(data.deliveryType) }
-  if (Array.isArray(data.orderStatusArray) && data.orderStatusArray.length > 0) {
-    const placeholders = data.orderStatusArray.map(() => '?').join(',')
+  if (data.delivery_type) { where.push('o.delivery_type = ?'); params.push(data.delivery_type) }
+  if (Array.isArray(data.order_status_array) && data.order_status_array.length > 0) {
+    const placeholders = data.order_status_array.map(() => '?').join(',')
     where.push(`o.order_status IN (${placeholders})`)
-    params.push(...data.orderStatusArray)
+    params.push(...data.order_status_array)
   }
 
   const whereClause = where.join(' AND ')
@@ -313,9 +313,10 @@ async function pay(data) {
     return response.fail(403, '订单状态不允许手动收款')
   }
 
+  const nextStatus = rows[0].delivery_type === 'pickup' ? STATUS.VERIFY_PENDING : STATUS.PAY
   await execute(
     'UPDATE litemall_order SET order_status = ?, pay_time = NOW(), pay_id = "admin-manual" WHERE id = ?',
-    [STATUS.PAY, orderId]
+    [nextStatus, orderId]
   )
   return response.ok()
 }
@@ -330,7 +331,7 @@ async function verify(data) {
   if (rows.length === 0) return response.badArgument()
 
   const order = rows[0]
-  if (order.order_status !== STATUS.VERIFY_PENDING) {
+  if (order.order_status !== STATUS.VERIFY_READY) {
     return response.fail(403, '订单状态不允许核销')
   }
 
@@ -346,4 +347,29 @@ async function verify(data) {
   return response.ok()
 }
 
-module.exports = { list, detail, ship, refund, reply, delete: deleteFn, overview, channel, express, snapshot, snapshotBySn, pay, verify }
+// ==================== 确认备货（自提订单） ====================
+
+async function prepare(data) {
+  const { orderId } = data
+  if (!orderId) return response.badArgument()
+
+  const rows = await query('SELECT * FROM litemall_order WHERE id = ? AND deleted = 0', [orderId])
+  if (rows.length === 0) return response.badArgument()
+
+  const order = rows[0]
+  if (order.order_status !== STATUS.VERIFY_PENDING) {
+    return response.fail(403, '订单状态不允许确认备货')
+  }
+  if (order.delivery_type !== 'pickup') {
+    return response.fail(403, '非自提订单')
+  }
+
+  const pickupCode = String(100000 + Math.floor(Math.random() * 900000))
+  await execute(
+    'UPDATE litemall_order SET order_status = ?, pickup_code = ?, update_time = NOW() WHERE id = ?',
+    [STATUS.VERIFY_READY, pickupCode, orderId]
+  )
+  return response.ok({ pickupCode })
+}
+
+module.exports = { list, detail, ship, refund, reply, delete: deleteFn, overview, channel, express, snapshot, snapshotBySn, pay, verify, prepare }

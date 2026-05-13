@@ -21,13 +21,13 @@ async function list(data) {
   const where = ['deleted = 0']
   const params = []
 
-  if (data.orderId) { where.push('order_id = ?'); params.push(data.orderId) }
-  if (data.aftersaleSn) { where.push('aftersale_sn = ?'); params.push(data.aftersaleSn) }
+  if (data.order_id) { where.push('order_id = ?'); params.push(data.order_id) }
+  if (data.aftersale_sn) { where.push('aftersale_sn = ?'); params.push(data.aftersale_sn) }
   if (data.status !== undefined) { where.push('status = ?'); params.push(data.status) }
-  if (Array.isArray(data.statusArray) && data.statusArray.length > 0) {
-    const placeholders = data.statusArray.map(() => '?').join(',')
+  if (Array.isArray(data.status_array) && data.status_array.length > 0) {
+    const placeholders = data.status_array.map(() => '?').join(',')
     where.push(`status IN (${placeholders})`)
-    params.push(...data.statusArray)
+    params.push(...data.status_array)
   }
 
   const whereClause = where.join(' AND ')

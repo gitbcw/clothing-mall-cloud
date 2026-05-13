@@ -11,10 +11,12 @@ const { managerAuth } = require('layer-auth')
 
 const {
   category, list, detail, edit, publish, unpublish, batchDelete, unpublishAll, create,
+  setSpecialPrice, cancelSpecialPrice,
 } = require('./service/goods')
 
 const routes = {
   category, list, detail, edit, publish, unpublish, batchDelete, unpublishAll, create,
+  setSpecialPrice, cancelSpecialPrice,
 }
 
 exports.main = async (event, context) => {

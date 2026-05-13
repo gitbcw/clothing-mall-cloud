@@ -14,6 +14,36 @@
 const { db, response } = require('layer-base')
 const { adminAuth } = require('layer-auth')
 
+function isValidMobile(mobile) {
+  return /^1[3-9]\d{9}$/.test(mobile || '')
+}
+
+function isValidCaptcha(code) {
+  return String(code || '') === '123456'
+}
+
+async function assignRegisterCoupons(userId) {
+  const coupons = await db.query(
+    'SELECT id, days, time_type, start_time, end_time FROM litemall_coupon WHERE type = 1 AND status = 0 AND deleted = 0'
+  )
+  for (const coupon of coupons) {
+    let startTime = new Date()
+    let endTime = new Date()
+    if (coupon.time_type === 0 && coupon.days > 0) {
+      endTime.setDate(endTime.getDate() + coupon.days)
+    } else if (coupon.time_type === 1 && coupon.start_time) {
+      startTime = new Date(coupon.start_time)
+      endTime = coupon.end_time ? new Date(coupon.end_time) : new Date(startTime.getTime() + 365 * 24 * 3600 * 1000)
+    } else {
+      endTime.setFullYear(endTime.getFullYear() + 1)
+    }
+    await db.query(
+      'INSERT INTO litemall_coupon_user (coupon_id, user_id, status, start_time, end_time, add_time, update_time, deleted) VALUES (?, ?, 0, ?, ?, NOW(), NOW(), 0)',
+      [coupon.id, userId, startTime, endTime]
+    )
+  }
+}
+
 // ==================== OPENID 获取 ====================
 
 /**
@@ -64,9 +94,9 @@ async function ensureUser(openId) {
   await db.query(
     `INSERT INTO litemall_user
       (username, password, gender, birthday, last_login_time, last_login_ip,
-       user_level, nickname, mobile, avatar, weixin_openid, session_key,
+       user_level, nickname, mobile, avatar, weixin_openid, session_key, role,
        status, add_time, update_time, deleted)
-     VALUES (?, '', 0, null, ?, '', 0, '微信用户', '', '', ?, '', 0, ?, ?, 0)`,
+     VALUES (?, '', 0, null, ?, '', 0, '微信用户', '', '', ?, '', 'owner', 0, ?, ?, 0)`,
     [
       `wx_${openId.slice(0, 16)}`,
       now, openId, now, now,
@@ -79,26 +109,7 @@ async function ensureUser(openId) {
 
   // ---------- 注册成功：自动发放新人券 (type=1) ----------
   try {
-    var coupons = await db.query(
-      'SELECT id, days, time_type, start_time, end_time FROM litemall_coupon WHERE type = 1 AND status = 0 AND deleted = 0'
-    )
-    for (var i = 0; i < coupons.length; i++) {
-      var coupon = coupons[i]
-      var startTime = new Date()
-      var endTime = new Date()
-      if (coupon.time_type === 0 && coupon.days > 0) {
-        endTime.setDate(endTime.getDate() + coupon.days)
-      } else if (coupon.time_type === 1 && coupon.start_time) {
-        startTime = new Date(coupon.start_time)
-        endTime = coupon.end_time ? new Date(coupon.end_time) : new Date(startTime.getTime() + 365 * 24 * 3600 * 1000)
-      } else {
-        endTime.setFullYear(endTime.getFullYear() + 1)
-      }
-      await db.query(
-        'INSERT INTO litemall_coupon_user (coupon_id, user_id, status, start_time, end_time, add_time, update_time, deleted) VALUES (?, ?, 0, ?, ?, NOW(), NOW(), 0)',
-        [coupon.id, rows[0].id, startTime, endTime]
-      )
-    }
+    await assignRegisterCoupons(rows[0].id)
   } catch (e) {
     console.error('register auto coupon error:', e)
   }
@@ -138,6 +149,93 @@ async function authenticate(event, context) {
 // ==================== 路由注册 ====================
 
 const routes = {
+  regCaptcha: async (data) => {
+    const { mobile } = data
+    if (!mobile) return response.badArgument()
+    if (!isValidMobile(mobile)) return response.badArgumentValue()
+
+    return response.ok({ code: '123456' })
+  },
+
+  register: async (data, context) => {
+    const { username, password, mobile, code } = data
+    if (!username || !password || !mobile || !code) return response.badArgument()
+    if (!isValidMobile(mobile)) return response.fail(705, '手机号格式不正确')
+    if (!isValidCaptcha(code)) return response.fail(707, '验证码错误')
+
+    const [nameRows, mobileRows] = await Promise.all([
+      db.query('SELECT id FROM litemall_user WHERE username = ? AND deleted = 0 LIMIT 1', [username]),
+      db.query('SELECT id FROM litemall_user WHERE mobile = ? AND deleted = 0 LIMIT 1', [mobile]),
+    ])
+    if (nameRows.length > 0) return response.fail(703, '用户名已注册')
+    if (mobileRows.length > 0) return response.fail(704, '手机号已注册')
+
+    const bcrypt = require('bcryptjs')
+    const encodedPassword = bcrypt.hashSync(password, 10)
+    const openId = getOpenId(context) || ''
+    await db.query(
+      `INSERT INTO litemall_user
+        (username, password, gender, birthday, last_login_time, last_login_ip,
+         user_level, nickname, mobile, avatar, weixin_openid, session_key, role,
+         status, add_time, update_time, deleted)
+       VALUES (?, ?, 0, null, NOW(), '', 0, ?, ?, ?, ?, '', 'owner', 0, NOW(), NOW(), 0)`,
+      [
+        username,
+        encodedPassword,
+        username,
+        mobile,
+        'https://yanxuan.nosdn.127.net/80841d741d7fa3073e0ae27bf487339f.jpg',
+        openId,
+      ]
+    )
+
+    const rows = await db.query(
+      'SELECT id, username, nickname, avatar, gender, mobile FROM litemall_user WHERE username = ? AND deleted = 0 LIMIT 1',
+      [username]
+    )
+    const user = rows[0]
+    if (user) {
+      try { await assignRegisterCoupons(user.id) } catch (e) { console.error('register auto coupon error:', e) }
+    }
+
+    return response.ok({
+      token: '',
+      userInfo: {
+        nickName: user ? user.nickname : username,
+        avatarUrl: user ? user.avatar : '',
+        gender: user ? user.gender : 0,
+        mobile,
+      },
+    })
+  },
+
+  reset: async (data) => {
+    const { mobile, code, password } = data
+    if (!mobile || !code || !password) return response.badArgument()
+    if (!isValidMobile(mobile)) return response.badArgumentValue()
+    if (!isValidCaptcha(code)) return response.fail(707, '验证码错误')
+
+    const rows = await db.query(
+      'SELECT id FROM litemall_user WHERE mobile = ? AND deleted = 0 LIMIT 2',
+      [mobile]
+    )
+    if (rows.length === 0) return response.fail(708, '手机号未注册')
+    if (rows.length > 1) return response.serious()
+
+    const bcrypt = require('bcryptjs')
+    const encodedPassword = bcrypt.hashSync(password, 10)
+    const result = await db.query(
+      'UPDATE litemall_user SET password = ?, update_time = NOW() WHERE id = ?',
+      [encodedPassword, rows[0].id]
+    )
+    if (result.affectedRows === 0) return response.updatedDataFailed()
+    return response.ok()
+  },
+
+  loginByPhone: async () => {
+    return response.fail(503, '手机号一键登录暂未支持，请使用手机号绑定或账号登录')
+  },
+
   // 微信静默登录（小程序 onLaunch 调用）
   loginByWeixin: async (data, context) => {
     const userId = context._userId

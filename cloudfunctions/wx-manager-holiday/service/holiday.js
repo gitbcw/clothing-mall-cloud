@@ -1,5 +1,6 @@
 /**
- * admin-clothing/service/holiday.js — 节日活动管理
+ * wx-manager-holiday/service/holiday.js — 节日活动管理
+ * 复制自 admin-clothing/service/holiday.js
  */
 const { db, response } = require('layer-base')
 const { query, execute } = db

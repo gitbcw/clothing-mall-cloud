@@ -47,7 +47,7 @@ function toOrderDetailCamel(r) {
 
 // ==================== Tab 状态映射 ====================
 
-const PENDING_STATUSES = [STATUS.PAY, STATUS.VERIFY_PENDING]
+const PENDING_STATUSES = [STATUS.PAY, STATUS.VERIFY_PENDING, STATUS.VERIFY_READY]
 const AFTERSALE_PENDING_STATUSES = [AS_STATUS.REQUEST, AS_STATUS.RECEPT]
 const AFTERSALE_DONE_STATUSES = [AS_STATUS.REJECT, AS_STATUS.CANCEL, AS_STATUS.COMPLETED]
 const COMPLETED_STATUSES = [
@@ -353,7 +353,7 @@ async function verify(data) {
   if (rows.length === 0) return response.badArgument()
 
   const order = rows[0]
-  if (order.order_status !== STATUS.VERIFY_PENDING) {
+  if (order.order_status !== STATUS.VERIFY_READY) {
     return response.fail(403, '订单状态不允许核销')
   }
 
@@ -367,6 +367,35 @@ async function verify(data) {
   )
 
   return response.ok()
+}
+
+// ==================== 确认备货 ====================
+
+async function prepare(data) {
+  const { orderId } = data
+  if (!orderId) return response.badArgument()
+
+  const rows = await db.query(
+    `SELECT * FROM litemall_order WHERE id = ? AND deleted = 0 LIMIT 1`,
+    [orderId]
+  )
+  if (rows.length === 0) return response.badArgument()
+
+  const order = rows[0]
+  if (order.order_status !== STATUS.VERIFY_PENDING) {
+    return response.fail(403, '订单状态不允许确认备货')
+  }
+  if (order.delivery_type !== 'pickup') {
+    return response.fail(403, '非自提订单')
+  }
+
+  const pickupCode = String(100000 + Math.floor(Math.random() * 900000))
+  await db.query(
+    `UPDATE litemall_order SET order_status = ?, pickup_code = ?, update_time = NOW() WHERE id = ?`,
+    [STATUS.VERIFY_READY, pickupCode, orderId]
+  )
+
+  return response.ok({ pickupCode })
 }
 
 // ==================== 统计数据 ====================
@@ -430,5 +459,5 @@ async function rollbackStock(conn, orderId) {
 }
 
 module.exports = {
-  list, detail, ship, cancel, refundAgree, refundReject, verify, stats, shippers,
+  list, detail, ship, cancel, refundAgree, refundReject, verify, stats, shippers, prepare,
 }

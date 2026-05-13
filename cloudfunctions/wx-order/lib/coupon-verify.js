@@ -46,8 +46,8 @@ async function checkCoupon(userId, couponId, userCouponId, checkedGoodsPrice) {
     return null
   }
 
-  // 生日券验证（type=2）
-  if (coupon.type === 2) {
+  // 生日券验证（type=4）
+  if (coupon.type === 4) {
     const userRows = await db.query(`SELECT birthday FROM litemall_user WHERE id = ? LIMIT 1`, [userId])
     const user = userRows[0]
     if (!user || !user.birthday) return null
@@ -57,6 +57,17 @@ async function checkCoupon(userId, couponId, userCouponId, checkedGoodsPrice) {
     const sevenDaysAfter = new Date(thisYearBirthday)
     sevenDaysAfter.setDate(sevenDaysAfter.getDate() + 6)
     if (today < thisYearBirthday || today > sevenDaysAfter) return null
+  }
+
+  // 新人/首单券验证（type=1 注册自动发放，type=3 弹窗领取）
+  if (coupon.type === 1 || coupon.type === 3) {
+    const cancelStatuses = [102, 103, 104, 203]
+    const placeholders = cancelStatuses.map(() => '?').join(',')
+    const orderCountRows = await db.query(
+      `SELECT COUNT(*) as total FROM litemall_order WHERE user_id = ? AND deleted = 0 AND order_status NOT IN (${placeholders})`,
+      [userId, ...cancelStatuses]
+    )
+    if (orderCountRows[0].total > 0) return null
   }
 
   // 检查最低消费

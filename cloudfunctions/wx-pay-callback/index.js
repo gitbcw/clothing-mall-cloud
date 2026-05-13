@@ -29,18 +29,50 @@ exports.main = async (event, context) => {
         return { errcode: 0, errmsg: 'SUCCESS' }
       }
 
-      // 按 order_sn 查找未支付订单
+      // 按 order_sn 查找订单，重复回调需要幂等处理
       const rows = await db.query(
-        `SELECT * FROM litemall_order WHERE order_sn = ? AND order_status = ? AND deleted = 0 LIMIT 1`,
-        [out_trade_no, STATUS.CREATE]
+        `SELECT * FROM litemall_order WHERE order_sn = ? AND deleted = 0 LIMIT 1`,
+        [out_trade_no]
       )
 
       if (rows.length === 0) {
-        console.warn('[wx-pay-callback] order not found or already paid:', out_trade_no)
+        console.warn('[wx-pay-callback] order not found:', out_trade_no)
         return { errcode: 0, errmsg: 'SUCCESS' }
       }
 
       const order = rows[0]
+      const paidStatuses = [STATUS.PAY, STATUS.VERIFY_PENDING]
+      if (paidStatuses.includes(order.order_status)) {
+        console.info('[wx-pay-callback] duplicate paid callback ignored:', {
+          orderId: order.id,
+          orderSn: out_trade_no,
+          status: order.order_status,
+          transactionId: transaction_id || '',
+        })
+        return { errcode: 0, errmsg: 'SUCCESS' }
+      }
+
+      if (order.order_status !== STATUS.CREATE) {
+        console.warn('[wx-pay-callback] order not payable:', {
+          orderId: order.id,
+          orderSn: out_trade_no,
+          status: order.order_status,
+        })
+        return { errcode: 0, errmsg: 'SUCCESS' }
+      }
+
+      const paidFee = parseInt(total_fee, 10)
+      const expectedFee = Math.round(parseFloat(order.actual_price) * 100)
+      if (!Number.isFinite(paidFee) || paidFee !== expectedFee) {
+        console.error('[wx-pay-callback] amount mismatch:', {
+          orderId: order.id,
+          orderSn: out_trade_no,
+          paidFee,
+          expectedFee,
+        })
+        return { errcode: 0, errmsg: 'SUCCESS' }
+      }
+
       const nextStatus = order.delivery_type === 'pickup'
         ? STATUS.VERIFY_PENDING
         : STATUS.PAY

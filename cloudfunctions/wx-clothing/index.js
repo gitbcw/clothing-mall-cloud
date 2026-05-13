@@ -26,13 +26,17 @@ const {
   memberInfo, memberBindGuide,
 } = require('./service/member')
 
+async function userLevels() {
+  return response.ok([])
+}
+
 const routes = {
   // SKU
   skuList, skuSizes, skuDetail, skuQuery, skuCheckStock,
   // 门店
   storeList, storeDetail, storeNearest,
   // 会员
-  memberInfo, memberBindGuide,
+  memberInfo, memberBindGuide, userLevels,
 }
 
 // 需要登录的接口
@@ -50,6 +54,7 @@ const ACTION_ERRORS = {
   storeNearest: '附近门店加载失败',
   memberInfo: '会员信息加载失败',
   memberBindGuide: '绑定导购失败，请重试',
+  userLevels: '会员等级加载失败',
 }
 
 exports.main = async (event, context) => {

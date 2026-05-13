@@ -17,10 +17,11 @@ const STATUS = {
   SHIP: 301,           // 已发货，待收货
   CONFIRM: 401,        // 用户确认收货
   AUTO_CONFIRM: 402,   // 系统自动确认收货
-  VERIFY_PENDING: 501, // 待核销（自提）
+  VERIFY_PENDING: 501, // 备货中（自提）
   VERIFIED: 502,       // 已核销
   VERIFY_EXPIRED: 503, // 核销过期
   VERIFY_REFUND: 504,  // 核销退款
+  VERIFY_READY: 505,   // 已备货，待取件
 }
 
 /**
@@ -37,10 +38,11 @@ function orderStatusText(order) {
     [STATUS.SHIP]: '已发货',
     [STATUS.CONFIRM]: '已收货',
     [STATUS.AUTO_CONFIRM]: '已收货(系统)',
-    [STATUS.VERIFY_PENDING]: '待核销',
+    [STATUS.VERIFY_PENDING]: '备货中',
     [STATUS.VERIFIED]: '已核销',
     [STATUS.VERIFY_EXPIRED]: '核销过期',
     [STATUS.VERIFY_REFUND]: '核销退款',
+    [STATUS.VERIFY_READY]: '已备货',
   }
   return map[order.order_status] || '未知状态'
 }
@@ -74,6 +76,8 @@ function buildHandleOption(order) {
     option.aftersale = true
   } else if (s === STATUS.VERIFY_PENDING) {
     option.refund = true
+  } else if (s === STATUS.VERIFY_READY) {
+    option.refund = true
   } else if (s === STATUS.VERIFIED) {
     option.delete = true
     option.rebuy = true
@@ -97,14 +101,14 @@ function orderStatusFilter(showType) {
     return [
       STATUS.CREATE, STATUS.PAY, STATUS.REFUND, STATUS.REFUND_CONFIRM,
       STATUS.SHIP, STATUS.CONFIRM, STATUS.AUTO_CONFIRM,
-      STATUS.VERIFY_PENDING, STATUS.VERIFIED, STATUS.VERIFY_EXPIRED, STATUS.VERIFY_REFUND,
+      STATUS.VERIFY_PENDING, STATUS.VERIFY_READY, STATUS.VERIFIED, STATUS.VERIFY_EXPIRED, STATUS.VERIFY_REFUND,
     ]
   }
 
   switch (showType) {
     case 1: return [STATUS.CREATE]                   // 待付款
     case 2: return [STATUS.PAY]                       // 待发货
-    case 3: return [STATUS.SHIP, STATUS.VERIFY_PENDING] // 待收货/核销
+    case 3: return [STATUS.SHIP, STATUS.VERIFY_READY] // 待收货/取件
     case 4: return [STATUS.CONFIRM, STATUS.AUTO_CONFIRM, STATUS.VERIFIED] // 已完成
     default: return null
   }

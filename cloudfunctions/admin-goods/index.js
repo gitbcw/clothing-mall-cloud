@@ -9,14 +9,14 @@ const { loadConfigs, getConfig } = require('layer-base').systemConfig
 const { adminAuth } = require('layer-auth')
 const { recognizeTag: aiRecognizeTag, recognizeImage: aiRecognizeImage } = require('layer-wechat/lib/ai')
 
-const { list, catAndBrand, detail, findBySn, create, update, delete: goodsDelete, publish, unpublish, unpublishAll, cancelSpecialPrice } = require('./service/goods')
+const { list, catAndBrand, detail, findBySn, create, update, delete: goodsDelete, publish, unpublish, unpublishAll, cancelSpecialPrice, setSpecialPrice } = require('./service/goods')
 const { list: brandList, create: brandCreate, read: brandRead, update: brandUpdate, delete: brandDelete } = require('./service/brand')
 const { list: categoryList, l1: categoryL1, read: categoryRead, create: categoryCreate, update: categoryUpdate, delete: categoryDelete } = require('./service/category')
 const { list: shipperList, create: shipperCreate, read: shipperRead, update: shipperUpdate, delete: shipperDelete, toggle: shipperToggle } = require('./service/shipper')
 
 // ==================== AI 识别 ====================
 
-const COS_BASE = 'https://636c-clo-test-4g8ukdond34672de-1258700476.tcb.qcloud.la/'
+const COS_BASE = 'https://636c-cloudbase-d3g1zmq7r388144eb-1427677265.tcb.qcloud.la/'
 
 function getFileUrl(fileID) {
   if (!fileID) throw new Error('文件路径为空')
@@ -31,13 +31,14 @@ function getFileUrl(fileID) {
 async function recognizeImage(data) {
   const enabled = getConfig('litemall_ai_enabled')
   if (enabled !== 'true' && enabled !== '1') return response.fail(501, 'AI 识别功能未启用')
-  if (!data.fileID) return response.badArgument()
+  const fileID = data.fileID || data.file_i_d || data.file_id
+  if (!fileID) return response.badArgument()
 
   const [catRows, sceneRows] = await Promise.all([
     db.query('SELECT name FROM litemall_category WHERE level = ? AND deleted = 0 ORDER BY sort_order', ['L1']),
     db.query('SELECT name FROM clothing_scene WHERE enabled = 1 AND deleted = 0 ORDER BY sort_order'),
   ])
-  const imageUrl = getFileUrl(data.fileID)
+  const imageUrl = getFileUrl(fileID)
   const result = await aiRecognizeImage(imageUrl, catRows.map(r => r.name), sceneRows.map(r => r.name))
   return response.ok(result)
 }
@@ -45,9 +46,10 @@ async function recognizeImage(data) {
 async function recognizeTag(data) {
   const enabled = getConfig('litemall_ai_enabled')
   if (enabled !== 'true' && enabled !== '1') return response.fail(501, 'AI 识别功能未启用')
-  if (!data.fileID) return response.badArgument()
+  const fileID = data.fileID || data.file_i_d || data.file_id
+  if (!fileID) return response.badArgument()
 
-  const imageUrl = getFileUrl(data.fileID)
+  const imageUrl = getFileUrl(fileID)
   const result = await aiRecognizeTag(imageUrl)
   return response.ok(result)
 }
@@ -77,6 +79,7 @@ const routes = {
   goodsUnpublish:   { handler: unpublish,    permission: 'admin:goods:update' },
   goodsUnpublishAll:{ handler: unpublishAll, permission: 'admin:goods:update' },
   goodsCancelSpecialPrice: { handler: cancelSpecialPrice, permission: 'admin:goods:update' },
+  goodsSetSpecialPrice:    { handler: setSpecialPrice,    permission: 'admin:goods:update' },
 
   // AI 识别
   goodsRecognizeImage: { handler: recognizeImage, permission: 'admin:goods:create' },

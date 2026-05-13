@@ -262,7 +262,7 @@ async function receive(data, context) {
   // 类型校验
   if (coupon.type === TYPE.REGISTER) return response.fail(741, '新用户优惠券自动发送')
   if (coupon.type === TYPE.CODE) return response.fail(741, '优惠券只能兑换')
-  if (coupon.type !== TYPE.COMMON) return response.fail(741, '优惠券类型不支持')
+  if (coupon.type !== TYPE.COMMON && coupon.type !== TYPE.NEWUSER) return response.fail(741, '优惠券类型不支持')
 
   // 状态校验
   if (coupon.status === STATUS.OUT) return response.fail(740, '优惠券已领完')
@@ -331,22 +331,37 @@ async function exchange(data, context) {
 
 // ==================== 弹窗推荐券（公开） ====================
 
-async function popup() {
+async function popup(data, context) {
   const now = new Date()
   const nowStr = now.toISOString().slice(0, 19).replace('T', ' ')
 
-  const rows = await db.query(
-    `SELECT c.id, c.name, c.\`desc\`, c.tag, c.discount, c.discount_type, c.min,
-            c.days, c.start_time, c.end_time, c.time_type,
-            (SELECT COUNT(*) FROM litemall_coupon_user cu WHERE cu.coupon_id = c.id AND cu.deleted = 0) AS received
+  // 通过 openId 查找用户，用于排除已领取的券
+  let userId = null
+  const openId = context.OPENID || null
+  if (openId) {
+    const userRows = await db.query(
+      'SELECT id FROM litemall_user WHERE weixin_openid = ? AND deleted = 0 LIMIT 1',
+      [openId]
+    )
+    if (userRows.length > 0) userId = userRows[0].id
+  }
+
+  let sql = `SELECT c.id, c.name, c.\`desc\`, c.tag, c.discount, c.discount_type, c.min,
+            c.days, c.start_time, c.end_time, c.time_type, c.type
      FROM litemall_coupon c
-     WHERE c.type = ? AND c.status = ? AND c.popup = 1 AND c.deleted = 0
+     WHERE c.type IN (?, ?) AND c.status = ? AND c.popup = 1 AND c.deleted = 0
        AND (c.total = 0 OR c.total > (SELECT COUNT(*) FROM litemall_coupon_user cu2 WHERE cu2.coupon_id = c.id AND cu2.deleted = 0))
-       AND (c.time_type = 0 OR (c.start_time IS NULL OR c.start_time <= ?) AND (c.end_time IS NULL OR c.end_time >= ?))
-     ORDER BY c.add_time DESC
-     LIMIT 3`,
-    [TYPE.COMMON, STATUS.NORMAL, nowStr, nowStr]
-  )
+       AND (c.time_type = 0 OR (c.start_time IS NULL OR c.start_time <= ?) AND (c.end_time IS NULL OR c.end_time >= ?))`
+  const params = [TYPE.COMMON, TYPE.NEWUSER, STATUS.NORMAL, nowStr, nowStr]
+
+  // 排除该用户已领取的券
+  if (userId) {
+    sql += ` AND NOT EXISTS (SELECT 1 FROM litemall_coupon_user cu3 WHERE cu3.coupon_id = c.id AND cu3.deleted = 0 AND cu3.user_id = ?)`
+    params.push(userId)
+  }
+
+  sql += ` ORDER BY c.add_time DESC LIMIT 3`
+  const rows = await db.query(sql, params)
 
   const list = rows.map(r => ({
     id: r.id,
@@ -360,6 +375,7 @@ async function popup() {
     startTime: r.start_time,
     endTime: r.end_time,
     timeType: r.time_type,
+    type: r.type,
   }))
 
   return response.ok(list)
@@ -424,7 +440,7 @@ async function checkCouponAvailable(userId, coupon, couponUser, checkedGoodsPric
   }
 
   // 新人券首单校验
-  if (coupon.type === TYPE.REGISTER) {
+  if (coupon.type === TYPE.REGISTER || coupon.type === TYPE.NEWUSER) {
     const cancelStatuses = [102, 103, 104, 203]
     const placeholders = cancelStatuses.map(() => '?').join(',')
     const orderCountRows = await db.query(

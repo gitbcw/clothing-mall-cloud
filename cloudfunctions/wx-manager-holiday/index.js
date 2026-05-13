@@ -1,8 +1,8 @@
 /**
- * wx-manager-order 云函数 — 小程序管理端订单
+ * wx-manager-holiday 云函数 — 小程序管理端节日活动管理
  *
- * 迁移自 WxManagerOrderController
- * 13 个接口：订单9个 + 售后4个
+ * 复用 admin-clothing/service/holiday.js 的业务逻辑
+ * 使用 wxAuth + managerAuth 认证（小程序管理端认证链）
  */
 
 const { response } = require('layer-base')
@@ -10,23 +10,21 @@ const { wxAuth } = require('layer-auth')
 const { managerAuth } = require('layer-auth')
 
 const {
-  list, detail, ship, cancel, refundAgree, refundReject, verify, stats, shippers, prepare,
-} = require('./service/order')
-
-const {
-  aftersaleList, aftersaleRecept, aftersaleReject, aftersaleShip,
-} = require('./service/aftersale')
+  list, read, create, update, delete: holidayDelete, enable, goods, goodsUpdate
+} = require('./service/holiday')
 
 const routes = {
-  // 订单
-  list, detail, ship, cancel, refundAgree, refundReject, verify, stats, shippers, prepare,
-
-  // 售后
-  aftersaleList, aftersaleRecept, aftersaleReject, aftersaleShip,
+  holidayList: list,
+  holidayRead: read,
+  holidayCreate: create,
+  holidayUpdate: update,
+  holidayDelete: holidayDelete,
+  holidayEnable: enable,
+  holidayGoods: goods,
+  holidayGoodsUpdate: goodsUpdate,
 }
 
 exports.main = async (event, context) => {
-  // CloudBase 将 OPENID 放在 event.userInfo.openId，注入到 context 供 layer-auth 使用
   const openId = (event.userInfo && event.userInfo.openId) || null
   if (openId && !context.OPENID) {
     context.OPENID = openId
@@ -54,7 +52,7 @@ exports.main = async (event, context) => {
   try {
     return await handler(data || {}, context)
   } catch (err) {
-    console.error(`[wx-manager-order] action=${action} error:`, err)
+    console.error(`[wx-manager-holiday] action=${action} error:`, err)
     return response.serious()
   }
 }

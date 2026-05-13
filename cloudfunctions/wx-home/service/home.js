@@ -22,7 +22,7 @@ async function index(data, context) {
   const [hotGoodsRows, outfitRows, holidayRows, specialPriceRows] = await Promise.all([
     // 热门商品（最新50个已发布商品）
     db.query(
-      `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price, category_id
+      `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price, special_price, category_id
        FROM litemall_goods
        WHERE status = 'published' AND deleted = 0
        ORDER BY add_time DESC LIMIT 50`
@@ -94,7 +94,7 @@ async function index(data, context) {
     const allGoods = await db.query(
       `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price, special_price, category_id
        FROM litemall_goods
-       WHERE status = 'published' AND deleted = 0
+       WHERE status = 'published' AND deleted = 0 AND category_id != 1022001
        ORDER BY id ASC`
     )
     if (allGoods.length > 0) {
@@ -135,6 +135,7 @@ async function index(data, context) {
           name: goods.name,
           picUrl: goods.pic_url,
           retailPrice: goods.retail_price,
+          specialPrice: goods.special_price,
         })
       }
     }
@@ -155,7 +156,7 @@ async function index(data, context) {
     hotGoodsList: hotGoodsRows.map(g => ({
       id: g.id, name: g.name, brief: g.brief, picUrl: g.pic_url,
       isHot: !!g.is_hot, isNew: !!g.is_new,
-      retailPrice: g.retail_price, categoryId: g.category_id,
+      retailPrice: g.retail_price, specialPrice: g.special_price, categoryId: g.category_id,
     })),
     outfitList,
     homeActivity: { goods: activityGoods, titleType },

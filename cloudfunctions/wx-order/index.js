@@ -15,8 +15,8 @@ const { response } = require('layer-base')
 const { wxAuth } = require('layer-auth')
 
 const {
-  list, detail, submit, cancel, refund, confirm, deleteOrder,
-  prepay, h5pay,
+  list, detail, goods, submit, cancel, refund, confirm, deleteOrder,
+  prepay, h5pay, payStatus,
 } = require('./service/order')
 
 const {
@@ -25,8 +25,8 @@ const {
 
 const routes = {
   // 订单
-  list, detail, submit, cancel, refund, confirm, deleteOrder,
-  prepay, h5pay,
+  list, detail, goods, submit, cancel, refund, confirm, deleteOrder,
+  prepay, h5pay, payStatus,
 
   // 售后
   aftersaleList, aftersaleDetail, aftersaleSubmit, aftersaleCancel,
@@ -39,6 +39,7 @@ const AUTH_REQUIRED = Object.keys(routes)
 const ACTION_ERRORS = {
   list: '订单列表加载失败，请稍后重试',
   detail: '订单详情加载失败，请稍后重试',
+  goods: '订单商品加载失败，请稍后重试',
   submit: '下单失败，请稍后重试',
   cancel: '取消订单失败，请稍后重试',
   refund: '退款申请失败，请稍后重试',
@@ -46,6 +47,7 @@ const ACTION_ERRORS = {
   deleteOrder: '删除订单失败，请稍后重试',
   prepay: '支付调起失败，请重试',
   h5pay: '支付调起失败，请重试',
+  payStatus: '支付配置检查失败，请稍后重试',
   aftersaleList: '售后列表加载失败，请稍后重试',
   aftersaleDetail: '售后详情加载失败，请稍后重试',
   aftersaleSubmit: '申请售后失败，请稍后重试',

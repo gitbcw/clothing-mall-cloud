@@ -10,6 +10,14 @@ const { STATUS, orderStatusText, buildHandleOption, orderStatusFilter } = requir
 const { calculateFreight } = require('../lib/freight')
 const { checkCoupon, calculateDiscount } = require('../lib/coupon-verify')
 
+let cloud = null
+try {
+  cloud = require('wx-server-sdk')
+  cloud.init({ env: process.env.TCB_ENV_ID || cloud.DYNAMIC_CURRENT_ENV })
+} catch (err) {
+  console.warn('[wx-order] wx-server-sdk unavailable:', err.message)
+}
+
 // ==================== 订单列表 ====================
 
 async function list(data, context) {
@@ -211,6 +219,28 @@ async function detail(data, context) {
   })
 }
 
+async function goods(data, context) {
+  const userId = context._userId
+  const { orderId, goodsId } = data
+  if (!orderId || !goodsId) return response.badArgument()
+
+  const orderRows = await db.query(
+    `SELECT id FROM litemall_order WHERE id = ? AND user_id = ? AND deleted = 0 LIMIT 1`,
+    [orderId, userId]
+  )
+  if (orderRows.length === 0) return response.badArgumentValue()
+
+  const rows = await db.query(
+    `SELECT * FROM litemall_order_goods
+     WHERE order_id = ? AND goods_id = ? AND deleted = 0
+     LIMIT 1`,
+    [orderId, goodsId]
+  )
+  if (rows.length === 0) return response.badArgumentValue()
+
+  return response.ok(rows[0])
+}
+
 // ==================== 提交订单 ====================
 
 async function submit(data, context) {
@@ -325,7 +355,7 @@ async function submit(data, context) {
     orderData.pickup_store_id = pickupStoreId
     orderData.pickup_contact = finalContact
     orderData.pickup_phone = finalPhone
-    orderData.pickup_code = generatePickupCode()
+    // 取件码在备货确认时生成
   }
 
   // 创建事务：插入订单 + 订单商品 + 清理购物车 + 扣减库存 + 更新优惠券
@@ -593,8 +623,13 @@ async function prepay(data, context) {
   // 真实微信支付：调用云支付统一下单
   const openId = context.OPENID
   if (!openId) return response.fail(502, '无法获取用户 OpenID')
+  if (!cloud || !cloud.cloudPay || typeof cloud.cloudPay.unifiedOrder !== 'function') {
+    console.error('[wx-order] cloudPay unavailable, check wx-server-sdk dependency and CloudBase payment configuration')
+    return response.fail(502, '微信支付未完成配置，请联系管理员')
+  }
 
   const totalFee = Math.round(parseFloat(order.actual_price) * 100) // 元 → 分
+  if (totalFee <= 0) return response.fail(502, '订单金额异常，无法发起支付')
 
   try {
     const payResult = await cloud.cloudPay.unifiedOrder({
@@ -608,6 +643,13 @@ async function prepay(data, context) {
       tradeType: 'JSAPI',
     })
 
+    console.info('[wx-order] unifiedOrder success:', {
+      orderId,
+      orderSn: order.order_sn,
+      totalFee,
+      hasPackage: !!(payResult && payResult.package),
+    })
+
     return response.ok({
       timeStamp: payResult.timeStamp,
       nonceStr: payResult.nonceStr,
@@ -619,6 +661,36 @@ async function prepay(data, context) {
     console.error('[wx-order] prepay unifiedOrder error:', err)
     return response.fail(502, '支付调起失败，请重试')
   }
+}
+
+// ==================== 支付配置检查 ====================
+
+async function payStatus() {
+  const mockPay = (process.env.MOCK_PAY || 'true') === 'true'
+  const envId = process.env.TCB_ENV_ID || ''
+  const sdkLoaded = !!cloud
+  const cloudPayAvailable = !!(cloud && cloud.cloudPay && typeof cloud.cloudPay.unifiedOrder === 'function')
+  const callbackRows = await db.query(
+    `SELECT 1 FROM litemall_system WHERE key_name = 'litemall_dummy_key_for_pay_status' LIMIT 1`
+  ).catch(() => [])
+
+  return response.ok({
+    mockPay,
+    envId,
+    sdkLoaded,
+    cloudPayAvailable,
+    callbackFunction: 'wx-pay-callback',
+    callbackDbReachable: Array.isArray(callbackRows),
+    readyForRealPay: !mockPay && sdkLoaded && cloudPayAvailable && !!envId,
+    requiredActions: [
+      mockPay ? '将 wx-order 云函数环境变量 MOCK_PAY 设置为 false' : '',
+      !envId ? '配置 TCB_ENV_ID 云函数环境变量' : '',
+      !sdkLoaded ? '为 wx-order 安装/打包 wx-server-sdk 依赖' : '',
+      sdkLoaded && !cloudPayAvailable ? '确认 CloudBase 云支付能力已开通并可调用 cloud.cloudPay.unifiedOrder' : '',
+      '确认微信支付商户号已开通 JSAPI/小程序支付并绑定当前小程序 AppID',
+      '完成 1 分钱真实支付闭环测试',
+    ].filter(Boolean),
+  })
 }
 
 // ==================== H5支付（代理到 prepay） ====================
@@ -681,6 +753,6 @@ async function releaseCoupon(conn, orderId) {
 }
 
 module.exports = {
-  list, detail, submit, cancel, refund, confirm, deleteOrder,
-  prepay, h5pay,
+  list, detail, goods, submit, cancel, refund, confirm, deleteOrder,
+  prepay, h5pay, payStatus,
 }

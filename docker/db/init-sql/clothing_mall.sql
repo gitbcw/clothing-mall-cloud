@@ -192,6 +192,7 @@ CREATE TABLE `litemall_category` (
   `pic_url` varchar(255) DEFAULT '' COMMENT '类目图片',
   `level` varchar(255) DEFAULT 'L1',
   `sort_order` tinyint(3) DEFAULT '50' COMMENT '排序',
+  `enabled` tinyint(1) DEFAULT '1' COMMENT '是否启用(0=否,1=是)',
   `add_time` datetime DEFAULT NULL COMMENT '创建时间',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   `deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除',
@@ -261,6 +262,9 @@ CREATE TABLE `litemall_coupon` (
   `total` int(11) NOT NULL DEFAULT '0' COMMENT '优惠券数量，如果是0，则是无限量',
   `discount` decimal(10,2) DEFAULT '0.00' COMMENT '优惠金额，',
   `min` decimal(10,2) DEFAULT '0.00' COMMENT '最少消费金额才能使用优惠券。',
+  `discount_type` smallint(6) DEFAULT '0' COMMENT '折扣类型：0=固定金额，1=百分比折扣(如30表示打7折)',
+  `item_limit` smallint(6) DEFAULT '0' COMMENT '商品件数限制：0=全部商品，1=仅最高价单品',
+  `popup` tinyint(1) DEFAULT '0' COMMENT '是否首页弹窗推荐(0=否,1=是)',
   `limit` smallint(6) DEFAULT '1' COMMENT '用户领券限制数量，如果是0，则是不限制；默认是1，限领一张.',
   `type` smallint(6) DEFAULT '0' COMMENT '优惠券赠送类型，如果是0则通用券，用户领取；如果是1，则是注册赠券；如果是2，则是优惠券码兑换；',
   `status` smallint(6) DEFAULT '0' COMMENT '优惠券状态，如果是0则是正常可用；如果是1则是过期; 如果是2则是下架。',
@@ -1094,7 +1098,11 @@ UNLOCK TABLES;
 
 LOCK TABLES `litemall_coupon` WRITE;
 /*!40000 ALTER TABLE `litemall_coupon` DISABLE KEYS */;
-INSERT INTO `litemall_coupon` VALUES (1,'限时满减券','全场通用','无限制',0,5.00,99.00,1,0,0,0,'[]',NULL,0,10,NULL,NULL,'2018-02-01 00:00:00','2018-02-01 00:00:00',0),(2,'限时满减券','全场通用','无限制',0,10.00,99.00,1,0,0,0,'[]',NULL,0,10,NULL,NULL,'2018-02-01 00:00:00','2018-02-01 00:00:00',0),(3,'新用户优惠券','全场通用','无限制',0,10.00,99.00,1,1,0,0,'[]',NULL,0,10,NULL,NULL,'2018-02-01 00:00:00','2018-02-01 00:00:00',0),(8,'可兑换优惠券','全场通用','仅兑换领券',0,15.00,99.00,1,2,0,0,'[]','DC6FF8SE',0,7,NULL,NULL,'2018-12-23 09:29:57','2018-12-23 09:29:57',0);
+INSERT INTO `litemall_coupon` (`id`, `name`, `desc`, `tag`, `total`, `discount`, `min`, `discount_type`, `item_limit`, `popup`, `limit`, `type`, `status`, `goods_type`, `goods_value`, `code`, `time_type`, `days`, `start_time`, `end_time`, `add_time`, `update_time`, `deleted`) VALUES
+(1,'限时满减券','全场通用','无限制',0,5.00,99.00,0,0,0,1,0,0,0,'[]',NULL,0,10,NULL,NULL,'2018-02-01 00:00:00','2018-02-01 00:00:00',0),
+(2,'限时满减券','全场通用','无限制',0,10.00,99.00,0,0,0,1,0,0,0,'[]',NULL,0,10,NULL,NULL,'2018-02-01 00:00:00','2018-02-01 00:00:00',0),
+(3,'新用户优惠券','全场通用','无限制',0,10.00,99.00,0,0,0,1,1,0,0,'[]',NULL,0,10,NULL,NULL,'2018-02-01 00:00:00','2018-02-01 00:00:00',0),
+(8,'可兑换优惠券','全场通用','仅兑换领券',0,15.00,99.00,0,0,0,1,2,0,0,'[]','DC6FF8SE',0,7,NULL,NULL,'2018-12-23 09:29:57','2018-12-23 09:29:57',0);
 /*!40000 ALTER TABLE `litemall_coupon` ENABLE KEYS */;
 UNLOCK TABLES;
 

@@ -8,6 +8,8 @@
 const { db, response } = require('layer-base')
 const { wxAuth } = require('layer-auth')
 
+const ACCESSORY_CATEGORY_CONDITION = `(c.id IS NOT NULL AND (c.name = '饰品' OR c.name LIKE '%首饰%' OR c.keywords LIKE '%饰品%' OR c.keywords LIKE '%首饰%'))`
+
 function toBrandCamel(r) {
   return {
     id: r.id, name: r.name, desc: r.desc, picUrl: r.pic_url,
@@ -49,6 +51,7 @@ function toGoodsCamel(row) {
     isPresale: row.is_presale,
     unit: row.unit,
     retailPrice: row.retail_price,
+    tagPrice: row.counter_price,
     addTime: row.add_time,
     updateTime: row.update_time,
   }
@@ -78,7 +81,7 @@ async function detail(data, context) {
       `SELECT id, goods_sn, name, category_id, brand_id, gallery, keywords, brief,
               is_on_sale, status, sort_order, pic_url, share_url,
               is_new, is_hot, is_special_price, special_price, is_presale,
-              unit, retail_price, add_time, update_time,
+              unit, retail_price, counter_price, add_time, update_time,
               detail, scene_tags, goods_params
        FROM litemall_goods WHERE id = ? AND deleted = 0 LIMIT 1`,
       [id]
@@ -268,10 +271,13 @@ async function list(data, context) {
   const conditions = []
   const params = []
   let joinClause = ''
+  let categoryJoinClause = ''
 
   // 场景筛选
   if (sceneId) {
-    joinClause = 'INNER JOIN clothing_goods_scene cgs ON g.id = cgs.goods_id AND cgs.scene_id = ?'
+    joinClause = 'INNER JOIN clothing_goods_scene cgs ON g.id = cgs.goods_id AND cgs.deleted = 0 AND cgs.scene_id = ?'
+    categoryJoinClause = 'LEFT JOIN litemall_category c ON c.id = g.category_id AND c.deleted = 0'
+    conditions.push(`NOT (${ACCESSORY_CATEGORY_CONDITION})`)
     params.push(sceneId)
   }
 
@@ -280,11 +286,13 @@ async function list(data, context) {
   if (isNew !== undefined && isNew !== null) { conditions.push('g.is_new = ?'); params.push(isNew ? 1 : 0) }
   if (isHot !== undefined && isHot !== null) { conditions.push('g.is_hot = ?'); params.push(isHot ? 1 : 0) }
 
-  // 关键词搜索（匹配商品 name/keywords + 分类 name/keywords）
+  // 关键词搜索（匹配商品 name/keywords + 分类 name/keywords + 场景 name）
   let matchedCatIds = []
+  let matchedSceneGoodsIds = []
   if (keyword) {
-    // 查找 keywords 或 name 命中的分类（含子分类的父分类）
     const like = `%${keyword}%`
+
+    // 查找 keywords 或 name 命中的分类
     const catRows = await db.query(
       `SELECT id FROM litemall_category
        WHERE deleted = 0 AND (keywords LIKE ? OR name LIKE ?)`,
@@ -292,25 +300,62 @@ async function list(data, context) {
     )
     matchedCatIds = catRows.map(r => r.id)
 
-    // 构造搜索条件：商品本身匹配 OR 属于命中分类
-    if (matchedCatIds.length > 0) {
-      const catPlaceholders = matchedCatIds.map(() => '?').join(',')
-      conditions.push(`(g.keywords LIKE ? OR g.name LIKE ? OR g.category_id IN (${catPlaceholders}))`)
-      params.push(like, like, ...matchedCatIds)
-    } else {
-      conditions.push('(g.keywords LIKE ? OR g.name LIKE ?)')
-      params.push(like, like)
+    // 查找 name 命中的场景，并获取关联商品 ID
+    const sceneRows = await db.query(
+      `SELECT id FROM clothing_scene
+       WHERE deleted = 0 AND enabled = 1 AND name LIKE ?`,
+      [like]
+    )
+    if (sceneRows.length > 0) {
+      const sceneIds = sceneRows.map(r => r.id)
+      const scenePlaceholders = sceneIds.map(() => '?').join(',')
+      const gsRows = await db.query(
+        `SELECT DISTINCT gs.goods_id
+         FROM clothing_goods_scene gs
+         JOIN litemall_goods g ON g.id = gs.goods_id AND g.deleted = 0
+         LEFT JOIN litemall_category c ON c.id = g.category_id AND c.deleted = 0
+         WHERE gs.deleted = 0
+           AND gs.scene_id IN (${scenePlaceholders})
+           AND NOT (${ACCESSORY_CATEGORY_CONDITION})`,
+        sceneIds
+      )
+      matchedSceneGoodsIds = gsRows.map(r => r.goods_id)
     }
+
+    // 构造搜索条件：商品本身匹配 OR 属于命中分类 OR 属于命中场景
+    const orParts = ['g.keywords LIKE ?', 'g.name LIKE ?']
+    const orParams = [like, like]
+    if (matchedCatIds.length > 0) {
+      const catPh = matchedCatIds.map(() => '?').join(',')
+      orParts.push(`g.category_id IN (${catPh})`)
+      orParams.push(...matchedCatIds)
+    }
+    if (matchedSceneGoodsIds.length > 0) {
+      const sgPh = matchedSceneGoodsIds.map(() => '?').join(',')
+      orParts.push(`g.id IN (${sgPh})`)
+      orParams.push(...matchedSceneGoodsIds)
+    }
+    conditions.push(`(${orParts.join(' OR ')})`)
+    params.push(...orParams)
   }
 
   const whereClause = conditions.length > 0 ? 'AND ' + conditions.join(' AND ') : ''
 
+  // countSql 只需条件参数，在排序参数 push 之前复制
+  const countParams = params.slice()
+  const countSql = `
+    SELECT COUNT(*) as total
+    FROM litemall_goods g ${joinClause} ${categoryJoinClause}
+    WHERE g.status = 'published' AND g.deleted = 0 ${whereClause}`
+
   // 排序逻辑
   let orderClause
   if (sort === 'default' && keyword) {
-    // 关键词相关度排序（分类匹配权重最低）
+    // 关键词相关度排序（场景匹配 < 分类匹配）
     const catIdList = matchedCatIds.length > 0 ? matchedCatIds : [-1]
     const catWhen = catIdList.map(() => '?').join(',')
+    const sceneIdList = matchedSceneGoodsIds.length > 0 ? matchedSceneGoodsIds : [-1]
+    const sceneWhen = sceneIdList.map(() => '?').join(',')
     orderClause = `CASE
       WHEN g.name = ? THEN 100
       WHEN g.name LIKE ? THEN 80
@@ -318,9 +363,10 @@ async function list(data, context) {
       WHEN g.keywords LIKE ? THEN 30
       WHEN g.keywords LIKE ? THEN 10
       WHEN g.category_id IN (${catWhen}) THEN 5
+      WHEN g.id IN (${sceneWhen}) THEN 3
       ELSE 0
     END DESC, g.sort_order DESC, g.add_time DESC`
-    params.push(keyword, `${keyword}%`, `%${keyword}%`, `${keyword}%`, `%${keyword}%`, ...catIdList)
+    params.push(keyword, `${keyword}%`, `%${keyword}%`, `${keyword}%`, `%${keyword}%`, ...catIdList, ...sceneIdList)
   } else if (sort === 'default') {
     orderClause = 'g.sort_order DESC, g.add_time DESC'
   } else {
@@ -335,17 +381,11 @@ async function list(data, context) {
     SELECT g.id, g.goods_sn, g.name, g.category_id, g.brand_id, g.gallery, g.keywords, g.brief,
            g.is_on_sale, g.status, g.sort_order, g.pic_url, g.share_url,
            g.is_new, g.is_hot, g.is_special_price, g.special_price, g.is_presale,
-           g.unit, g.retail_price, g.add_time, g.update_time
-    FROM litemall_goods g ${joinClause}
+           g.unit, g.retail_price, g.counter_price, g.add_time, g.update_time
+    FROM litemall_goods g ${joinClause} ${categoryJoinClause}
     WHERE g.status = 'published' AND g.deleted = 0 ${whereClause}
     ORDER BY ${orderClause}
     LIMIT ${offset}, ${safeLimit}`
-
-  const countParams = params.slice() // 复制一份，不包含 offset/limit
-  const countSql = `
-    SELECT COUNT(*) as total
-    FROM litemall_goods g ${joinClause}
-    WHERE g.status = 'published' AND g.deleted = 0 ${whereClause}`
 
   const [goodsRows, countRows] = await Promise.all([
     db.query(goodsSql, params),
@@ -459,7 +499,7 @@ async function related(data) {
 
   // 查同类商品，排除当前商品
   const rows = await db.query(
-    `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price, category_id
+    `SELECT id, name, brief, pic_url, is_hot, is_new, retail_price, counter_price, special_price, category_id
      FROM litemall_goods
      WHERE category_id = ? AND id != ? AND status = 'published' AND deleted = 0
      ORDER BY add_time DESC LIMIT 6`,
@@ -523,6 +563,7 @@ function toGoodsBriefCamel(row) {
     categoryId: row.category_id,
     picUrl: row.pic_url,
     retailPrice: row.retail_price,
+    tagPrice: row.counter_price,
     isOnSale: row.is_on_sale,
     isNew: !!row.is_new,
     isHot: !!row.is_hot,
@@ -535,7 +576,7 @@ async function listAllBrief(data, context) {
   // 并发查：全量轻量商品 + L1 分类列表
   const [goodsRows, catRows] = await Promise.all([
     db.query(
-      `SELECT g.id, g.name, g.category_id, g.pic_url, g.retail_price,
+      `SELECT g.id, g.name, g.category_id, g.pic_url, g.retail_price, g.counter_price,
               g.is_on_sale, g.is_new, g.is_hot, g.is_special_price, g.special_price
        FROM litemall_goods g
        WHERE g.status = 'published' AND g.deleted = 0

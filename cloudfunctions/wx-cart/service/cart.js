@@ -324,7 +324,7 @@ async function clear(data, context) {
 /**
  * 检查优惠券是否有效
  */
-function checkCouponValid(coupon, couponUser, checkedGoodsPrice) {
+async function checkCouponValid(userId, coupon, couponUser, checkedGoodsPrice) {
   const now = new Date()
   // 时间校验
   if (coupon.time_type === 1) {
@@ -336,6 +336,16 @@ function checkCouponValid(coupon, couponUser, checkedGoodsPrice) {
   }
   // 状态
   if (coupon.status !== 0) return false
+  // 新人/首单券
+  if (coupon.type === 1 || coupon.type === 3) {
+    const cancelStatuses = [102, 103, 104, 203]
+    const placeholders = cancelStatuses.map(() => '?').join(',')
+    const orderCountRows = await db.query(
+      `SELECT COUNT(*) as total FROM litemall_order WHERE user_id = ? AND deleted = 0 AND order_status NOT IN (${placeholders})`,
+      [userId, ...cancelStatuses]
+    )
+    if (orderCountRows[0].total > 0) return false
+  }
   // 最低消费
   if (checkedGoodsPrice < parseFloat(coupon.min)) return false
   return true
@@ -476,7 +486,7 @@ async function checkout(data, context) {
   for (const cu of couponUserRows) {
     const coupon = couponMap[cu.coupon_id]
     if (!coupon) continue
-    if (!checkCouponValid(coupon, cu, checkedGoodsPrice)) continue
+    if (!(await checkCouponValid(userId, coupon, cu, checkedGoodsPrice))) continue
     tmpCouponLength++
     const discount = calcCouponDiscount(coupon, checkedGoodsPrice)
     if (discount > tmpCouponPrice) {
@@ -497,7 +507,7 @@ async function checkout(data, context) {
   } else {
     const cu = couponUserRows.find(r => r.coupon_id === couponId && r.id === userCouponId)
     const coupon = cu ? couponMap[cu.coupon_id] : null
-    if (cu && coupon && checkCouponValid(coupon, cu, checkedGoodsPrice)) {
+    if (cu && coupon && await checkCouponValid(userId, coupon, cu, checkedGoodsPrice)) {
       finalCouponPrice = calcCouponDiscount(coupon, checkedGoodsPrice)
       finalCouponId = couponId
       finalUserCouponId = userCouponId

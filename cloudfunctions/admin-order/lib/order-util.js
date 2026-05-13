@@ -16,6 +16,7 @@ const STATUS = {
   VERIFIED: 502,
   VERIFY_EXPIRED: 503,
   VERIFY_REFUND: 504,
+  VERIFY_READY: 505,
 }
 
 function orderStatusText(order) {
@@ -29,10 +30,11 @@ function orderStatusText(order) {
     [STATUS.SHIP]: '已发货',
     [STATUS.CONFIRM]: '已收货',
     [STATUS.AUTO_CONFIRM]: '已收货(系统)',
-    [STATUS.VERIFY_PENDING]: '待核销',
+    [STATUS.VERIFY_PENDING]: '备货中',
     [STATUS.VERIFIED]: '已核销',
     [STATUS.VERIFY_EXPIRED]: '核销过期',
     [STATUS.VERIFY_REFUND]: '核销退款',
+    [STATUS.VERIFY_READY]: '已备货',
     [STATUS.ADMIN_CANCEL]: '已取消(管理员)',
   }
   return map[order.order_status] || '未知状态'

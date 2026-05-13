@@ -33,7 +33,7 @@ async function list(data, context) {
   const goodsMap = {}
   if (goodsIds.length > 0) {
     const goodsRows = await db.query(
-      `SELECT id, name, brief, pic_url, retail_price FROM litemall_goods WHERE id IN (${goodsIds.map(() => '?').join(',')})`,
+      `SELECT id, name, brief, pic_url, retail_price, special_price FROM litemall_goods WHERE id IN (${goodsIds.map(() => '?').join(',')})`,
       goodsIds
     )
     for (const g of goodsRows) {
@@ -53,6 +53,7 @@ async function list(data, context) {
       brief: goods.brief,
       picUrl: goods.pic_url,
       retailPrice: goods.retail_price,
+      specialPrice: goods.special_price,
     })
   }
 

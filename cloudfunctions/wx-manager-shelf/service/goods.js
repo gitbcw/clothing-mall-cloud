@@ -7,6 +7,8 @@
 
 const { db, response } = require('layer-base')
 
+const ACCESSORY_CATEGORY_CONDITION = `(c.id IS NOT NULL AND (c.name = '饰品' OR c.name LIKE '%首饰%' OR c.keywords LIKE '%饰品%' OR c.keywords LIKE '%首饰%'))`
+
 // ==================== 字段转换 ====================
 
 function toGoodsCamel(row) {
@@ -75,6 +77,11 @@ async function list(data) {
   if (keyword) {
     where += ' AND name LIKE ?'
     params.push(`%${keyword}%`)
+  }
+
+  if (data.isSpecialPrice !== undefined) {
+    where += ' AND is_special_price = ?'
+    params.push(data.isSpecialPrice ? 1 : 0)
   }
 
   const countResult = await db.query(
@@ -148,7 +155,7 @@ async function edit(data) {
 
   const fields = {
     name: 'name', brief: 'brief', categoryId: 'category_id', brandId: 'brand_id',
-    retailPrice: 'retail_price', picUrl: 'pic_url', detail: 'detail',
+    retailPrice: 'retail_price', tagPrice: 'counter_price', picUrl: 'pic_url', detail: 'detail',
     keywords: 'keywords',
   }
 
@@ -196,6 +203,11 @@ async function edit(data) {
     await updateSkus(id, data.skus)
   }
 
+  if (data.scenes !== undefined || data.categoryId !== undefined) {
+    const sceneTags = data.scenes !== undefined ? data.scenes : parseSceneTags(rows[0].scene_tags)
+    await syncSceneTags(id, sceneTags)
+  }
+
   return response.ok()
 }
 
@@ -210,6 +222,15 @@ async function publish(data) {
      WHERE id IN (${ids.map(() => '?').join(',')}) AND deleted = 0`,
     ids
   )
+
+  const rows = await db.query(
+    `SELECT id, scene_tags FROM litemall_goods
+     WHERE id IN (${ids.map(() => '?').join(',')}) AND deleted = 0`,
+    ids
+  )
+  for (const row of rows) {
+    await syncSceneTags(row.id, parseSceneTags(row.scene_tags))
+  }
 
   return response.ok()
 }
@@ -269,10 +290,10 @@ async function create(data) {
 
     const result = await conn.query(
       `INSERT INTO litemall_goods
-        (name, category_id, brief, detail, keywords, retail_price,
+        (name, category_id, brief, detail, keywords, retail_price, counter_price,
          special_price, is_special_price, pic_url, gallery, scene_tags, goods_params,
          status, is_on_sale, deleted, add_time, update_time)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', 0, 0, NOW(), NOW())`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', 0, 0, NOW(), NOW())`,
       [
         name.trim(),
         data.categoryId || null,
@@ -280,6 +301,7 @@ async function create(data) {
         data.detail || '',
         data.keywords || '',
         retailPrice,
+        data.tagPrice || null,
         data.specialPrice || null,
         data.specialPrice ? 1 : 0,
         data.picUrl || data.sourceImage || '',
@@ -289,6 +311,8 @@ async function create(data) {
       ]
     )
     const goodsId = result[0].insertId
+
+    await syncSceneTags(goodsId, data.scenes, conn)
 
     // 插入 SKU
     if (data.skus && Array.isArray(data.skus) && data.skus.length > 0) {
@@ -390,6 +414,114 @@ async function updateSkus(goodsId, skus) {
   }
 }
 
+async function syncSceneTags(goodsId, sceneTags, conn) {
+  const executor = conn || db
+  await executor.query(
+    `DELETE FROM clothing_goods_scene WHERE goods_id = ?`,
+    [goodsId]
+  )
+
+  if (await isAccessoryGoods(goodsId, executor)) {
+    await executor.query(
+      `UPDATE litemall_goods SET scene_tags = NULL WHERE id = ?`,
+      [goodsId]
+    )
+    return
+  }
+
+  if (!Array.isArray(sceneTags) || sceneTags.length === 0) return
+
+  const names = [...new Set(sceneTags.map(tag => String(tag || '').trim()).filter(Boolean))]
+  if (names.length === 0) return
+
+  const placeholders = names.map(() => '?').join(',')
+  const sceneRows = await executor.query(
+    `SELECT id FROM clothing_scene WHERE name IN (${placeholders}) AND deleted = 0`,
+    names
+  )
+  const scenes = unwrapRows(sceneRows)
+  if (!Array.isArray(scenes) || scenes.length === 0) return
+
+  const values = scenes.map(() => '(?, ?, NOW(), 0)').join(',')
+  const params = []
+  scenes.forEach(scene => {
+    params.push(goodsId, scene.id)
+  })
+
+  await executor.query(
+    `INSERT IGNORE INTO clothing_goods_scene (goods_id, scene_id, add_time, deleted)
+     VALUES ${values}`,
+    params
+  )
+}
+
+async function isAccessoryGoods(goodsId, executor = db) {
+  const result = await executor.query(
+    `SELECT g.id
+     FROM litemall_goods g
+     JOIN litemall_category c ON c.id = g.category_id AND c.deleted = 0
+     WHERE g.id = ? AND ${ACCESSORY_CATEGORY_CONDITION}
+     LIMIT 1`,
+    [goodsId]
+  )
+  const rows = unwrapRows(result)
+  return Array.isArray(rows) && rows.length > 0
+}
+
+function unwrapRows(result) {
+  if (Array.isArray(result) && Array.isArray(result[0])) {
+    return result[0]
+  }
+  return result
+}
+
+function parseSceneTags(value) {
+  if (Array.isArray(value)) return value
+  if (!value) return []
+  try {
+    const parsed = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed : []
+  } catch (e) {
+    return []
+  }
+}
+
+// ==================== 批量设置特价 ====================
+
+async function setSpecialPrice(data) {
+  const { ids, specialPrice } = data
+  if (!Array.isArray(ids) || ids.length === 0) return response.badArgument()
+
+  const placeholders = ids.map(() => '?').join(',')
+  if (specialPrice !== undefined && specialPrice !== null) {
+    await db.query(
+      `UPDATE litemall_goods SET is_special_price = 1, special_price = ?, update_time = NOW() WHERE id IN (${placeholders}) AND deleted = 0`,
+      [specialPrice, ...ids]
+    )
+  } else {
+    await db.query(
+      `UPDATE litemall_goods SET is_special_price = 1, update_time = NOW() WHERE id IN (${placeholders}) AND deleted = 0`,
+      ids
+    )
+  }
+  return response.ok()
+}
+
+// ==================== 批量取消特价 ====================
+
+async function cancelSpecialPrice(data) {
+  const { ids } = data
+  if (!Array.isArray(ids) || ids.length === 0) return response.badArgument()
+
+  const placeholders = ids.map(() => '?').join(',')
+  await db.query(
+    `UPDATE litemall_goods SET is_special_price = 0, special_price = NULL, update_time = NOW() WHERE id IN (${placeholders}) AND deleted = 0`,
+    ids
+  )
+  return response.ok()
+}
+
 module.exports = {
   category, list, detail, edit, publish, unpublish, batchDelete, unpublishAll, create,
+  setSpecialPrice, cancelSpecialPrice,
 }

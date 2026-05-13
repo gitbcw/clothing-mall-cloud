@@ -15,14 +15,14 @@ const { response } = require('layer-base')
 const { wxAuth } = require('layer-auth')
 
 const {
-  list, mylist, selectlist, receive, exchange,
+  list, mylist, selectlist, receive, exchange, popup,
 } = require('./service/coupon')
 
 const routes = {
-  list, mylist, selectlist, receive, exchange,
+  list, mylist, selectlist, receive, exchange, popup,
 }
 
-// list 是公开接口，其余需要登录
+// list, popup 是公开接口，其余需要登录
 const AUTH_REQUIRED = ['mylist', 'selectlist', 'receive', 'exchange']
 
 // 操作失败时的用户提示
@@ -32,6 +32,7 @@ const ACTION_ERRORS = {
   selectlist: '可用优惠券加载失败',
   receive: '领取优惠券失败，请重试',
   exchange: '兑换优惠券失败，请重试',
+  popup: '弹窗优惠券加载失败',
 }
 
 exports.main = async (event, context) => {

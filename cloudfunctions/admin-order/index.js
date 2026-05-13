@@ -15,6 +15,7 @@ const {
   overview: orderOverview, channel: orderChannel,
   express: orderExpress, snapshot: orderSnapshot,
   snapshotBySn: orderSnapshotBySn, pay: orderPay, verify: orderVerify,
+  prepare: orderPrepare,
 } = require('./service/order')
 
 const {
@@ -49,6 +50,7 @@ const routes = {
   orderOverview:     { handler: orderOverview,     permission: 'admin:order:list' },
   orderPay:          { handler: orderPay,          permission: 'admin:order:pay' },
   orderVerify:       { handler: orderVerify,       permission: 'admin:order:ship' },
+  orderPrepare:      { handler: orderPrepare,      permission: 'admin:order:ship' },
   orderChannel:      { handler: orderChannel,      permission: null },
   orderExpress:      { handler: orderExpress,      permission: null },
   orderSnapshot:     { handler: orderSnapshot,     permission: null },

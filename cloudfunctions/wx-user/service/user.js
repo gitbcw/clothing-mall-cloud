@@ -6,7 +6,7 @@
  */
 
 const { db, response } = require('layer-base')
-const { getConfig, getConfigInt } = require('layer-base').systemConfig
+const { loadConfigs, getConfig, getConfigInt } = require('layer-base').systemConfig
 
 // 订单状态常量
 const STATUS = {
@@ -14,6 +14,7 @@ const STATUS = {
   PAY: 201,
   SHIP: 301,
   VERIFY_PENDING: 501,
+  VERIFY_READY: 505,
 }
 
 // ==================== 用户首页订单统计 ====================
@@ -32,14 +33,15 @@ async function index(data, context) {
       [userId, STATUS.PAY]
     ),
     db.query(
-      `SELECT COUNT(*) as total FROM litemall_order WHERE user_id = ? AND order_status IN (?, ?) AND deleted = 0`,
-      [userId, STATUS.SHIP, STATUS.VERIFY_PENDING]
+      `SELECT COUNT(*) as total FROM litemall_order WHERE user_id = ? AND order_status IN (?, ?, ?) AND deleted = 0`,
+      [userId, STATUS.SHIP, STATUS.VERIFY_PENDING, STATUS.VERIFY_READY]
     ),
   ])
 
   // 生日券自动发放：每年生日当天打开小程序时触发
   let birthdayCoupon = null
-  const birthdayEnabled = getConfig('litemall_birthday_coupon_status')
+  await loadConfigs()
+  const birthdayEnabled = getConfig('litemall_birthday_coupon_coupon_status')
   if (birthdayEnabled === 'true' || birthdayEnabled === '1') {
     birthdayCoupon = await trySendBirthdayCoupon(userId)
   }

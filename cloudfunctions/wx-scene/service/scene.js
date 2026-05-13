@@ -7,6 +7,8 @@
 
 const { db, response } = require('layer-base')
 
+const ACCESSORY_CATEGORY_CONDITION = `(c.id IS NOT NULL AND (c.name = '饰品' OR c.name LIKE '%首饰%' OR c.keywords LIKE '%饰品%' OR c.keywords LIKE '%首饰%'))`
+
 function toSceneCamel(r) {
   return {
     id: r.id, name: r.name, icon: r.icon, posterUrl: r.poster_url,
@@ -18,7 +20,8 @@ function toSceneCamel(r) {
 function toGoodsCamel(r) {
   return {
     id: r.id, name: r.name, brief: r.brief, picUrl: r.pic_url,
-    retailPrice: r.retail_price, isNew: !!r.is_new, isHot: !!r.is_hot,
+    retailPrice: r.retail_price, specialPrice: r.special_price,
+    isNew: !!r.is_new, isHot: !!r.is_hot,
     categoryId: r.category_id,
   }
 }
@@ -55,29 +58,36 @@ async function goods(data) {
   const limit = data.limit || 10
   const offset = (page - 1) * limit
 
-  // 查场景下关联的商品 ID
   const countResult = await db.query(
-    `SELECT COUNT(*) as total FROM clothing_goods_scene WHERE scene_id = ?`,
+    `SELECT COUNT(DISTINCT g.id) as total
+     FROM clothing_goods_scene gs
+     JOIN litemall_goods g ON g.id = gs.goods_id
+     LEFT JOIN litemall_category c ON c.id = g.category_id AND c.deleted = 0
+     WHERE gs.scene_id = ? AND gs.deleted = 0
+       AND g.deleted = 0 AND g.status = 'published'
+       AND NOT (${ACCESSORY_CATEGORY_CONDITION})`,
     [sceneId]
   )
 
-  const sceneGoodsRows = await db.query(
-    `SELECT goods_id FROM clothing_goods_scene WHERE scene_id = ?
-     ORDER BY add_time DESC LIMIT ${offset}, ${limit}`,
+  const goodsRows = await db.query(
+    `SELECT g.id, g.name, g.brief, g.pic_url, g.retail_price, g.special_price,
+            g.is_new, g.is_hot, g.category_id, MAX(gs.add_time) AS latest_add_time
+     FROM clothing_goods_scene gs
+     JOIN litemall_goods g ON g.id = gs.goods_id
+     LEFT JOIN litemall_category c ON c.id = g.category_id AND c.deleted = 0
+     WHERE gs.scene_id = ? AND gs.deleted = 0
+       AND g.deleted = 0 AND g.status = 'published'
+       AND NOT (${ACCESSORY_CATEGORY_CONDITION})
+     GROUP BY g.id, g.name, g.brief, g.pic_url, g.retail_price, g.special_price,
+              g.is_new, g.is_hot, g.category_id
+     ORDER BY latest_add_time DESC
+     LIMIT ${offset}, ${limit}`,
     [sceneId]
   )
 
-  if (sceneGoodsRows.length === 0) {
+  if (goodsRows.length === 0) {
     return response.okList([], countResult[0].total, page, limit)
   }
-
-  // 批量查商品
-  const goodsIds = sceneGoodsRows.map(r => r.goods_id)
-  const goodsRows = await db.query(
-    `SELECT id, name, brief, pic_url, retail_price, is_new, is_hot
-     FROM litemall_goods WHERE id IN (${goodsIds.map(() => '?').join(',')}) AND deleted = 0 AND status = 'published'`,
-    goodsIds
-  )
 
   return response.okList(goodsRows.map(toGoodsCamel), countResult[0].total, page, limit)
 }

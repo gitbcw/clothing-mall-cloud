@@ -16,7 +16,7 @@ const CONFIG_MODULES = {
   express:      { prefix: 'litemall_express_%',         prefixes: null,                                                                listPerm: 'admin:config:express:list',    updatePerm: 'admin:config:express:updateConfigs' },
   order:        { prefix: null,                          prefixes: ['litemall_order_%', 'litemall_presale_%'],                          listPerm: 'admin:config:order:list',      updatePerm: 'admin:config:order:updateConfigs' },
   wx:           { prefix: 'litemall_wx_%',              prefixes: null,                                                                listPerm: 'admin:config:wx:list',         updatePerm: 'admin:config:wx:updateConfigs' },
-  promotion:    { prefix: null,                          prefixes: ['litemall_newuser_%', 'litemall_birthday_%', 'litemall_wework_%'],  listPerm: 'admin:config:promotion:list',   updatePerm: 'admin:config:promotion:updateConfigs' },
+  promotion:    { prefix: null,                          prefixes: ['litemall_newuser_%', 'litemall_birthday_%'],                       listPerm: 'admin:config:promotion:list',   updatePerm: 'admin:config:promotion:updateConfigs' },
   homeActivity: { prefix: 'litemall_home_activity_%',   prefixes: null,                                                                listPerm: 'admin:config:promotion:list',   updatePerm: 'admin:config:promotion:updateConfigs' },
 }
 
