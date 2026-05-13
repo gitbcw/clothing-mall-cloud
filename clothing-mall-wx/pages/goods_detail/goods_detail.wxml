@@ -49,8 +49,14 @@
       <text class="price-symbol">￥</text>
       <text class="price-num">{{goods.specialPrice}}</text>
       <view class="price-tag">特价</view>
-          </view>
+      <text class="detail-original-price" wx:if="{{goods.tagPrice}}">￥{{goods.tagPrice}}</text>
+    </view>
     <!-- 普通价格 -->
+    <view class="price-wrap" wx:elif="{{goods.tagPrice}}">
+      <text class="price-symbol">￥</text>
+      <text class="price-num">{{goods.retailPrice}}</text>
+      <text class="detail-original-price">￥{{goods.tagPrice}}</text>
+    </view>
     <view class="price-wrap" wx:else>
       <text class="price-symbol">￥</text>
       <text class="price-num">{{goods.retailPrice}}</text>
@@ -63,37 +69,17 @@
     </view>
   </view>
 
-  <!-- 服务与选择区块（暂时隐藏） -->
-  <!--
+  <!-- 服务区块 -->
   <view class="service-section">
-    <view class="service-item" bindtap="selectAddress">
-      <text class="label">配送</text>
-      <view class="content">
-        <view class="location-icon"></view>
-        <text class="value" wx:if="{{checkedAddress}}">{{checkedAddress.name}} {{checkedAddress.tel}} {{checkedAddress.address}}</text>
-        <text class="value" wx:else>请选择收货地址</text>
-      </view>
-      <view class="arrow"></view>
-    </view>
     <view class="service-item" bindtap="openServicePopup">
       <text class="label">服务</text>
       <view class="content">
         <view class="heart-icon"></view>
-        <text class="value">只换不退 · 正品保障</text>
-      </view>
-      <view class="arrow"></view>
-    </view>
-    <view class="service-item no-border" bindtap="openSkuPicker">
-      <text class="label">规格</text>
-      <view class="content">
-        <view class="clothes-icon"></view>
-        <text class="value" wx:if="{{selectedSize}}">已选：{{selectedSize}} x {{selectedQuantity}}</text>
-        <text class="value" wx:else>{{checkedSpecText}}</text>
+        <text class="value">线下实体店 · 支持更换一次</text>
       </view>
       <view class="arrow"></view>
     </view>
   </view>
-  -->
 
   <!-- 商品参数 -->
   <view class="attr-section" wx:if="{{attribute.length > 0}}">
@@ -122,7 +108,7 @@
       </block>
 
       <!-- 尺码对照表 -->
-      <view class="size-chart-wrap">
+      <view class="size-chart-wrap" wx:if="{{enableSize}}">
         <view class="size-chart-title">尺码对照表</view>
         <view class="table-container">
           <view class="table-row header">
@@ -165,7 +151,15 @@
         <image class="related-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onGoodsDetailImageError" data-source="relatedGoods" data-index="{{index}}"></image>
         <view class="related-info">
           <view class="related-title">{{item.name}}</view>
-          <view class="related-price">￥{{item.retailPrice}}</view>
+          <view wx:if="{{item.specialPrice}}" class="related-price-wrap">
+            <text class="related-price">￥{{item.specialPrice}}</text>
+            <text class="related-original-price" wx:if="{{item.tagPrice}}">￥{{item.tagPrice}}</text>
+          </view>
+          <view wx:elif="{{item.tagPrice}}" class="related-price-wrap">
+            <text class="related-price">￥{{item.retailPrice}}</text>
+            <text class="related-original-price">￥{{item.tagPrice}}</text>
+          </view>
+          <view wx:else class="related-price">￥{{item.retailPrice}}</view>
         </view>
       </view>
     </view>
@@ -207,8 +201,8 @@
       </view>
       <view class="service-popup-body">
         <view class="service-popup-item">
-          <view class="service-popup-item-title">只换不退</view>
-          <view class="service-popup-item-desc">商品支持7天内换货服务，如有尺码不合适等问题可申请换货。</view>
+          <view class="service-popup-item-title">线下实体店更换</view>
+          <view class="service-popup-item-desc">线下实体店购物，支持到店更换一次，尺码不合适可到店更换。</view>
         </view>
         <view class="service-popup-item">
           <view class="service-popup-item-title">正品保障</view>

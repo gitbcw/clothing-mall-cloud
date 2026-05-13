@@ -87,6 +87,7 @@ module.exports = {
   CouponSelectList: WxApiRoot + 'coupon/selectlist', //当前订单可用优惠券列表
   CouponReceive: WxApiRoot + 'coupon/receive', //优惠券领取
   CouponExchange: WxApiRoot + 'coupon/exchange', //优惠券兑换
+  CouponPopup: WxApiRoot + 'coupon/popup', //弹窗推荐券
 
   StorageUpload: WxApiRoot + 'storage/upload', //图片上传,
   SceneList: WxApiRoot + 'scene/list',
@@ -131,6 +132,7 @@ module.exports = {
   ManagerOrderRefundAgree: WxApiRoot + 'manager/order/refundAgree', // 同意退款
   ManagerOrderRefundReject: WxApiRoot + 'manager/order/refundReject', // 拒绝退款
   ManagerOrderVerify: WxApiRoot + 'manager/order/verify', // 核销自提订单
+  ManagerOrderPrepare: WxApiRoot + 'manager/order/prepare', // 确认备货
   ManagerStats: WxApiRoot + 'manager/order/stats', // 管理后台统计数据
   ManagerAftersaleList: WxApiRoot + 'manager/order/aftersale/list', // 售后列表
   ManagerAftersaleRecept: WxApiRoot + 'manager/order/aftersale/recept', // 审核通过
@@ -173,15 +175,28 @@ module.exports = {
   ManagerIssueUpdate: WxApiRoot + 'manager/issue/update', // 更新问题
   ManagerIssueDelete: WxApiRoot + 'manager/issue/delete', // 删除问题
 
-  // 管理端企微推送接口
-  ManagerWeWorkTags: WxApiRoot + 'manager/wework/tags', // 企微标签列表
-  ManagerWeWorkPages: WxApiRoot + 'manager/wework/pages', // 可跳转页面列表
-  ManagerWeWorkUploadMedia: WxApiRoot + 'manager/wework/uploadMedia', // 上传素材到企微
-  ManagerWeWorkSendCard: WxApiRoot + 'manager/wework/sendCard', // 发送小程序卡片
-  ManagerWeWorkSendMessage: WxApiRoot + 'manager/wework/sendMessage', // 发送消息
-  ManagerWeWorkPushGroups: WxApiRoot + 'manager/wework/pushGroups', // 推送分组列表
-
   // 管理端系统配置接口
   ManagerSystemConfigList: WxApiRoot + 'manager/system/configList',
   ManagerSystemConfigUpdate: WxApiRoot + 'manager/system/configUpdate',
+
+  // 管理端优惠券接口
+  ManagerCouponList: WxApiRoot + 'manager/coupon/list',
+  ManagerCouponCreate: WxApiRoot + 'manager/coupon/create',
+  ManagerCouponRead: WxApiRoot + 'manager/coupon/read',
+  ManagerCouponUpdate: WxApiRoot + 'manager/coupon/update',
+  ManagerCouponDelete: WxApiRoot + 'manager/coupon/delete',
+
+  // 管理端特价接口
+  ManagerGoodsSetSpecialPrice: WxApiRoot + 'manager/goods/setSpecialPrice',
+  ManagerGoodsCancelSpecialPrice: WxApiRoot + 'manager/goods/cancelSpecialPrice',
+
+  // 管理端节日活动接口
+  ManagerHolidayList: WxApiRoot + 'manager/holiday/list',
+  ManagerHolidayCreate: WxApiRoot + 'manager/holiday/create',
+  ManagerHolidayRead: WxApiRoot + 'manager/holiday/read',
+  ManagerHolidayUpdate: WxApiRoot + 'manager/holiday/update',
+  ManagerHolidayDelete: WxApiRoot + 'manager/holiday/delete',
+  ManagerHolidayEnable: WxApiRoot + 'manager/holiday/enable',
+  ManagerHolidayGoods: WxApiRoot + 'manager/holiday/goods',
+  ManagerHolidayGoodsUpdate: WxApiRoot + 'manager/holiday/goods/update',
 };

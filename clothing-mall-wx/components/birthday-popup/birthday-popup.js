@@ -52,6 +52,10 @@ Component({
       this.triggerEvent('skip');
     },
 
+    openPrivacy: function() {
+      util.openPrivacyContract('/pages/agreement/agreement?type=privacy');
+    },
+
     /**
      * 提交生日
      */
@@ -63,9 +67,13 @@ Component({
 
       this.setData({ loading: true });
 
-      util.request(api.UserProfile, {
-        birthday: this.data.birthday
-      }, 'POST').then(res => {
+      util.ensurePrivacyAuthorized({
+        message: '提交生日信息前，请先阅读并同意小程序用户隐私保护指引。'
+      }).then(() => {
+        return util.request(api.UserProfile, {
+          birthday: this.data.birthday
+        }, 'POST');
+      }).then(res => {
         this.setData({ loading: false });
         if (res.errno === 0) {
           this.triggerEvent('submit', { birthday: this.data.birthday, coupon: res.data && res.data.coupon || null });
@@ -74,7 +82,9 @@ Component({
         }
       }).catch(err => {
         this.setData({ loading: false });
-        util.showErrorToast('网络错误');
+        if (!err || err.errmsg !== 'privacy authorization denied') {
+          util.showErrorToast('网络错误');
+        }
       });
     },
 

@@ -1,5 +1,6 @@
 var util = require('../../../utils/util.js');
 var api = require('../../../config/api.js');
+var homeRefresh = require('../../../utils/home-refresh.js');
 
 Page({
   data: {
@@ -54,6 +55,7 @@ Page({
       id: id,
       status: status === 1 ? 0 : 1
     }, 'POST').then(function() {
+      homeRefresh.markHomeRefreshNeeded();
       that.loadOutfits();
     });
   },
@@ -69,6 +71,7 @@ Page({
         if (res.confirm) {
           util.request(api.ManagerOutfitDelete, { id: id }, 'POST').then(function() {
             wx.showToast({ title: '已删除', icon: 'success' });
+            homeRefresh.markHomeRefreshNeeded();
             that.loadOutfits();
           });
         }

@@ -42,6 +42,7 @@
         <el-form-item label="商品主图">
           <div class="upload-area">
             <el-upload
+              action="#"
               :http-request="cloudUpload"
               :show-file-list="false"
               :auto-upload="false"
@@ -69,6 +70,7 @@
         <!-- 吊牌识别 -->
         <el-form-item label="吊牌识别">
           <el-upload
+            action="#"
             :http-request="handleTagUpload"
             :show-file-list="false"
             accept=".jpg,.jpeg,.png"
@@ -81,6 +83,7 @@
         <!-- 轮播图 -->
         <el-form-item label="商品轮播图">
           <el-upload
+            action="#"
             :http-request="cloudUpload"
             :limit="9"
             :file-list="galleryFileList"
@@ -259,7 +262,7 @@ export default {
   methods: {
     init() {
       listCatAndBrand().then(response => {
-        this.categoryList = response.data.data.categoryList
+        this.categoryList = (response.data.data.categoryList || []).map(item => ({ value: item.id, label: item.name }))
       })
       listScene({ page: 1, limit: 100 }).then(response => {
         const list = response.data.data.list || response.data.data || []
@@ -456,11 +459,24 @@ export default {
 
       return {
         goods: {
-          ...this.goods,
           status,
           scene_tags: sceneNames,
           goods_params: params,
-          cat_id: this.goods.categoryId || 0,
+          category_id: this.goods.categoryId || 0,
+          name: this.goods.name,
+          goods_sn: this.goods.goodsSn || '',
+          brand_id: this.goods.brandId || 0,
+          gallery: this.goods.gallery,
+          pic_url: this.goods.picUrl,
+          detail: this.goods.detail,
+          keywords: this.goods.keywords,
+          brief: this.goods.brief,
+          is_new: this.goods.isNew ? 1 : 0,
+          is_hot: this.goods.isHot ? 1 : 0,
+          sort_order: this.goods.sortOrder || 100,
+          retail_price: this.goods.retailPrice || 0,
+          special_price: this.goods.specialPrice || null,
+          is_special_price: this.goods.isSpecialPrice ? 1 : 0,
         },
         specifications: [],
         products: [],

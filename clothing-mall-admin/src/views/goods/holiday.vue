@@ -26,7 +26,7 @@
       </el-table-column>
       <el-table-column align="center" label="活动日期" min-width="200">
         <template slot-scope="scope">
-          <span class="date-range">{{ scope.row.startDate }} ~ {{ scope.row.endDate }}</span>
+          <span class="date-range">{{ formatDate(scope.row.startDate) }} ~ {{ formatDate(scope.row.endDate) }}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="排序" prop="sortOrder" width="70" />
@@ -200,6 +200,15 @@ export default {
         disabled: 'info'
       }
       return map[this.computeStatus(row)] || 'info'
+    },
+    formatDate(date) {
+      if (!date) return ''
+      if (typeof date === 'string') return date.substring(0, 10)
+      const d = new Date(date)
+      const y = d.getFullYear()
+      const m = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      return `${y}-${m}-${day}`
     },
     handleFilterChange() {
       // filteredList is computed, UI updates automatically

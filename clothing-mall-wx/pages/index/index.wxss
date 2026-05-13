@@ -246,7 +246,6 @@ page {
 }
 
 .hot-scroll-wrapper {
-  overflow: hidden;
   width: 100%;
   padding: 0;
 }
@@ -254,16 +253,6 @@ page {
 .hot-scroll-inner {
   display: inline-flex;
   white-space: nowrap;
-  animation: hotScrollLoop linear infinite;
-}
-
-@keyframes hotScrollLoop {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 .hot-list {
@@ -311,6 +300,13 @@ page {
   display: flex;
   align-items: baseline;
   margin-bottom: 12rpx;
+}
+
+.price-original {
+  font-size: 22rpx;
+  color: #CCCCCC;
+  text-decoration: line-through;
+  margin-left: 8rpx;
 }
 
 .buy-btn {
@@ -659,7 +655,6 @@ page {
 }
 
 .outfit-scroll-wrapper {
-  overflow: hidden;
   width: 100%;
   padding: 0 24rpx;
   box-sizing: border-box;
@@ -668,16 +663,6 @@ page {
 .outfit-scroll-inner {
   display: inline-flex;
   white-space: nowrap;
-  animation: outfitScrollLoop linear infinite;
-}
-
-@keyframes outfitScrollLoop {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
 }
 
 .outfit-item-wrap {

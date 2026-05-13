@@ -1,0 +1,305 @@
+@import "../../../styles/manager-common.wxss";
+
+.container {
+  min-height: 100vh;
+  background-color: #F7F8FA;
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
+}
+
+/* ---- 导航栏 ---- */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30rpx;
+  position: relative;
+}
+
+.nav-back {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-back-icon {
+  width: 18rpx;
+  height: 18rpx;
+  border-left: 4rpx solid #333;
+  border-bottom: 4rpx solid #333;
+  transform: rotate(45deg);
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.nav-save-text {
+  font-size: 28rpx;
+  color: #FF8096;
+  font-weight: 500;
+}
+
+.nav-placeholder {
+  background: transparent;
+}
+
+/* ---- 表单 ---- */
+.form-section {
+  padding: 20rpx 24rpx;
+}
+
+.form-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 30rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.form-item:last-child {
+  border-bottom: none;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  flex-shrink: 0;
+  width: 160rpx;
+}
+
+.form-input {
+  flex: 1;
+  text-align: right;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.form-picker {
+  flex: 1;
+  text-align: right;
+}
+
+.picker-value {
+  font-size: 28rpx;
+  color: #333;
+}
+
+.picker-placeholder {
+  font-size: 28rpx;
+  color: #CCC;
+}
+
+/* ---- 排序控件 ---- */
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.sort-btn {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F5F5F5;
+  border-radius: 50%;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.sort-btn:active {
+  background: #E8E8E8;
+}
+
+.sort-value {
+  font-size: 28rpx;
+  color: #333;
+  min-width: 40rpx;
+  text-align: center;
+}
+
+/* ---- 开关 ---- */
+.toggle-switch {
+  width: 88rpx;
+  height: 48rpx;
+  border-radius: 24rpx;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.switch-on {
+  background: #FF8096;
+}
+
+.switch-off {
+  background: #DDD;
+}
+
+.switch-dot {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #FFFFFF;
+  position: absolute;
+  top: 4rpx;
+  transition: left 0.2s;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.15);
+}
+
+.switch-on .switch-dot {
+  left: 44rpx;
+}
+
+.switch-off .switch-dot {
+  left: 4rpx;
+}
+
+/* ---- 关联商品 ---- */
+.goods-section {
+  margin: 20rpx 24rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx 30rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 600;
+}
+
+.add-goods-btn {
+  font-size: 26rpx;
+  color: #FF8096;
+  font-weight: 500;
+}
+
+.goods-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.goods-item {
+  display: flex;
+  align-items: center;
+  background: #FAFAFA;
+  border-radius: 12rpx;
+  padding: 16rpx;
+}
+
+.goods-img {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 8rpx;
+  flex-shrink: 0;
+  margin-right: 16rpx;
+}
+
+.goods-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.goods-name {
+  font-size: 26rpx;
+  color: #333;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.goods-price {
+  font-size: 22rpx;
+  color: #FF4444;
+  margin-top: 4rpx;
+  display: block;
+}
+
+.goods-remove {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-x {
+  font-size: 32rpx;
+  color: #CCC;
+}
+
+.goods-empty {
+  padding: 40rpx 0;
+  text-align: center;
+}
+
+.goods-empty-text {
+  font-size: 24rpx;
+  color: #BBB;
+}
+
+/* ---- 保存按钮 ---- */
+.save-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 40rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  border-top: 1rpx solid rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+.save-btn {
+  background: #FF8096;
+  color: #FFFFFF;
+  border-radius: 44rpx;
+  padding: 24rpx 0;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.save-btn:active {
+  opacity: 0.85;
+}
+
+.btn-disabled {
+  opacity: 0.5;
+}

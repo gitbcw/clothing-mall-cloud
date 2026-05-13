@@ -1,7 +1,7 @@
 {
   "cloudfunctionRoot": "",
   "cloudbaseConfig": {
-    "env": "clo-test-4g8ukdond34672de"
+    "env": "cloudbase-d3g1zmq7r388144eb"
   },
   "setting": {
     "es6": true,
@@ -38,7 +38,7 @@
     ],
     "include": []
   },
-  "appid": "wx1809b86df93c5107",
+  "appid": "wx07e5af39e1096d3d",
   "editorSetting": {},
   "libVersion": "3.15.0"
 }

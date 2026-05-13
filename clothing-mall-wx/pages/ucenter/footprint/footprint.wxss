@@ -189,6 +189,18 @@ page {
   font-weight: 600;
 }
 
+.goods-price-wrap {
+  display: flex;
+  align-items: baseline;
+}
+
+.goods-original-price {
+  font-size: 22rpx;
+  color: #CCCCCC;
+  text-decoration: line-through;
+  margin-left: 8rpx;
+}
+
 /* ================================================================
    Footer
    ================================================================ */

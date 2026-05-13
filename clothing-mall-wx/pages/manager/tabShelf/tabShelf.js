@@ -1,5 +1,6 @@
 const util = require('../../../utils/util.js');
 const api = require('../../../config/api.js');
+const homeRefresh = require('../../../utils/home-refresh.js');
 
 // 防抖函数
 function debounce(fn, delay) {
@@ -182,6 +183,7 @@ Page({
     util.request(api.ManagerGoodsCreate, data, 'POST').then(function(res) {
       if (res.errno === 0) {
         wx.showToast({ title: '保存成功', icon: 'success' });
+        homeRefresh.markHomeRefreshNeeded();
         that.clearDraft();
       } else {
         wx.showToast({ title: res.errmsg || '保存失败', icon: 'none' });
@@ -199,6 +201,7 @@ Page({
         util.request(api.ManagerGoodsPublish, { id: goodsId }, 'POST').then(function(res2) {
           if (res2.errno === 0) {
             wx.showToast({ title: '上架成功', icon: 'success' });
+            homeRefresh.markHomeRefreshNeeded();
             that.clearDraft();
             that.setData({ activeSubTab: 'list', listTab: 'on_sale' });
             that.refreshGoodsList();
@@ -314,6 +317,7 @@ Page({
           util.request(api.ManagerGoodsUnpublish, { ids: [id] }, 'POST').then(function(res) {
             if (res.errno === 0) {
               wx.showToast({ title: '已下架', icon: 'success' });
+              homeRefresh.markHomeRefreshNeeded();
               that.refreshGoodsList();
             } else {
               wx.showToast({ title: res.errmsg || '操作失败', icon: 'none' });
@@ -330,6 +334,7 @@ Page({
     util.request(api.ManagerGoodsPublish, { ids: [id] }, 'POST').then(function(res) {
       if (res.errno === 0) {
         wx.showToast({ title: '已上架', icon: 'success' });
+        homeRefresh.markHomeRefreshNeeded();
         that.refreshGoodsList();
       } else {
         wx.showToast({ title: res.errmsg || '操作失败', icon: 'none' });
@@ -348,6 +353,7 @@ Page({
           util.request(api.ManagerGoodsBatchDelete, { ids: [id] }, 'POST').then(function(res) {
             if (res.errno === 0) {
               wx.showToast({ title: '已删除', icon: 'success' });
+              homeRefresh.markHomeRefreshNeeded();
               that.refreshGoodsList();
             } else {
               wx.showToast({ title: res.errmsg || '删除失败', icon: 'none' });
@@ -368,6 +374,7 @@ Page({
           util.request(api.ManagerGoodsUnpublishAll, {}, 'POST').then(function(res) {
             if (res.errno === 0) {
               wx.showToast({ title: '已全部下架', icon: 'success' });
+              homeRefresh.markHomeRefreshNeeded();
               that.refreshGoodsList();
             } else {
               wx.showToast({ title: res.errmsg || '操作失败', icon: 'none' });
@@ -442,6 +449,7 @@ Page({
           util.request(api.ManagerGoodsBatchDelete, { ids: ids }, 'POST').then(function(res) {
             if (res.errno === 0) {
               wx.showToast({ title: '删除成功', icon: 'success' });
+              homeRefresh.markHomeRefreshNeeded();
               that.setData({ batchMode: false, selectedIds: [], selectedMap: {} });
               that.refreshGoodsList();
             } else {

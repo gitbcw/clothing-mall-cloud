@@ -111,4 +111,5 @@
       <text>{{saving ? '保存中...' : '保存'}}</text>
     </view>
   </view>
+  <privacy-dialog />
 </view>

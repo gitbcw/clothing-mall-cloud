@@ -14,6 +14,8 @@
     "pages/auth/accountLogin/accountLogin",
     "pages/auth/register/register",
     "pages/auth/reset/reset",
+    "pages/agreement/agreement",
+    "pages/ucenter/accountSecurity/accountSecurity",
     "pages/ucenter/address/address",
     "pages/ucenter/addressAdd/addressAdd",
     "pages/ucenter/couponList/couponList",
@@ -40,9 +42,13 @@
     "pages/manager/goodsPicker/goodsPicker",
     "pages/manager/issueManage/issueManage",
     "pages/manager/issueEdit/issueEdit",
-    "pages/manager/pushSend/pushSend",
     "pages/manager/verify/verify",
-    "pages/manager/systemConfig/systemConfig"
+    "pages/manager/systemConfig/systemConfig",
+    "pages/manager/couponManage/couponManage",
+    "pages/manager/couponEdit/couponEdit",
+    "pages/manager/specialPrice/specialPrice",
+    "pages/manager/holidayManage/holidayManage",
+    "pages/manager/holidayEdit/holidayEdit"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -94,7 +100,8 @@
     "van-tag": "./lib/vant-weapp/tag/index",
     "van-icon": "./lib/vant-weapp/icon/index",
     "van-checkbox": "./lib/vant-weapp/checkbox/index",
-    "van-steps": "./lib/vant-weapp/steps/index"
+    "van-steps": "./lib/vant-weapp/steps/index",
+    "privacy-dialog": "./components/privacy-dialog/privacy-dialog"
   },
   "sitemapLocation": "sitemap.json"
 }

@@ -116,7 +116,7 @@ Page({
   },
 
   goUse() {
-    wx.switchTab({ url: '/pages/index/index' });
+    wx.switchTab({ url: '/pages/category/category' });
   },
 
   showExpiredCoupons() {

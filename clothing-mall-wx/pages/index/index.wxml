@@ -9,8 +9,6 @@
       <swiper-item wx:for="{{banners}}" wx:key="id" bindtap="goToScene" data-scene-id="{{item.id}}" data-scene-name="{{item.name}}" data-index="{{index}}">
         <view class="banner-slide">
           <image src="{{img.url(item.posterUrl)}}" mode="aspectFill" class="banner-image" binderror="onHomeImageError" data-source="banner" data-index="{{index}}" />
-          <!-- 艺术水印 -->
-          <view class="banner-watermark">{{item.name}}</view>
           <!-- 底部场景信息 -->
           <view class="banner-text-overlay">
             <view class="banner-info-block">
@@ -26,7 +24,7 @@
     </swiper>
 
     <!-- 活动位 -->
-    <view class="activity-section" wx:if="{{activityGoodsTop.length > 0 || activityGoodsBottom.length > 0}}" style="{{activityBgImage ? 'background-image: url(' + activityBgImage + ')' : ''}}">
+    <view class="activity-section" wx:if="{{activityGoodsTop.length > 0 || activityGoodsBottom.length > 0}}" style="{{activityBgStyle}}">
       <view class="section-header-weekly">
         <text class="section-title-cn">{{activityTitle}}</text>
         <text class="section-title-en">{{activityTitleEn}}</text>
@@ -97,13 +95,18 @@
           <text class="subtitle">HOT</text>
         </view>
       </view>
-      <view class="hot-scroll-wrapper" bindtouchstart="pauseHotScroll" bindtouchend="resumeHotScroll">
-        <view class="hot-scroll-inner" style="animation-duration: {{hotScrollDuration}}s; animation-play-state: {{hotScrollPaused ? 'paused' : 'running'}}">
-          <view class="hot-item" wx:for="{{hotSalesScroll}}" wx:key="{{item.id}}_{{index}}" bindtap="goToDetail" data-id="{{item.id}}">
+      <scroll-view class="hot-scroll-wrapper" scroll-x enhanced show-scrollbar="{{false}}" scroll-left="{{hotScrollLeft}}" bindscroll="onHotScroll" bindtouchstart="pauseHotScroll" bindtouchend="resumeHotScroll">
+        <view class="hot-scroll-inner">
+          <view class="hot-item" wx:for="{{hotSalesScroll}}" wx:key="_scrollKey" bindtap="goToDetail" data-id="{{item.id}}">
             <image class="hot-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill" binderror="onHomeImageError" data-source="hotSales" data-index="{{index % hotSales.length}}"></image>
             <view class="hot-info">
               <view class="hot-title">【川着】{{item.name}}</view>
-              <view class="hot-price-wrap">
+              <view wx:if="{{item.specialPrice}}" class="hot-price-wrap">
+                <text class="price-symbol theme-color">￥</text>
+                <text class="price-num theme-color">{{item.specialPrice}}</text>
+                <text class="price-original">￥{{item.retailPrice}}</text>
+              </view>
+              <view wx:else class="hot-price-wrap">
                 <text class="price-symbol theme-color">￥</text>
                 <text class="price-num theme-color">{{item.retailPrice}}</text>
               </view>
@@ -111,7 +114,7 @@
             </view>
           </view>
         </view>
-      </view>
+      </scroll-view>
     </view>
 
     <!-- 搭配推荐（匀速无限循环滚动） -->
@@ -120,9 +123,9 @@
         <view class="section-title-cn" style="font-style: normal; font-size: 36rpx; margin-bottom: 8rpx; display: block; color: #333;">搭配推荐</view>
         <view class="section-title-en" style="font-size: 24rpx; color: #FF8096; margin: 0; letter-spacing: 2rpx; display: block; font-weight: normal;">SELECTION LIST</view>
       </view>
-      <view class="outfit-scroll-wrapper" bindtouchstart="pauseOutfitScroll" bindtouchend="resumeOutfitScroll">
-        <view class="outfit-scroll-inner" style="animation-duration: {{outfitScrollDuration}}s; animation-play-state: {{outfitScrollPaused ? 'paused' : 'running'}}">
-          <view class="outfit-item-wrap" wx:for="{{outfitScrollList}}" wx:key="{{item.id}}_{{index}}" bindtap="goToOutfit" data-id="{{item.id}}">
+      <scroll-view class="outfit-scroll-wrapper" scroll-x enhanced show-scrollbar="{{false}}" scroll-left="{{outfitScrollLeft}}" bindscroll="onOutfitScroll" bindtouchstart="pauseOutfitScroll" bindtouchend="resumeOutfitScroll">
+        <view class="outfit-scroll-inner">
+          <view class="outfit-item-wrap" wx:for="{{outfitScrollList}}" wx:key="_scrollKey" bindtap="goToOutfit" data-id="{{item.id}}">
             <!-- 背景海报图 -->
             <image src="{{img.url(item.coverPic)}}" mode="aspectFill" class="outfit-bg-img" binderror="onHomeImageError" data-source="matchRecommends" data-index="{{index % matchRecommends.length}}" />
             <!-- 品牌水印（磨砂卡片） -->
@@ -136,13 +139,16 @@
               <scroll-view class="outfit-goods-scroll" scroll-y enhanced show-scrollbar="{{false}}">
                 <view class="outfit-good-item" wx:for="{{item.goods}}" wx:key="id" wx:for-item="good" catchtap="goToDetail" data-id="{{good.id}}">
                   <image src="{{img.url(good.picUrl)}}" mode="aspectFill" class="outfit-good-img" />
-                  <view class="outfit-good-price">¥{{good.retailPrice}}</view>
+                  <view class="outfit-good-price-wrap">
+                    <text wx:if="{{good.specialPrice}}" class="outfit-good-price">¥{{good.specialPrice}}</text>
+                    <text wx:else class="outfit-good-price">¥{{good.retailPrice}}</text>
+                  </view>
                 </view>
               </scroll-view>
             </view>
           </view>
         </view>
-      </view>
+      </scroll-view>
     </view>
 
     <!-- 饰饰如意 -->
@@ -158,7 +164,12 @@
           <view class="grid-info">
             <view class="grid-title">{{item.name}}</view>
             <view class="grid-bottom">
-              <view class="grid-price-wrap">
+              <view wx:if="{{item.specialPrice}}" class="grid-price-wrap">
+                <text class="price-symbol theme-color">￥</text>
+                <text class="price-num theme-color">{{item.specialPrice}}</text>
+                <text class="price-original">￥{{item.retailPrice}}</text>
+              </view>
+              <view wx:else class="grid-price-wrap">
                 <text class="price-symbol theme-color">￥</text>
                 <text class="price-num theme-color">{{item.retailPrice}}</text>
               </view>
@@ -188,5 +199,13 @@
     bind:close="closeSkuPicker"
     bind:addcart="skuAddToCart"
     bind:buynow="skuBuyNow"
+  />
+
+  <!-- 优惠券弹窗 -->
+  <coupon-popup
+    show="{{showCouponPopup}}"
+    coupons="{{popupCoupons}}"
+    bind:close="onCouponPopupClose"
+    bind:receive="onCouponReceive"
   />
 </view>

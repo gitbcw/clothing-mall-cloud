@@ -14,7 +14,7 @@ Page({
       avatarUrl: '/static/images/user.png'
     },
     headerBgDefaultImage: '/static/images/fallback-image.svg',
-    headerBgImage: 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80',
+    headerBgImage: 'cloud://cloudbase-d3g1zmq7r388144eb.636c-cloudbase-d3g1zmq7r388144eb-1427677265/static/images/transmute-wbg.jpg',
     avatarDefaultImage: '/static/images/user.png',
     avatarLoadError: false,
     order: {
@@ -25,6 +25,7 @@ Page({
     hasLogin: false,
     couponCount: 0,
     loading: true,
+    roleLoading: false,
     // 管理员相关
     isManager: false,
     userRole: 'user'
@@ -58,7 +59,8 @@ Page({
         userInfo: userInfo || { nickName: '用户', avatarUrl: '/static/images/user.png' },
         hasLogin: true,
         avatarLoadError: false,
-        loading: false
+        loading: false,
+        roleLoading: true
       })
 
       // 获取订单统计
@@ -73,6 +75,7 @@ Page({
         avatarLoadError: false,
         isManager: false,
         userRole: 'user',
+        roleLoading: false,
         loading: false,
         userInfo: {
           nickName: '点击登录',
@@ -89,13 +92,17 @@ Page({
       if (res.errno === 0) {
         that.setData({
           isManager: res.data.isManager,
-          userRole: res.data.role
+          userRole: res.data.role,
+          roleLoading: false
         })
+      } else {
+        that.setData({ roleLoading: false })
       }
     }).catch(function() {
       that.setData({
         isManager: false,
-        userRole: 'user'
+        userRole: 'user',
+        roleLoading: false
       })
     })
   },
@@ -193,19 +200,6 @@ Page({
     }
   },
 
-  // 跳转地址管理
-  goAddress() {
-    if (this.data.hasLogin) {
-      wx.navigateTo({
-        url: '/pages/ucenter/address/address'
-      })
-    } else {
-      wx.navigateTo({
-        url: '/pages/auth/login/login'
-      })
-    }
-  },
-
   // 跳转收藏
   goCollect() {
     if (this.data.hasLogin) {
@@ -224,6 +218,19 @@ Page({
     if (this.data.hasLogin) {
       wx.navigateTo({
         url: '/pages/ucenter/footprint/footprint'
+      })
+    } else {
+      wx.navigateTo({
+        url: '/pages/auth/login/login'
+      })
+    }
+  },
+
+  // 跳转地址管理
+  goAddress() {
+    if (this.data.hasLogin) {
+      wx.navigateTo({
+        url: '/pages/ucenter/address/address'
       })
     } else {
       wx.navigateTo({
@@ -253,17 +260,11 @@ Page({
     })
   },
 
-  // 跳转个人信息
-  goUserInfo() {
-    if (this.data.hasLogin) {
-      wx.navigateTo({
-        url: '/pages/ucenter/userInfo/userInfo'
-      })
-    } else {
-      wx.navigateTo({
-        url: '/pages/auth/login/login'
-      })
-    }
+  // 跳转账号与隐私
+  goAccountSecurity() {
+    wx.navigateTo({
+      url: '/pages/ucenter/accountSecurity/accountSecurity'
+    })
   },
 
   // 跳转管理后台

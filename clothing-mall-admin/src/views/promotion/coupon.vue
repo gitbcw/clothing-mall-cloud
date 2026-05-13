@@ -54,6 +54,13 @@
         <template slot-scope="scope">{{ scope.row.total != 0 ? scope.row.total : $t('promotion_coupon.text.unlimited') }}</template>
       </el-table-column>
 
+      <el-table-column align="center" label="弹窗推荐" prop="popup">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.popup === 1" type="success" size="mini">是</el-tag>
+          <el-tag v-else type="info" size="mini">否</el-tag>
+        </template>
+      </el-table-column>
+
       <el-table-column align="center" :label="$t('promotion_coupon.table.status')" prop="status">
         <template slot-scope="scope">{{ scope.row.status | formatStatus }}</template>
       </el-table-column>
@@ -120,6 +127,9 @@
           <el-input v-model="dataForm.total">
             <template slot="append">{{ $t('promotion_coupon.text.units') }}</template>
           </el-input>
+        </el-form-item>
+        <el-form-item label="弹窗推荐">
+          <el-switch v-model="dataForm.popup" :active-value="1" :inactive-value="0" active-text="首页弹窗展示" inactive-text="不弹窗" />
         </el-form-item>
         <el-form-item :label="$t('promotion_coupon.form.time_type')">
           <el-radio-group v-model="dataForm.timeType">
@@ -366,7 +376,8 @@ export default {
         startTime: null,
         endTime: null,
         discountType: 0,
-        itemLimit: 0
+        itemLimit: 0,
+        popup: 0
       },
       dialogFormVisible: false,
       dialogStatus: '',

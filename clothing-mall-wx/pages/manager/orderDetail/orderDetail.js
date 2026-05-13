@@ -53,8 +53,9 @@ Page({
           301: '已发货',
           401: '已收货',
           402: '已收货(系统)',
-          501: '待核销',
-          502: '已核销'
+          501: '备货中',
+          502: '已核销',
+          505: '已备货'
         };
         order.orderStatusText = statusMap[order.orderStatus] || '未知状态';
 
@@ -160,7 +161,31 @@ Page({
     });
   },
 
-  // ========== 核销（501→502） ==========
+  // ========== 确认备货（501→505） ==========
+
+  handlePrepare() {
+    let that = this;
+    wx.showModal({
+      title: '确认备货',
+      content: '确认商品已备好？确认后将生成取件码通知用户。',
+      success(res) {
+        if (res.confirm) {
+          util.request(api.ManagerOrderPrepare, {
+            orderId: that.data.orderId
+          }, 'POST').then(function(res) {
+            if (res.errno === 0) {
+              wx.showToast({ title: '备货完成', icon: 'success' });
+              that.getOrderDetail();
+            } else {
+              wx.showToast({ title: res.errmsg || '操作失败', icon: 'none' });
+            }
+          });
+        }
+      }
+    });
+  },
+
+  // ========== 核销（505→502） ==========
 
   handleVerify() {
     let that = this;

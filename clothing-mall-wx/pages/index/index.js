@@ -1,6 +1,7 @@
 const util = require('../../utils/util.js');
 const api = require('../../config/api.js');
 const tracker = require('../../utils/tracker.js');
+const homeRefresh = require('../../utils/home-refresh.js');
 
 const app = getApp();
 
@@ -15,14 +16,12 @@ Page({
     // 热销推荐
     hotSales: [],
     hotSalesScroll: [],  // 复制一份用于无限循环滚动
-    hotScrollDuration: 60,
-    hotScrollPaused: false,
+    hotScrollLeft: 0,
 
     // 搭配推荐
     matchRecommends: [],
     outfitScrollList: [],
-    outfitScrollDuration: 80,
-    outfitScrollPaused: false,
+    outfitScrollLeft: 0,
 
     // 活动位
     activityGoodsTop: [],
@@ -30,6 +29,7 @@ Page({
     activityTitle: '每周上新',
     activityTitleEn: 'NEW IN',
     activityBgImage: '',
+    activityBgStyle: '',
 
     // 饰饰如意
     accessories: [],
@@ -42,7 +42,11 @@ Page({
     bannerHeightPx: 225,
 
     // 鏾屏加载
-    loading: true
+    loading: true,
+
+    // 优惠券弹窗
+    showCouponPopup: false,
+    popupCoupons: []
   },
 
   onShareAppMessage() {
@@ -84,27 +88,51 @@ Page({
     }
     // 页面浏览埋点
     tracker.trackPageView('首页')
+    if (homeRefresh.consumeHomeRefreshNeeded()) {
+      this.loadData()
+    }
     // 刷新轮播图，确保场景修改后能及时更新
     this.loadSceneBanners()
     // 更新购物车角标
     app.fetchCartCount()
+    // 加载弹窗优惠券
+    this.loadPopupCoupons()
+    // 恢复自动滚动
+    this._startHotAutoScroll()
+    this._startOutfitAutoScroll()
   },
 
   onPageScroll() {},
 
+  onHide() {
+    this._stopHotAutoScroll()
+    this._stopOutfitAutoScroll()
+  },
+
+  onUnload() {
+    this._stopHotAutoScroll()
+    this._stopOutfitAutoScroll()
+  },
+
   // 加载数数据
   loadData() {
+    this._stopHotAutoScroll()
+    this._stopOutfitAutoScroll()
     this.setData({ loading: true })
     util.request(api.IndexUrl).then(res => {
       if (res.errno === 0) {
         const { hotGoodsList = [] } = res.data
 
         const hotSales = hotGoodsList.filter(item => item.categoryId !== 1022001)
+        const hotSalesScroll = [...hotSales, ...hotSales].map((item, i) => ({
+          ...item, _scrollKey: item.id + '_' + i
+        }))
         this.setData({
           hotSales,
-          hotSalesScroll: [...hotSales, ...hotSales],
-          hotScrollDuration: Math.max(hotSales.length * 10, 120)
+          hotSalesScroll,
+          hotScrollLeft: 0
         })
+        this._startHotAutoScroll()
 
         // 活动位数据
         const homeActivity = res.data.homeActivity
@@ -128,12 +156,16 @@ Page({
 
         // 穿搭推荐（替换原来的搭配推荐数据源）
         const outfitList = res.data.outfitList || []
+        const outfitScrollList = [...outfitList, ...outfitList].map((item, i) => ({
+          ...item, _scrollKey: item.id + '_' + i
+        }))
         this.setData({
           matchRecommends: outfitList,
-          outfitScrollList: [...outfitList, ...outfitList],
-          outfitScrollDuration: Math.max(outfitList.length * 10, 40),
+          outfitScrollList,
+          outfitScrollLeft: 0,
           loading: false
         })
+        this._startOutfitAutoScroll()
 
         // 系统配置 - 活动位背景图 & 客服信息
         const systemConfig = res.data.systemConfig || {}
@@ -144,7 +176,7 @@ Page({
         if (systemConfig.csQrCode) {
           var csUrl = systemConfig.csQrCode
           if (csUrl.indexOf('://') === -1 && csUrl.indexOf('/') !== 0) {
-            csUrl = 'https://636c-clo-test-4g8ukdond34672de-1258700476.tcb.qcloud.la/' + csUrl
+            csUrl = 'https://636c-cloudbase-d3g1zmq7r388144eb-1427677265.tcb.qcloud.la/' + csUrl
           }
           csConfig.csQrCode = csUrl
         }
@@ -154,10 +186,16 @@ Page({
         if (Object.keys(csConfig).length > 0) {
           app.globalData.csConfig = csConfig
         }
-        if (bgUrl && bgUrl.indexOf('://') === -1 && bgUrl.indexOf('/') !== 0) {
-          bgUrl = 'https://636c-clo-test-4g8ukdond34672de-1258700476.tcb.qcloud.la/' + bgUrl
+        if (bgUrl && bgUrl.indexOf('://') === -1 && bgUrl.indexOf('/') !== 0 && bgUrl.indexOf('linear-gradient') !== 0) {
+          bgUrl = 'https://636c-cloudbase-d3g1zmq7r388144eb-1427677265.tcb.qcloud.la/' + bgUrl
         }
-        this.setData({ activityBgImage: bgUrl })
+        var bgStyle = ''
+        if (bgUrl) {
+          bgStyle = bgUrl.indexOf('linear-gradient') === 0
+            ? 'background-image: ' + bgUrl
+            : 'background-image: url(' + bgUrl + ')'
+        }
+        this.setData({ activityBgImage: bgUrl, activityBgStyle: bgStyle })
       }
     }).catch(() => {
         this.setData({ loading: false })
@@ -326,21 +364,171 @@ Page({
     wx.switchTab({ url })
   },
 
-  // 热销推荐自动滚动控制
+  // 热销推荐自动滚动
+  _startHotAutoScroll() {
+    this._stopHotAutoScroll()
+    const list = this.data.hotSales
+    if (!list || list.length === 0) return
+    if (typeof this._hotScrollLeft !== 'number') {
+      this._hotScrollLeft = 0
+    }
+    this._hotAutoActive = true
+    const self = this
+    const tick = () => {
+      if (!self._hotAutoActive) return
+      self._hotScrollLeft += 2
+      self.setData({ hotScrollLeft: self._hotScrollLeft })
+      self._hotAutoTimer = setTimeout(tick, 80)
+    }
+    tick()
+  },
+
+  _stopHotAutoScroll() {
+    this._hotAutoActive = false
+    if (this._hotAutoTimer) {
+      clearTimeout(this._hotAutoTimer)
+      this._hotAutoTimer = null
+    }
+    if (this._hotResumeTimer) {
+      clearTimeout(this._hotResumeTimer)
+      this._hotResumeTimer = null
+    }
+  },
+
+  onHotScroll(e) {
+    if (this._hotResetting) return
+    // 自动滚动期间不更新 _hotScrollLeft（避免异步回调覆盖定时器值）
+    // 只在手动滑动时追踪实际位置
+    if (!this._hotAutoActive) {
+      this._hotScrollLeft = e.detail.scrollLeft
+    }
+    // 无限循环回跳：仅在自动滚动时触发
+    if (this._hotAutoActive) {
+      const halfWidth = Math.floor(e.detail.scrollWidth / 2)
+      if (halfWidth > 0 && e.detail.scrollLeft >= halfWidth) {
+        this._hotResetting = true
+        const newLeft = e.detail.scrollLeft - halfWidth
+        this._hotScrollLeft = newLeft
+        this.setData({ hotScrollLeft: newLeft }, () => {
+          this._hotResetting = false
+        })
+      }
+    }
+  },
+
   pauseHotScroll() {
-    this.setData({ hotScrollPaused: true })
+    this._stopHotAutoScroll()
   },
 
   resumeHotScroll() {
-    this.setData({ hotScrollPaused: false })
+    const self = this
+    this._hotResumeTimer = setTimeout(() => {
+      self._startHotAutoScroll()
+    }, 3000)
   },
 
-  // 搭配推荐自动滚动控制
+  // 搭配推荐自动滚动
+  _startOutfitAutoScroll() {
+    this._stopOutfitAutoScroll()
+    const list = this.data.matchRecommends
+    if (!list || list.length === 0) return
+    if (typeof this._outfitScrollLeft !== 'number') {
+      this._outfitScrollLeft = 0
+    }
+    this._outfitAutoActive = true
+    const self = this
+    const tick = () => {
+      if (!self._outfitAutoActive) return
+      self._outfitScrollLeft += 2
+      self.setData({ outfitScrollLeft: self._outfitScrollLeft })
+      self._outfitAutoTimer = setTimeout(tick, 100)
+    }
+    tick()
+  },
+
+  _stopOutfitAutoScroll() {
+    this._outfitAutoActive = false
+    if (this._outfitAutoTimer) {
+      clearTimeout(this._outfitAutoTimer)
+      this._outfitAutoTimer = null
+    }
+    if (this._outfitResumeTimer) {
+      clearTimeout(this._outfitResumeTimer)
+      this._outfitResumeTimer = null
+    }
+  },
+
+  onOutfitScroll(e) {
+    if (this._outfitResetting) return
+    if (!this._outfitAutoActive) {
+      this._outfitScrollLeft = e.detail.scrollLeft
+    }
+    if (this._outfitAutoActive) {
+      const halfWidth = Math.floor(e.detail.scrollWidth / 2)
+      if (halfWidth > 0 && e.detail.scrollLeft >= halfWidth) {
+        this._outfitResetting = true
+        const newLeft = e.detail.scrollLeft - halfWidth
+        this._outfitScrollLeft = newLeft
+        this.setData({ outfitScrollLeft: newLeft }, () => {
+          this._outfitResetting = false
+        })
+      }
+    }
+  },
+
   pauseOutfitScroll() {
-    this.setData({ outfitScrollPaused: true })
+    this._stopOutfitAutoScroll()
   },
 
   resumeOutfitScroll() {
-    this.setData({ outfitScrollPaused: false })
+    this._outfitResumeTimer = setTimeout(() => {
+      this._startOutfitAutoScroll()
+    }, 3000)
+  },
+
+  // ========== 优惠券弹窗 ==========
+
+  loadPopupCoupons() {
+    var that = this
+    // 需要登录才弹
+    var token = wx.getStorageSync('token')
+    if (!token) return
+
+    util.request(api.CouponPopup).then(function(res) {
+      if (res.errno !== 0 || !res.data || res.data.length === 0) return
+
+      // 过滤已领取和今日已展示的券
+      var today = that._getToday()
+      var myCoupons = wx.getStorageSync('myCouponIds') || []
+
+      var filtered = res.data.filter(function(c) {
+        // 今日已弹过则跳过
+        var shown = wx.getStorageSync('popup_coupon_' + c.id)
+        if (shown === today) return false
+        return true
+      })
+
+      if (filtered.length > 0) {
+        that.setData({
+          popupCoupons: filtered,
+          showCouponPopup: true
+        })
+      }
+    }).catch(function() {})
+  },
+
+  onCouponPopupClose() {
+    this.setData({ showCouponPopup: false })
+  },
+
+  onCouponReceive(e) {
+    // 领取成功回调，不做额外处理
+  },
+
+  _getToday() {
+    var d = new Date()
+    return d.getFullYear() + '-' +
+      ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
+      ('0' + d.getDate()).slice(-2)
   }
 })

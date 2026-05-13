@@ -21,6 +21,18 @@
   color: #999;
 }
 
+.privacy-note {
+  margin-top: 16rpx;
+  padding: 0 16rpx;
+  font-size: 22rpx;
+  line-height: 1.5;
+  color: #999;
+}
+
+.privacy-link {
+  color: #5D9CEC;
+}
+
 .date-display {
   background: #f8f8f8;
   border-radius: 16rpx;

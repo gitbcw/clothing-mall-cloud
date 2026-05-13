@@ -1,5 +1,6 @@
 const util = require('../../../utils/util.js');
 const api = require('../../../config/api.js');
+const homeRefresh = require('../../../utils/home-refresh.js');
 
 Page({
   data: {
@@ -178,6 +179,7 @@ Page({
     util.request(saveApi, data, 'POST').then(function(res) {
       if (res.errno === 0) {
         wx.showToast({ title: '保存成功', icon: 'success' });
+        homeRefresh.markHomeRefreshNeeded();
         if (!that.data.isEdit) {
           that.clearDraft();
         }
@@ -207,6 +209,7 @@ Page({
         util.request(api.ManagerGoodsPublish, { id: goodsId }, 'POST').then(function(res2) {
           if (res2.errno === 0) {
             wx.showToast({ title: '上架成功', icon: 'success' });
+            homeRefresh.markHomeRefreshNeeded();
             if (!that.data.isEdit) {
               that.clearDraft();
             }
@@ -231,6 +234,7 @@ Page({
     util.request(api.ManagerGoodsUnpublish, { id: this.data.goodsId }, 'POST').then(function(res) {
       if (res.errno === 0) {
         wx.showToast({ title: '已下架', icon: 'success' });
+        homeRefresh.markHomeRefreshNeeded();
         that.getGoodsDetail();
       } else {
         wx.showToast({ title: res.errmsg || '下架失败', icon: 'none' });

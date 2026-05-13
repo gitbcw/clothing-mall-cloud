@@ -1,0 +1,20 @@
+<view wx:if="{{show}}" class="privacy-mask">
+  <view class="privacy-panel">
+    <view class="privacy-title">隐私保护提示</view>
+    <view class="privacy-content">
+      <text>{{message}}</text>
+      <text>请阅读并同意</text>
+      <text class="privacy-link" catchtap="openPrivacy">《{{privacyContractName}}》</text>
+      <text>后继续使用相关功能。</text>
+    </view>
+    <view class="privacy-actions">
+      <button class="privacy-btn secondary" bindtap="onDisagree">暂不同意</button>
+      <button
+        id="agree-btn"
+        class="privacy-btn primary"
+        open-type="agreePrivacyAuthorization"
+        bindagreeprivacyauthorization="onAgree"
+      >同意并继续</button>
+    </view>
+  </view>
+</view>

@@ -53,6 +53,7 @@ const ROUTE_MAP = {
   'goods/unpublish': ['admin-goods', 'goodsUnpublish'],
   'goods/unpublishAll': ['admin-goods', 'goodsUnpublishAll'],
   'goods/cancelSpecialPrice': ['admin-goods', 'goodsCancelSpecialPrice'],
+  'goods/setSpecialPrice': ['admin-goods', 'goodsSetSpecialPrice'],
   'goods/recognizeImage': ['admin-goods', 'goodsRecognizeImage'],
   'goods/recognizeTag': ['admin-goods', 'goodsRecognizeTag'],
   'category/list': ['admin-goods', 'categoryList'],
@@ -206,18 +207,6 @@ const ROUTE_MAP = {
   'clothing/holiday/goods': ['admin-clothing', 'holidayGoods'],
   'clothing/holiday/goods/update': ['admin-clothing', 'holidayGoodsUpdate'],
 
-  // ---- admin-wework ----
-  'wework/tags': ['admin-wework', 'weworkTags'],
-  'wework/pages': ['admin-wework', 'weworkPages'],
-  'wework/uploadMedia': ['admin-wework', 'weworkUploadMedia'],
-  'wework/sendCard': ['admin-wework', 'weworkSendCard'],
-  'wework/sendMessage': ['admin-wework', 'weworkSendMessage'],
-  'wework/pushGroups': ['admin-wework', 'weworkPushGroups'],
-  'push/group/list': ['admin-wework', 'pushGroupList'],
-  'push/group/detail': ['admin-wework', 'pushGroupDetail'],
-  'push/group/create': ['admin-wework', 'pushGroupCreate'],
-  'push/group/update': ['admin-wework', 'pushGroupUpdate'],
-  'push/group/delete': ['admin-wework', 'pushGroupDelete'],
 }
 
 // ==================== 路由解析 ====================
@@ -291,11 +280,16 @@ function handleErrno(res) {
   return null
 }
 
-// ==================== snake_case → camelCase 转换 ====================
+// ==================== camelCase ⇄ snake_case 双向转换 ====================
 // 云函数从 MySQL 返回 snake_case 字段，Vue 模板期望 camelCase（原 Java Jackson 行为）
+// 发送时需反向转换，否则云函数读不到 camelCase 字段
 
 function snakeToCamel(str) {
   return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
+}
+
+function camelToSnake(str) {
+  return str.replace(/[A-Z]/g, c => '_' + c.toLowerCase())
 }
 
 function camelize(obj) {
@@ -306,6 +300,20 @@ function camelize(obj) {
       // 配置 KV 的 key（如 litemall_express_*, litemall_mall_*）保持原样
       const isConfigKey = key.startsWith('litemall_')
       out[isConfigKey ? key : snakeToCamel(key)] = camelize(obj[key])
+    }
+    return out
+  }
+  return obj
+}
+
+function snakify(obj) {
+  if (Array.isArray(obj)) return obj.map(snakify)
+  if (obj !== null && typeof obj === 'object') {
+    const out = {}
+    for (const key of Object.keys(obj)) {
+      // 配置 KV 的 key（如 litemall_express_*, litemall_mall_*）保持原样
+      const isConfigKey = key.startsWith('litemall_')
+      out[isConfigKey ? key : camelToSnake(key)] = snakify(obj[key])
     }
     return out
   }
@@ -332,10 +340,13 @@ async function request(config) {
   const token = getToken()
   if (token) payload.token = token
 
+  // camelCase → snake_case，与响应的 camelize 对称
+  const snakePayload = snakify(payload)
+
   try {
     const res = await app.callFunction({
       name: functionName,
-      data: { action, data: payload }
+      data: { action, data: snakePayload },
     })
 
     const result = camelize(res.result)

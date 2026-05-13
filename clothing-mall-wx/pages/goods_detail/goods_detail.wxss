@@ -168,6 +168,13 @@ page {
   top: -4rpx;
 }
 
+.detail-original-price {
+  font-size: 24rpx;
+  color: #CCCCCC;
+  text-decoration: line-through;
+  margin-left: 8rpx;
+}
+
 .original-price {
   font-size: 24rpx;
   color: #999999;
@@ -625,6 +632,19 @@ page {
   font-weight: bold;
   color: #FF8096;
   margin-top: 6rpx;
+}
+
+.related-price-wrap {
+  display: flex;
+  align-items: baseline;
+  margin-top: 6rpx;
+}
+
+.related-original-price {
+  font-size: 20rpx;
+  color: #CCCCCC;
+  text-decoration: line-through;
+  margin-left: 6rpx;
 }
 
 /* 底部安全区 */

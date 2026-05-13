@@ -23,17 +23,21 @@ Page({
     }
 
     var that = this;
-    wx.chooseImage({
-      count: 1,
-      sizeType: ['original', 'compressed'],
-      sourceType: ['album', 'camera'],
-      success: function(res) {
-        that.setData({
-          files: that.data.files.concat(res.tempFilePaths)
-        });
-        that.upload(res);
-      }
-    })
+    util.ensurePrivacyAuthorized({
+      message: '上传反馈图片前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      wx.chooseImage({
+        count: 1,
+        sizeType: ['original', 'compressed'],
+        sourceType: ['album', 'camera'],
+        success: function(res) {
+          that.setData({
+            files: that.data.files.concat(res.tempFilePaths)
+          });
+          that.upload(res);
+        }
+      })
+    }).catch(function() {})
   },
   upload: function(res) {
     var that = this;
@@ -104,21 +108,25 @@ Page({
       submitting: true
     });
 
-    wx.showLoading({
-      title: '提交中...',
-      mask: true,
-      success: function() {
+    util.ensurePrivacyAuthorized({
+      message: '提交反馈和联系方式前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      wx.showLoading({
+        title: '提交中...',
+        mask: true,
+        success: function() {
 
-      }
-    });
+        }
+      });
 
-    util.request(api.FeedbackAdd, {
-      mobile: that.data.mobile,
-      feedType: that.data.array[that.data.index],
-      content: that.data.content,
-      hasPicture: that.data.hasPicture,
-      picUrls: that.data.picUrls
-    }, 'POST').then(function(res) {
+      return util.request(api.FeedbackAdd, {
+        mobile: that.data.mobile,
+        feedType: that.data.array[that.data.index],
+        content: that.data.content,
+        hasPicture: that.data.hasPicture,
+        picUrls: that.data.picUrls
+      }, 'POST')
+    }).then(function(res) {
       wx.hideLoading();
 
       if (res.errno === 0) {
@@ -145,12 +153,14 @@ Page({
         });
         util.showErrorToast(res.errmsg);
       }
-    }).catch(function() {
+    }).catch(function(err) {
       wx.hideLoading();
       that.setData({
         submitting: false
       });
-      util.showErrorToast('提交失败');
+      if (!err || err.errmsg !== 'privacy authorization denied') {
+        util.showErrorToast('提交失败');
+      }
     });
   },
   onLoad: function(options) {

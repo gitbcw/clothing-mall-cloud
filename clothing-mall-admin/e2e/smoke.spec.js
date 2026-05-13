@@ -10,7 +10,7 @@
  */
 const { chromium } = require('playwright-core')
 
-const BASE_URL = 'https://clo-test-4g8ukdond34672de-1258700476.tcloudbaseapp.com'
+const BASE_URL = 'https://cloudbase-d3g1zmq7r388144eb-1427677265.tcloudbaseapp.com'
 const CHROMIUM_PATH = process.env.HOME + '/Library/Caches/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-mac-arm64/chrome-headless-shell'
 const USERNAME = 'admin123'
 const PASSWORD = 'admin123'

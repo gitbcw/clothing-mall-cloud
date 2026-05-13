@@ -41,31 +41,35 @@ Page({
 
   sendCode: function() {
     let that = this;
-    wx.request({
-      url: api.AuthRegisterCaptcha,
-      data: {
-        mobile: that.data.mobile
-      },
-      method: 'POST',
-      header: {
-        'content-type': 'application/json'
-      },
-      success: function(res) {
-        if (res.data.errno == 0) {
-          wx.showModal({
-            title: '发送成功',
-            content: '验证码已发送',
-            showCancel: false
-          });
-        } else {
-          wx.showModal({
-            title: '错误信息',
-            content: res.data.errmsg,
-            showCancel: false
-          });
+    util.ensurePrivacyAuthorized({
+      message: '发送密码重置验证码前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      wx.request({
+        url: api.AuthRegisterCaptcha,
+        data: {
+          mobile: that.data.mobile
+        },
+        method: 'POST',
+        header: {
+          'content-type': 'application/json'
+        },
+        success: function(res) {
+          if (res.data.errno == 0) {
+            wx.showModal({
+              title: '发送成功',
+              content: '验证码已发送',
+              showCancel: false
+            });
+          } else {
+            wx.showModal({
+              title: '错误信息',
+              content: res.data.errmsg,
+              showCancel: false
+            });
+          }
         }
-      }
-    });
+      });
+    }).catch(function() {});
   },
   startReset: function() {
     var that = this;
@@ -97,11 +101,15 @@ Page({
       return false;
     }
 
-    util.request(api.AuthReset, {
-      mobile: that.data.mobile,
-      code: that.data.code,
-      password: that.data.password
-    }, 'POST').then(function(res) {
+    util.ensurePrivacyAuthorized({
+      message: '重置密码前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      return util.request(api.AuthReset, {
+        mobile: that.data.mobile,
+        code: that.data.code,
+        password: that.data.password
+      }, 'POST')
+    }).then(function(res) {
       if (res.errno == 0) {
         wx.navigateBack();
       } else {
@@ -111,7 +119,7 @@ Page({
           showCancel: false
         });
       }
-    });
+    }).catch(function() {});
   },
   bindPasswordInput: function(e) {
 

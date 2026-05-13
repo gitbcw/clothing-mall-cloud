@@ -34,6 +34,12 @@ Page({
     this.loadCoupons();
   },
 
+  onShow: function() {
+    if (this.data.couponList.length > 0 || !this.data.loading) {
+      this.loadCoupons();
+    }
+  },
+
   loadCoupons: function() {
     var that = this;
     that.setData({ loading: true, page: 1 });

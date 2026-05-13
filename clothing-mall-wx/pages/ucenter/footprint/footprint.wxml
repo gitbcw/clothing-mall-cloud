@@ -44,7 +44,15 @@
             <text class="goods-brief" wx:if="{{iitem.brief}}">{{iitem.brief}}</text>
           </view>
           <view class="goods-bottom">
-            <text class="goods-price">¥{{iitem.retailPrice}}</text>
+            <view wx:if="{{iitem.specialPrice}}" class="goods-price-wrap">
+              <text class="goods-price">¥{{iitem.specialPrice}}</text>
+              <text class="goods-original-price" wx:if="{{iitem.tagPrice}}">¥{{iitem.tagPrice}}</text>
+            </view>
+            <view wx:elif="{{iitem.tagPrice}}" class="goods-price-wrap">
+              <text class="goods-price">¥{{iitem.retailPrice}}</text>
+              <text class="goods-original-price">¥{{iitem.tagPrice}}</text>
+            </view>
+            <text wx:else class="goods-price">¥{{iitem.retailPrice}}</text>
           </view>
         </view>
       </view>

@@ -6,7 +6,7 @@ App({
   onLaunch: function() {
     // 初始化云开发
     if (wx.cloud) {
-      wx.cloud.init({ env: 'clo-test-4g8ukdond34672de', traceUser: true })
+      wx.cloud.init({ env: 'cloudbase-d3g1zmq7r388144eb', traceUser: true })
     }
     // Promise.finally polyfill
     Promise.prototype.finally = function(callback) {
@@ -34,6 +34,22 @@ App({
         }
       })
     });
+
+    if (wx.onNeedPrivacyAuthorization) {
+      var appInstance = this;
+      wx.onNeedPrivacyAuthorization(function(resolve) {
+        var dialog = appInstance.globalData.privacyDialog;
+        if (dialog && typeof dialog.requestAuthorization === 'function') {
+          dialog.requestAuthorization().then(function() {
+            resolve({ event: 'agree', buttonId: 'agree-btn' });
+          }).catch(function() {
+            resolve({ event: 'disagree' });
+          });
+          return;
+        }
+        resolve({ event: 'disagree' });
+      });
+    }
   },
 
   onShow: function(options) {
@@ -72,6 +88,7 @@ App({
   globalData: {
     hasLogin: false,
     loginPromise: null,
+    privacyDialog: null,
     cartCount: 0,
     cartListeners: []
   },

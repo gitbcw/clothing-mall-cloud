@@ -1,5 +1,6 @@
 var util = require('../../../utils/util.js');
 var api = require('../../../config/api.js');
+var homeRefresh = require('../../../utils/home-refresh.js');
 
 var BUILT_IN_BGS = [
   { id: 'none', name: '无', value: '' },
@@ -108,26 +109,30 @@ Page({
 
   onChooseBgImage: function() {
     var that = this;
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
-      success: function(res) {
-        var tempFilePath = res.tempFiles[0].tempFilePath;
-        that.setData({ uploading: true });
-        util.uploadFile(tempFilePath).then(function(url) {
-          that.setData({
-            'form.activityBgImage': url,
-            uploading: false
+    util.ensurePrivacyAuthorized({
+      message: '上传活动背景图前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      wx.chooseMedia({
+        count: 1,
+        mediaType: ['image'],
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera'],
+        success: function(res) {
+          var tempFilePath = res.tempFiles[0].tempFilePath;
+          that.setData({ uploading: true });
+          util.uploadFile(tempFilePath).then(function(url) {
+            that.setData({
+              'form.activityBgImage': url,
+              uploading: false
+            });
+            that._updateCustomState(url);
+          }).catch(function() {
+            that.setData({ uploading: false });
+            wx.showToast({ title: '上传失败', icon: 'none' });
           });
-          that._updateCustomState(url);
-        }).catch(function() {
-          that.setData({ uploading: false });
-          wx.showToast({ title: '上传失败', icon: 'none' });
-        });
-      }
-    });
+        }
+      });
+    }).catch(function() {});
   },
 
   onRemoveBgImage: function() {
@@ -182,6 +187,7 @@ Page({
       that.setData({ saving: false });
       if (res && res.errno === 0) {
         wx.showToast({ title: '保存成功', icon: 'success' });
+        homeRefresh.markHomeRefreshNeeded();
         setTimeout(function() {
           wx.navigateBack();
         }, 1500);

@@ -3,11 +3,28 @@ var api = require('../../config/api.js');
 var tracker = require('../../utils/tracker.js');
 
 var app = getApp()
+
+function normalizeKeywordText(value) {
+  if (!value) {
+    return '';
+  }
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'object') {
+    return value.keyword || value.name || value.text || '';
+  }
+  return String(value);
+}
+
 Page({
   data: {
     keywrod: '',
+    keyword: '',
     searchStatus: false,
     goodsList: [],
+    leftGoods: [],
+    rightGoods: [],
     helpKeyword: [],
     localSuggestions: [],
     suggestionList: [],
@@ -17,7 +34,8 @@ Page({
     currentSortType: 'default',
     currentSortOrder: 'desc',
     filterCategory: [],
-    defaultKeyword: {},
+    defaultKeyword: '',
+    placeholderKeyword: '搜索商品',
     hotKeyword: [],
     page: 1,
     limit: 20,
@@ -27,6 +45,7 @@ Page({
     sceneId: 0,
     statusBarHeight: 20,
     navBarHeight: 44,
+    defaultImage: '/static/images/fallback-image.svg',
   },
   //事件处理函数
   closeSearch: function() {
@@ -37,7 +56,9 @@ Page({
       keyword: '',
       searchStatus: false,
       localSuggestions: [],
-      suggestionList: []
+      suggestionList: [],
+      leftGoods: [],
+      rightGoods: []
     });
   },
   onShow: function() {
@@ -55,10 +76,12 @@ Page({
     let that = this;
     util.request(api.SearchIndex).then(function(res) {
       if (res.errno === 0) {
+        var defaultKeyword = normalizeKeywordText(res.data.defaultKeyword);
         that.setData({
-          historyKeyword: res.data.historyKeywordList,
-          defaultKeyword: res.data.defaultKeyword || {},
-          hotKeyword: res.data.hotKeywordList,
+          historyKeyword: res.data.historyKeywordList || [],
+          defaultKeyword: defaultKeyword,
+          placeholderKeyword: defaultKeyword || '搜索商品',
+          hotKeyword: res.data.hotKeywordList || [],
           categoryList: res.data.categoryList || [],
           sceneList: res.data.sceneList || []
         });
@@ -169,6 +192,7 @@ Page({
   },
   getGoodsList: function() {
     let that = this;
+    console.log('[Search] getGoodsList, keyword:', that.data.keyword);
     util.request(api.GoodsList, {
       keyword: that.data.keyword,
       page: that.data.page,
@@ -178,15 +202,25 @@ Page({
       categoryId: that.data.categoryId,
       sceneId: that.data.sceneId
     }).then(function(res) {
+      console.log('[Search] getGoodsList response:', res);
       if (res.errno === 0) {
+        var list = res.data.list || [];
+        var leftGoods = [];
+        var rightGoods = [];
+        list.forEach(function(item, i) {
+          if (i % 2 === 0) leftGoods.push(item);
+          else rightGoods.push(item);
+        });
         that.setData({
           searchStatus: true,
           categoryFilter: false,
-          goodsList: res.data.list,
-          filterCategory: res.data.filterCategoryList
+          goodsList: list,
+          leftGoods: leftGoods,
+          rightGoods: rightGoods,
+          filterCategory: res.data.filterCategoryList || []
         });
         // 搜索埋点
-        tracker.trackSearch(that.data.keyword, res.data.list ? res.data.list.length : 0);
+        tracker.trackSearch(that.data.keyword, list.length);
       }
 
       //重新获取关键词
@@ -221,14 +255,17 @@ Page({
     }
   },
   getSearchResult(keyword) {
-    if (keyword === '') {
-      keyword = this.data.defaultKeyword || '';
+    keyword = normalizeKeywordText(keyword);
+    if (!keyword) {
+      keyword = normalizeKeywordText(this.data.defaultKeyword);
     }
     this.setData({
       keyword: keyword,
       page: 1,
       categoryId: 0,
-      goodsList: []
+      goodsList: [],
+      leftGoods: [],
+      rightGoods: []
     });
 
     this.getGoodsList();
@@ -293,6 +330,10 @@ Page({
   onKeywordConfirm(event) {
     this.getSearchResult(event.detail.value);
   },
+  onSearchTap: function() {
+    console.log('[Search] onSearchTap, keyword:', this.data.keyword);
+    this.getSearchResult(this.data.keyword);
+  },
   onCategoryTap: function(e) {
     let categoryId = e.currentTarget.dataset.id;
     this.setData({
@@ -301,6 +342,8 @@ Page({
       categoryId: categoryId,
       sceneId: 0,
       goodsList: [],
+      leftGoods: [],
+      rightGoods: [],
       currentSortType: 'default',
       currentSort: 'default',
       currentSortOrder: 'desc'
@@ -316,12 +359,22 @@ Page({
       categoryId: 0,
       sceneId: sceneId,
       goodsList: [],
+      leftGoods: [],
+      rightGoods: [],
       currentSortType: 'default',
       currentSort: 'default',
       currentSortOrder: 'desc'
     });
     this.getGoodsList();
   },
+
+  goToDetail: function(e) {
+    var id = e.currentTarget.dataset.id;
+    wx.navigateTo({
+      url: '/pages/goods_detail/goods_detail?id=' + id
+    });
+  },
+
     // 返回
   goBack:function(){
     wx.navigateBack({

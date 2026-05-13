@@ -321,6 +321,11 @@ Page({
       return false;
     }
 
+    if (!check.isValidPhone(address.tel)) {
+      util.showErrorToast('手机号格式不正确');
+      return false;
+    }
+
 
     if (address.areaCode == 0) {
       util.showErrorToast('请输入省市区');
@@ -333,17 +338,21 @@ Page({
     }
 
     let that = this;
-    util.request(api.AddressSave, {
-      id: address.id,
-      name: address.name,
-      tel: address.tel,
-      province: address.province,
-      city: address.city,
-      county: address.county,
-      areaCode: address.areaCode,
-      addressDetail: address.addressDetail,
-      isDefault: address.isDefault
-    }, 'POST').then(function(res) {
+    util.ensurePrivacyAuthorized({
+      message: '保存收货人、手机号和收货地址前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      return util.request(api.AddressSave, {
+        id: address.id,
+        name: address.name,
+        tel: address.tel,
+        province: address.province,
+        city: address.city,
+        county: address.county,
+        areaCode: address.areaCode,
+        addressDetail: address.addressDetail,
+        isDefault: address.isDefault
+      }, 'POST')
+    }).then(function(res) {
       if (res.errno === 0) {
         //返回之前，先取出上一页对象，并设置addressId
         var pages = getCurrentPages();
@@ -363,7 +372,7 @@ Page({
         }
         wx.navigateBack();
       }
-    });
+    }).catch(function() {});
 
   },
   onShow: function() {

@@ -8,7 +8,8 @@ Page({
       mobile: '',
       birthday: ''
     },
-    today: ''
+    today: '',
+    privacyReady: false
   },
 
   onLoad: function (options) {
@@ -18,6 +19,24 @@ Page({
       today: todayStr
     });
     this.getUserInfo();
+    this.refreshPrivacyReady();
+  },
+
+  refreshPrivacyReady: function () {
+    const that = this;
+    util.getPrivacySetting().then(function (res) {
+      that.setData({ privacyReady: !res.needAuthorization });
+    });
+  },
+
+  requestPrivacyAuthorization: function () {
+    const that = this;
+    util.ensurePrivacyAuthorized({
+      message: '完善头像、手机号和生日信息前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function () {
+      that.setData({ privacyReady: true });
+      wx.showToast({ title: '已同意，请继续操作', icon: 'none' });
+    }).catch(function () {});
   },
 
   getUserInfo: function () {
@@ -49,14 +68,19 @@ Page({
 
   onChooseAvatar(e) {
     const { avatarUrl } = e.detail;
-    // 上传到云存储
-    util.uploadFile(avatarUrl, 'avatar').then(fileID => {
+    const that = this;
+    util.ensurePrivacyAuthorized({
+      message: '上传头像前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function () {
+      that.setData({ privacyReady: true });
+      return util.uploadFile(avatarUrl, 'avatar');
+    }).then(fileID => {
       if (fileID) {
-        this.setData({
+        that.setData({
           'userInfo.avatarUrl': fileID
         });
       }
-    });
+    }).catch(function () {});
   },
 
   bindNicknameInput(e) {
@@ -103,27 +127,33 @@ Page({
   },
 
   showManualBindPhone() {
-    wx.showModal({
-      title: '绑定手机号',
-      editable: true,
-      placeholderText: '请输入手机号',
-      success: (res) => {
-        if (!res.confirm) return;
-        const mobile = (res.content || '').trim();
-        if (!/^1[3-9]\d{9}$/.test(mobile)) {
-          util.showErrorToast('手机号格式不正确');
-          return;
-        }
-        util.request({ func: 'wx-auth', action: 'bindPhoneManual' }, { mobile }, 'POST').then(res => {
-          if (res.errno === 0) {
-            wx.showToast({ title: '绑定成功', icon: 'success' });
-            this.setData({ 'userInfo.mobile': mobile });
-          } else {
-            util.showErrorToast(res.errmsg || '绑定失败');
+    const that = this;
+    util.ensurePrivacyAuthorized({
+      message: '绑定手机号前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function () {
+      that.setData({ privacyReady: true });
+      wx.showModal({
+        title: '绑定手机号',
+        editable: true,
+        placeholderText: '请输入手机号',
+        success: (res) => {
+          if (!res.confirm) return;
+          const mobile = (res.content || '').trim();
+          if (!/^1[3-9]\d{9}$/.test(mobile)) {
+            util.showErrorToast('手机号格式不正确');
+            return;
           }
-        });
-      }
-    });
+          util.request({ func: 'wx-auth', action: 'bindPhoneManual' }, { mobile }, 'POST').then(res => {
+            if (res.errno === 0) {
+              wx.showToast({ title: '绑定成功', icon: 'success' });
+              that.setData({ 'userInfo.mobile': mobile });
+            } else {
+              util.showErrorToast(res.errmsg || '绑定失败');
+            }
+          });
+        }
+      });
+    }).catch(function () {});
   },
 
   onChangePhone() {
@@ -137,12 +167,17 @@ Page({
       return;
     }
 
-    util.request({ func: 'wx-user', action: 'profile' }, {
-      nickname: nickName,
-      avatar: avatarUrl,
-      mobile: mobile,
-      birthday: birthday
-    }, 'POST').then(res => {
+    util.ensurePrivacyAuthorized({
+      message: '保存个人资料前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(() => {
+      this.setData({ privacyReady: true });
+      return util.request({ func: 'wx-user', action: 'profile' }, {
+        nickname: nickName,
+        avatar: avatarUrl,
+        mobile: mobile,
+        birthday: birthday
+      }, 'POST');
+    }).then(res => {
       if (res.errno === 0) {
         // 更新本地缓存
         const localUserInfo = wx.getStorageSync('userInfo') || {};
@@ -169,7 +204,7 @@ Page({
             showCancel: true,
             success: (modalRes) => {
               if (modalRes.confirm) {
-                wx.switchTab({ url: '/pages/index/index' });
+                wx.switchTab({ url: '/pages/category/category' });
               } else {
                 wx.navigateBack({ delta: 1 });
               }
@@ -184,6 +219,6 @@ Page({
       } else {
         util.showErrorToast(res.errmsg || '保存失败');
       }
-    });
+    }).catch(function () {});
   }
 });

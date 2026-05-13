@@ -22,10 +22,20 @@
   <view class="goods-content" wx:if="{{leftGoodsList.length > 0 || rightGoodsList.length > 0}}">
     <view class="waterfall-col">
       <view class="goods-card" wx:for="{{leftGoodsList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
-        <image src="{{img.url(item.picUrl)}}" mode="widthFix" class="goods-img" binderror="onImageError" data-index="{{index}}" data-col="left" />
+        <image src="{{img.url(item.picUrl)}}" mode="aspectFill" class="goods-img" binderror="onImageError" data-index="{{index}}" data-col="left" />
         <view class="goods-info">
           <text class="goods-name">{{item.name}}</text>
-          <view class="goods-price-row">
+          <view wx:if="{{item.specialPrice}}" class="goods-price-row">
+            <text class="goods-price-symbol">¥</text>
+            <text class="goods-price">{{item.specialPrice}}</text>
+            <text class="goods-original-price" wx:if="{{item.tagPrice}}">¥{{item.tagPrice}}</text>
+          </view>
+          <view wx:elif="{{item.tagPrice}}" class="goods-price-row">
+            <text class="goods-price-symbol">¥</text>
+            <text class="goods-price">{{item.retailPrice}}</text>
+            <text class="goods-original-price">¥{{item.tagPrice}}</text>
+          </view>
+          <view wx:else class="goods-price-row">
             <text class="goods-price-symbol">¥</text>
             <text class="goods-price">{{item.retailPrice}}</text>
           </view>
@@ -34,10 +44,20 @@
     </view>
     <view class="waterfall-col">
       <view class="goods-card" wx:for="{{rightGoodsList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
-        <image src="{{img.url(item.picUrl)}}" mode="widthFix" class="goods-img" binderror="onImageError" data-index="{{index}}" data-col="right" />
+        <image src="{{img.url(item.picUrl)}}" mode="aspectFill" class="goods-img" binderror="onImageError" data-index="{{index}}" data-col="right" />
         <view class="goods-info">
           <text class="goods-name">{{item.name}}</text>
-          <view class="goods-price-row">
+          <view wx:if="{{item.specialPrice}}" class="goods-price-row">
+            <text class="goods-price-symbol">¥</text>
+            <text class="goods-price">{{item.specialPrice}}</text>
+            <text class="goods-original-price" wx:if="{{item.tagPrice}}">¥{{item.tagPrice}}</text>
+          </view>
+          <view wx:elif="{{item.tagPrice}}" class="goods-price-row">
+            <text class="goods-price-symbol">¥</text>
+            <text class="goods-price">{{item.retailPrice}}</text>
+            <text class="goods-original-price">¥{{item.tagPrice}}</text>
+          </view>
+          <view wx:else class="goods-price-row">
             <text class="goods-price-symbol">¥</text>
             <text class="goods-price">{{item.retailPrice}}</text>
           </view>

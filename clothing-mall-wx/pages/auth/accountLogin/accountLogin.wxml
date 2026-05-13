@@ -48,4 +48,5 @@
       </checkbox-group>
     </view>
   </view>
+  <privacy-dialog />
 </view>

@@ -53,10 +53,10 @@ Page({
     });
   },
   goAgreement: function () {
-    wx.showToast({ title: '敬请期待', icon: 'none' });
+    wx.navigateTo({ url: '/pages/agreement/agreement?type=agreement' });
   },
   goPrivacy: function () {
-    wx.showToast({ title: '敬请期待', icon: 'none' });
+    util.openPrivacyContract('/pages/agreement/agreement?type=privacy');
   },
   sendCode: function () {
     if (this.data.countdown > 0) return;
@@ -65,17 +65,22 @@ Page({
       return;
     }
     
-    // 模拟发送验证码
-    wx.showToast({ title: '发送成功', icon: 'success' });
-    this.setData({ countdown: 60 });
-    this.timer = setInterval(() => {
-      if (this.data.countdown <= 1) {
-        clearInterval(this.timer);
-        this.setData({ countdown: 0 });
-      } else {
-        this.setData({ countdown: this.data.countdown - 1 });
-      }
-    }, 1000);
+    var that = this;
+    util.ensurePrivacyAuthorized({
+      message: '发送手机号验证码前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      // 模拟发送验证码
+      wx.showToast({ title: '发送成功', icon: 'success' });
+      that.setData({ countdown: 60 });
+      that.timer = setInterval(() => {
+        if (that.data.countdown <= 1) {
+          clearInterval(that.timer);
+          that.setData({ countdown: 0 });
+        } else {
+          that.setData({ countdown: that.data.countdown - 1 });
+        }
+      }, 1000);
+    }).catch(function() {});
   },
   accountLogin: function () {
     var that = this;
@@ -94,11 +99,15 @@ Page({
       return false;
     }
 
-    // 这里由于后端可能还是使用 username/password 接口，暂时做映射
-    util.request(api.AuthLoginByAccount, {
-      username: that.data.mobile,
-      password: that.data.code,
-    }, "POST").then(function (res) {
+    util.ensurePrivacyAuthorized({
+      message: '手机号登录前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      // 这里由于后端可能还是使用 username/password 接口，暂时做映射
+      return util.request(api.AuthLoginByAccount, {
+        username: that.data.mobile,
+        password: that.data.code,
+      }, "POST")
+    }).then(function (res) {
       if (res.errno == 0) {
         that.setData({
           loginErrorCount: 0,
@@ -120,7 +129,9 @@ Page({
       that.setData({
         loginErrorCount: that.data.loginErrorCount + 1,
       });
-      util.showErrorToast("登录失败");
+      if (!err || err.errmsg !== 'privacy authorization denied') {
+        util.showErrorToast("登录失败");
+      }
     });
   },
   clearInput: function (e) {

@@ -78,6 +78,7 @@ const ROUTE_MAP = {
   'coupon/selectlist':             ['wx-coupon', 'selectlist'],
   'coupon/receive':                ['wx-coupon', 'receive'],
   'coupon/exchange':               ['wx-coupon', 'exchange'],
+  'coupon/popup':                  ['wx-coupon', 'popup'],
 
   // wx-clothing
   'clothing/sku/list':             ['wx-clothing', 'skuList'],
@@ -139,6 +140,7 @@ const ROUTE_MAP = {
   'manager/order/aftersale/reject':  ['wx-manager-order', 'aftersaleReject'],
   'manager/order/aftersale/ship':    ['wx-manager-order', 'aftersaleShip'],
   'manager/order/shippers':         ['wx-manager-order', 'shippers'],
+  'manager/order/prepare':          ['wx-manager-order', 'prepare'],
 
   // wx-manager-shelf
   'manager/goods/list':            ['wx-manager-shelf', 'list'],
@@ -171,17 +173,30 @@ const ROUTE_MAP = {
   'manager/issue/update':           ['wx-manager-content', 'issueUpdate'],
   'manager/issue/delete':           ['wx-manager-content', 'issueDelete'],
 
-  // wx-manager-wework
-  'manager/wework/tags':            ['wx-manager-wework', 'tags'],
-  'manager/wework/pages':            ['wx-manager-wework', 'pages'],
-  'manager/wework/uploadMedia':      ['wx-manager-wework', 'uploadMedia'],
-  'manager/wework/sendCard':         ['wx-manager-wework', 'sendCard'],
-  'manager/wework/sendMessage':      ['wx-manager-wework', 'sendMessage'],
-  'manager/wework/pushGroups':       ['wx-manager-wework', 'pushGroups'],
-
   // wx-manager-system
   'manager/system/configList':       ['wx-manager-system', 'systemConfigList'],
   'manager/system/configUpdate':     ['wx-manager-system', 'systemConfigUpdate'],
+
+  // wx-manager-marketing (优惠券)
+  'manager/coupon/list':             ['wx-manager-marketing', 'couponList'],
+  'manager/coupon/create':           ['wx-manager-marketing', 'couponCreate'],
+  'manager/coupon/read':             ['wx-manager-marketing', 'couponRead'],
+  'manager/coupon/update':           ['wx-manager-marketing', 'couponUpdate'],
+  'manager/coupon/delete':           ['wx-manager-marketing', 'couponDelete'],
+
+  // wx-manager-shelf (特价)
+  'manager/goods/setSpecialPrice':    ['wx-manager-shelf', 'setSpecialPrice'],
+  'manager/goods/cancelSpecialPrice': ['wx-manager-shelf', 'cancelSpecialPrice'],
+
+  // wx-manager-holiday (节日活动)
+  'manager/holiday/list':            ['wx-manager-holiday', 'holidayList'],
+  'manager/holiday/create':          ['wx-manager-holiday', 'holidayCreate'],
+  'manager/holiday/read':            ['wx-manager-holiday', 'holidayRead'],
+  'manager/holiday/update':          ['wx-manager-holiday', 'holidayUpdate'],
+  'manager/holiday/delete':          ['wx-manager-holiday', 'holidayDelete'],
+  'manager/holiday/enable':          ['wx-manager-holiday', 'holidayEnable'],
+  'manager/holiday/goods':           ['wx-manager-holiday', 'holidayGoods'],
+  'manager/holiday/goods/update':    ['wx-manager-holiday', 'holidayGoodsUpdate'],
 }
 
 /**
@@ -351,11 +366,73 @@ function showErrorToast(msg) {
   })
 }
 
+function openPrivacyContract(fallbackUrl) {
+  if (wx.openPrivacyContract) {
+    wx.openPrivacyContract({
+      fail: function() {
+        if (fallbackUrl) wx.navigateTo({ url: fallbackUrl })
+      }
+    })
+    return
+  }
+  if (fallbackUrl) wx.navigateTo({ url: fallbackUrl })
+}
+
+function getPrivacySetting() {
+  return new Promise(function(resolve) {
+    if (!wx.getPrivacySetting) {
+      resolve({ needAuthorization: false, privacyContractName: '隐私政策' })
+      return
+    }
+    wx.getPrivacySetting({
+      success: resolve,
+      fail: function() {
+        resolve({ needAuthorization: false, privacyContractName: '隐私政策' })
+      }
+    })
+  })
+}
+
+function ensurePrivacyAuthorized(options) {
+  options = options || {}
+  return getPrivacySetting().then(function(setting) {
+    if (!setting.needAuthorization) return true
+
+    var app = getApp()
+    var dialog = app && app.globalData && app.globalData.privacyDialog
+    if (dialog && typeof dialog.requestAuthorization === 'function') {
+      return dialog.requestAuthorization({
+        message: options.message,
+        privacyContractName: setting.privacyContractName
+      })
+    }
+
+    return new Promise(function(resolve, reject) {
+      wx.showModal({
+        title: '隐私保护提示',
+        content: '使用该功能前，请先阅读并同意小程序用户隐私保护指引。',
+        confirmText: '查看指引',
+        cancelText: '稍后再说',
+        success: function(res) {
+          if (res.confirm) {
+            openPrivacyContract('/pages/agreement/agreement?type=privacy')
+          }
+          reject({ errno: 1, errmsg: 'privacy authorization required' })
+        },
+        fail: reject
+      })
+    })
+  })
+}
+
 module.exports = {
   formatTime,
   request,
   uploadFile,
   redirect,
   showErrorToast,
+  openPrivacyContract,
+  getPrivacySetting,
+  ensurePrivacyAuthorized,
   ROUTE_MAP,
 }

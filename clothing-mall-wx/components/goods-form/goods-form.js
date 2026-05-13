@@ -50,8 +50,10 @@ Component({
     _scenes: [],
     _sceneMap: {},
     _params: [],
+    _aiPicUrl: '',
     tagRecognizing: false,
     imageRecognizing: false,
+    aiImagePreparing: false,
     showCategoryPicker: false,
     editorCtx: null,
     formats: {}
@@ -70,10 +72,13 @@ Component({
           detail: val.detail || '',
           retailPrice: val.retailPrice || '',
           specialPrice: val.specialPrice || '',
+          tagPrice: val.tagPrice || '',
           categoryId: val.categoryId || '',
           categoryName: val.categoryName || '',
           keywords: val.keywords || ''
         },
+        _aiPicUrl: '',
+        aiImagePreparing: false,
         _galleryList: val.gallery || [],
         _scenes: scenes,
         _sceneMap: this._buildSceneMap(scenes),
@@ -141,61 +146,129 @@ Component({
 
     insertImage: function() {
       var that = this;
-      wx.chooseImage({
-        count: 1,
-        sizeType: ['compressed'],
-        sourceType: ['album', 'camera'],
-        success: function(res) {
-          var tempPath = res.tempFilePaths[0];
-          wx.showLoading({ title: '上传中...' });
-          that.uploadImage(tempPath, function(url) {
-            wx.hideLoading();
-            if (url) {
-              that.data.editorCtx.insertImage({
-                src: url,
-                width: '100%'
-              });
-            } else {
-              wx.showToast({ title: '图片上传失败', icon: 'none' });
-            }
-          });
-        }
-      });
+      util.ensurePrivacyAuthorized({
+        message: '上传商品详情图片前，请先阅读并同意小程序用户隐私保护指引。'
+      }).then(function() {
+        wx.chooseImage({
+          count: 1,
+          sizeType: ['original'],
+          sourceType: ['album', 'camera'],
+          success: function(res) {
+            var tempPath = res.tempFilePaths[0];
+            wx.showLoading({ title: '上传中...' });
+            that.uploadImage(tempPath, function(url) {
+              wx.hideLoading();
+              if (url) {
+                that.data.editorCtx.insertImage({
+                  src: url,
+                  width: '100%'
+                });
+              } else {
+                wx.showToast({ title: '图片上传失败', icon: 'none' });
+              }
+            });
+          }
+        });
+      }).catch(function() {});
     },
 
     // ========== 图片操作 ==========
 
     chooseMainImage: function() {
       var that = this;
-      wx.chooseImage({
-        count: 1,
-        sizeType: ['compressed'],
-        sourceType: ['album', 'camera'],
-        success: function(res) {
-          var tempPath = res.tempFilePaths[0];
-          that.setData({ '_form.picUrl': tempPath });
-          that.uploadImage(tempPath, function(url) {
-            if (url) {
-              that.setData({ '_form.picUrl': url });
-              that._emitChange();
-              // 自动触发主图 AI 识别（使用本地临时文件，避免重复下载）
-              that.recognizeImage(tempPath);
-            } else {
-              wx.showToast({ title: '主图上传失败，请重试', icon: 'none' });
-            }
-          });
-        }
+      util.ensurePrivacyAuthorized({
+        message: '上传商品主图前，请先阅读并同意小程序用户隐私保护指引。'
+      }).then(function() {
+        wx.chooseImage({
+          count: 1,
+          sizeType: ['original'],
+          sourceType: ['album', 'camera'],
+          success: function(res) {
+            var tempPath = res.tempFilePaths[0];
+            that.setData({
+              '_form.picUrl': tempPath,
+              _aiPicUrl: '',
+              aiImagePreparing: true
+            });
+
+            that.prepareAiImage(tempPath).then(function(aiFileID) {
+              that.setData({
+                _aiPicUrl: aiFileID || '',
+                aiImagePreparing: false
+              });
+            }).catch(function() {
+              that.setData({ aiImagePreparing: false });
+            });
+
+            that.uploadImage(tempPath, function(url) {
+              if (url) {
+                that.setData({ '_form.picUrl': url });
+                that._emitChange();
+              } else {
+                wx.showToast({ title: '主图上传失败，请重试', icon: 'none' });
+              }
+            });
+          }
+        });
+      }).catch(function() {});
+    },
+
+    onAiRecognize: function() {
+      var picUrl = this.data._form.picUrl;
+      if (!picUrl) {
+        wx.showToast({ title: '请先上传商品主图', icon: 'none' });
+        return;
+      }
+      if (this.data.aiImagePreparing && !this.data._aiPicUrl) {
+        wx.showToast({ title: 'AI图片压缩中，请稍候', icon: 'none' });
+        return;
+      }
+      this.recognizeImage(this.data._aiPicUrl || picUrl);
+    },
+
+    prepareAiImage: function(filePath) {
+      return this.compressImageForAi(filePath).then(function(compressed) {
+        return util.uploadFile(compressed, 'ai');
+      }).catch(function(err) {
+        console.warn('prepareAiImage fail:', err);
+        return '';
       });
     },
 
-    recognizeImage: function(localFilePath) {
+    compressImageForAi: function(filePath) {
+      return new Promise(function(resolve) {
+        if (!filePath || filePath.indexOf('cloud://') === 0 || filePath.indexOf('://') === -1) {
+          resolve(filePath);
+          return;
+        }
+        wx.compressImage({
+          src: filePath,
+          quality: 40,
+          success: function(res) { resolve(res.tempFilePath); },
+          fail: function() { resolve(filePath); }
+        });
+      });
+    },
+
+    recognizeImage: function(filePath) {
       if (this.data.imageRecognizing) return;
 
       var that = this;
       that.setData({ imageRecognizing: true });
 
-      // 先上传到云存储，再调用 AI 云函数识别
-      util.uploadFile(localFilePath, 'ai').then(function(fileID) {
+      // 本地临时文件包含 ://（如 wxfile://、http://tmp/），相对云路径不含
+      var promise;
+      if (filePath.indexOf('cloud://') === 0 || filePath.indexOf('://') === -1) {
+        // cloud:// fileID 或相对云路径（如 uploads/xxx.jpg），直接传给云函数
+        promise = Promise.resolve(filePath);
+      } else {
+        // 本地临时文件：压缩后再上传，减少 AI 识别耗时
+        promise = this.compressImageForAi(filePath).then(function(compressed) {
+          return util.uploadFile(compressed, 'ai');
+        });
+      }
+
+      promise.then(function(fileID) {
         return util.request({ func: 'wx-ai', action: 'recognizeImage' }, { fileID: fileID }, 'POST');
       }).then(function(res) {
         that.setData({ imageRecognizing: false });
@@ -224,9 +297,13 @@ Component({
         hasUpdate = true;
       }
 
-      // 价格（仅空时填充）
-      if (result.price && !this.data._form.retailPrice) {
-        updates['_form.retailPrice'] = result.price;
+      // 价格：填入一口价，自动计算实际价格
+      if (result.price && !this.data._form.tagPrice) {
+        updates['_form.tagPrice'] = result.price;
+        var actual = parseFloat(result.price) * 0.8;
+        if (!this.data._form.retailPrice) {
+          updates['_form.retailPrice'] = actual % 1 === 0 ? String(Math.round(actual)) : actual.toFixed(1);
+        }
         hasUpdate = true;
       }
 
@@ -308,69 +385,80 @@ Component({
       if (this.data.tagRecognizing) return;
 
       var that = this;
-      wx.chooseImage({
-        count: 1,
-        sizeType: ['compressed'],
-        sourceType: ['album', 'camera'],
-        success: function(res) {
-          var tempPath = res.tempFilePaths[0];
-          that.setData({ tagRecognizing: true });
+      util.ensurePrivacyAuthorized({
+        message: '上传吊牌图片识别前，请先阅读并同意小程序用户隐私保护指引。'
+      }).then(function() {
+        wx.chooseImage({
+          count: 1,
+          sizeType: ['original'],
+          sourceType: ['album', 'camera'],
+          success: function(res) {
+            var tempPath = res.tempFilePaths[0];
+            that.setData({ tagRecognizing: true });
 
-          // 先上传到云存储，再调用 AI 云函数识别
-          util.uploadFile(tempPath, 'ai').then(function(fileID) {
-            return util.request({ func: 'wx-ai', action: 'recognizeTag' }, { fileID: fileID }, 'POST');
-          }).then(function(res) {
-            that.setData({ tagRecognizing: false });
-            if (res.errno === 0 && res.data) {
-              var updates = {};
-              // 吊牌识别总是覆盖（吊牌信息更准确）
-              if (res.data.name) {
-                updates['_form.name'] = res.data.name;
-              }
-              if (res.data.price) {
-                updates['_form.retailPrice'] = res.data.price;
-              }
-              if (Object.keys(updates).length > 0) {
-                that.setData(updates);
-                that._emitChange();
-                wx.showToast({ title: '吊牌识别成功', icon: 'success' });
+            // 先上传到云存储，再调用 AI 云函数识别
+            util.uploadFile(tempPath, 'ai').then(function(fileID) {
+              return util.request({ func: 'wx-ai', action: 'recognizeTag' }, { fileID: fileID }, 'POST');
+            }).then(function(res) {
+              that.setData({ tagRecognizing: false });
+              if (res.errno === 0 && res.data) {
+                var updates = {};
+                // 吊牌识别总是覆盖（吊牌信息更准确）
+                if (res.data.name) {
+                  updates['_form.name'] = res.data.name;
+                }
+                if (res.data.price) {
+                  var tagPrice = parseFloat(res.data.price);
+                  var discounted = tagPrice * 0.8;
+                  updates['_form.retailPrice'] = discounted % 1 === 0 ? String(Math.round(discounted)) : discounted.toFixed(1);
+                  updates['_form.tagPrice'] = tagPrice % 1 === 0 ? String(tagPrice) : tagPrice.toFixed(1);
+                }
+                if (Object.keys(updates).length > 0) {
+                  that.setData(updates);
+                  that._emitChange();
+                  wx.showToast({ title: '吊牌识别成功', icon: 'success' });
+                } else {
+                  wx.showToast({ title: '未识别到有效信息', icon: 'none' });
+                }
               } else {
-                wx.showToast({ title: '未识别到有效信息', icon: 'none' });
+                wx.showToast({ title: res.errmsg || '识别失败', icon: 'none' });
               }
-            } else {
-              wx.showToast({ title: res.errmsg || '识别失败', icon: 'none' });
-            }
-          }).catch(function() {
-            that.setData({ tagRecognizing: false });
-            wx.showToast({ title: '识别请求失败', icon: 'none' });
-          });
-        }
-      });
+            }).catch(function() {
+              that.setData({ tagRecognizing: false });
+              wx.showToast({ title: '识别请求失败', icon: 'none' });
+            });
+          }
+        });
+      }).catch(function() {});
     },
 
     chooseGalleryImage: function() {
       var remaining = 9 - this.data._galleryList.length;
       if (remaining <= 0) return;
       var that = this;
-      wx.chooseImage({
-        count: remaining,
-        sizeType: ['compressed'],
-        sourceType: ['album', 'camera'],
-        success: function(res) {
-          var tasks = res.tempFilePaths.map(function(path) {
-            return new Promise(function(resolve) {
-              that.uploadImage(path, resolve);
+      util.ensurePrivacyAuthorized({
+        message: '上传商品相册图片前，请先阅读并同意小程序用户隐私保护指引。'
+      }).then(function() {
+        wx.chooseImage({
+          count: remaining,
+          sizeType: ['original'],
+          sourceType: ['album', 'camera'],
+          success: function(res) {
+            var tasks = res.tempFilePaths.map(function(path) {
+              return new Promise(function(resolve) {
+                that.uploadImage(path, resolve);
+              });
             });
-          });
-          Promise.all(tasks).then(function(urls) {
-            var validUrls = urls.filter(function(u) { return u; });
-            that.setData({
-              _galleryList: that.data._galleryList.concat(validUrls)
+            Promise.all(tasks).then(function(urls) {
+              var validUrls = urls.filter(function(u) { return u; });
+              that.setData({
+                _galleryList: that.data._galleryList.concat(validUrls)
+              });
+              that._emitChange();
             });
-            that._emitChange();
-          });
-        }
-      });
+          }
+        });
+      }).catch(function() {});
     },
 
     removeGallery: function(e) {
@@ -407,6 +495,22 @@ Component({
 
     onSpecialPriceInput: function(e) {
       this.setData({ '_form.specialPrice': e.detail.value });
+      this._emitChange();
+    },
+
+    onTagPriceInput: function(e) {
+      var val = e.detail.value;
+      var updates = { '_form.tagPrice': val };
+      if (val) {
+        var tagPrice = parseFloat(val);
+        if (!isNaN(tagPrice) && tagPrice > 0) {
+          var actual = tagPrice * 0.8;
+          updates['_form.retailPrice'] = actual % 1 === 0 ? String(Math.round(actual)) : actual.toFixed(1);
+        }
+      } else {
+        updates['_form.retailPrice'] = '';
+      }
+      this.setData(updates);
       this._emitChange();
     },
 
@@ -538,6 +642,7 @@ Component({
         gallery: this.data._galleryList,
         retailPrice: form.retailPrice ? parseFloat(form.retailPrice) : null,
         specialPrice: form.specialPrice ? parseFloat(form.specialPrice) : null,
+        tagPrice: form.tagPrice ? parseFloat(form.tagPrice) : null,
         categoryId: form.categoryId || null,
         keywords: form.keywords || '',
         scenes: this.data._scenes,
@@ -575,6 +680,7 @@ Component({
           detail: this.data._form.detail,
           retailPrice: this.data._form.retailPrice,
           specialPrice: this.data._form.specialPrice,
+          tagPrice: this.data._form.tagPrice,
           categoryId: this.data._form.categoryId,
           categoryName: this.data._form.categoryName,
           keywords: this.data._form.keywords,

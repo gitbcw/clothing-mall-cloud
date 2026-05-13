@@ -151,3 +151,27 @@ button::after {
   font-size: 30rpx;
   color: #999;
 }
+
+/* 协议勾选 */
+.agreement-wrap {
+  margin-top: 60rpx;
+}
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+}
+.custom-checkbox {
+  transform: scale(0.6);
+  margin-right: 4rpx;
+  margin-top: -6rpx;
+}
+.agreement-text {
+  font-size: 22rpx;
+  color: #999;
+  line-height: 1.5;
+  flex: 1;
+}
+.agreement-text .link {
+  color: #5D9CEC;
+  display: inline;
+}

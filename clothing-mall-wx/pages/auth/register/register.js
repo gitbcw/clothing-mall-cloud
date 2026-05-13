@@ -13,7 +13,8 @@ Page({
     statusBarHeight: 20,
     navContentHeight: 48,
     navTotalHeight: 68,
-    navTitle: '注册'
+    navTitle: '注册',
+    agreement: false
   },
   onLoad: function(options) {
     // 页面初始化 options为页面跳转所带来的参数
@@ -51,9 +52,13 @@ Page({
       return false;
     }
 
-    util.request(api.AuthRegisterCaptcha, {
-      mobile: that.data.mobile
-    }, 'POST').then(function(res) {
+    util.ensurePrivacyAuthorized({
+      message: '发送注册验证码前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      return util.request(api.AuthRegisterCaptcha, {
+        mobile: that.data.mobile
+      }, 'POST')
+    }).then(function(res) {
       if (res.errno == 0) {
         wx.showModal({
           title: '发送成功',
@@ -67,17 +72,21 @@ Page({
           showCancel: false
         });
       }
-    });
+    }).catch(function() {});
   },
   requestRegister: function(wxCode) {
     let that = this;
-    util.request(api.AuthRegister, {
-      username: that.data.username,
-      password: that.data.password,
-      mobile: that.data.mobile,
-      code: that.data.code,
-      wxCode: wxCode
-    }, 'POST').then(function(res) {
+    util.ensurePrivacyAuthorized({
+      message: '注册账号前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      return util.request(api.AuthRegister, {
+        username: that.data.username,
+        password: that.data.password,
+        mobile: that.data.mobile,
+        code: that.data.code,
+        wxCode: wxCode
+      }, 'POST')
+    }).then(function(res) {
       if (res.errno == 0) {
         app.globalData.hasLogin = true;
         wx.setStorageSync('userInfo', res.data.userInfo);
@@ -92,10 +101,15 @@ Page({
           showCancel: false
         });
       }
-    });
+    }).catch(function() {});
   },
   startRegister: function() {
     var that = this;
+
+    if (!this.data.agreement) {
+      wx.showToast({ title: '请阅读并同意协议', icon: 'none' });
+      return false;
+    }
 
     if (this.data.password.length < 6 || this.data.username.length < 6) {
       wx.showModal({
@@ -196,6 +210,17 @@ Page({
         });
         break;
     }
+  },
+  bindAgreementChange: function(e) {
+    this.setData({
+      agreement: e.detail.value.length > 0
+    });
+  },
+  goAgreement: function() {
+    wx.navigateTo({ url: '/pages/agreement/agreement?type=agreement' });
+  },
+  goPrivacy: function() {
+    util.openPrivacyContract('/pages/agreement/agreement?type=privacy');
   },
   handleBack: function() {
     wx.navigateBack({ delta: 1 })

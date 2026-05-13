@@ -1,4 +1,4 @@
-const util = require('../../../utils/util.js');
+const homeRefresh = require('../../../utils/home-refresh.js');
 
 Page({
   data: {
@@ -8,7 +8,9 @@ Page({
       {
         group: '运营管理',
         items: [
-          { key: 'wework', label: '企微推送', icon: 'wework', desc: '发送消息与卡片推送' }
+          { key: 'coupon', label: '优惠券管理', icon: 'coupon', desc: '管理优惠券与发放' },
+          { key: 'specialPrice', label: '特价管理', icon: 'specialPrice', desc: '设置特价商品' },
+          { key: 'holiday', label: '节日活动', icon: 'holiday', desc: '管理节日活动与商品' }
         ]
       },
       {
@@ -48,11 +50,14 @@ Page({
   onMenuTap(e) {
     var key = e.currentTarget.dataset.key;
     switch (key) {
-      case 'wework':
-        wx.navigateTo({ url: '/pages/manager/pushSend/pushSend' });
+      case 'coupon':
+        wx.navigateTo({ url: '/pages/manager/couponManage/couponManage' });
         break;
-      case 'issue':
-        wx.navigateTo({ url: '/pages/manager/issueManage/issueManage' });
+      case 'specialPrice':
+        wx.navigateTo({ url: '/pages/manager/specialPrice/specialPrice' });
+        break;
+      case 'holiday':
+        wx.navigateTo({ url: '/pages/manager/holidayManage/holidayManage' });
         break;
       case 'outfit':
         wx.navigateTo({ url: '/pages/manager/outfitManage/outfitManage' });
@@ -64,7 +69,8 @@ Page({
         wx.navigateTo({ url: '/pages/manager/systemConfig/systemConfig' });
         break;
       case 'switchUser':
-        wx.switchTab({ url: '/pages/index/index' });
+        homeRefresh.markHomeRefreshNeeded();
+        wx.reLaunch({ url: '/pages/index/index' });
         break;
     }
   }

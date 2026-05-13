@@ -1,5 +1,6 @@
 var util = require('../../../utils/util.js');
 var api = require('../../../config/api.js');
+var homeRefresh = require('../../../utils/home-refresh.js');
 
 Page({
   data: {
@@ -120,24 +121,28 @@ Page({
 
   onChoosePoster: function() {
     var that = this;
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sizeType: ['compressed'],
-      sourceType: ['album', 'camera'],
-      success: function(res) {
-        var tempFilePath = res.tempFiles[0].tempFilePath;
-        that.setData({ uploading: true });
-        util.uploadFile(tempFilePath).then(function(url) {
-          that.setData({
-            'form.posterUrl': url,
-            uploading: false
+    util.ensurePrivacyAuthorized({
+      message: '上传场景海报前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      wx.chooseMedia({
+        count: 1,
+        mediaType: ['image'],
+        sizeType: ['original'],
+        sourceType: ['album', 'camera'],
+        success: function(res) {
+          var tempFilePath = res.tempFiles[0].tempFilePath;
+          that.setData({ uploading: true });
+          util.uploadFile(tempFilePath).then(function(url) {
+            that.setData({
+              'form.posterUrl': url,
+              uploading: false
+            });
+          }).catch(function() {
+            that.setData({ uploading: false });
           });
-        }).catch(function() {
-          that.setData({ uploading: false });
-        });
-      }
-    });
+        }
+      });
+    }).catch(function() {});
   },
 
   onRemovePoster: function() {
@@ -189,6 +194,7 @@ Page({
       }, 'POST').then(function() {
         that.setData({ saving: false });
         wx.showToast({ title: that.data.isEdit ? '保存成功' : '创建成功', icon: 'success' });
+        homeRefresh.markHomeRefreshNeeded();
         setTimeout(function() {
           wx.navigateBack();
         }, 800);

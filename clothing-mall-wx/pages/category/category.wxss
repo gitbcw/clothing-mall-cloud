@@ -126,7 +126,7 @@ page {
   line-height: 108rpx;
   text-align: center;
   font-size: 25rpx;
-  color: #bbbbbb;
+  color: #666666;
   transition: all 0.25s ease;
   overflow: hidden;
 }

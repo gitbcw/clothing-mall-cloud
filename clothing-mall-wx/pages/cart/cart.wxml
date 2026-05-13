@@ -71,9 +71,9 @@
                 </view>
                 <!-- 步进器 -->
                 <view class="stepper">
-                  <view class="step-btn minus" bindtap="cutNumber" data-item-index="{{index}}"></view>
+                  <view class="step-btn minus" catchtap="cutNumber" data-item-index="{{index}}"></view>
                   <view class="step-input">{{item.number}}</view>
-                  <view class="step-btn plus" bindtap="addNumber" data-item-index="{{index}}"></view>
+                  <view class="step-btn plus" catchtap="addNumber" data-item-index="{{index}}"></view>
                 </view>
               </view>
             </view>

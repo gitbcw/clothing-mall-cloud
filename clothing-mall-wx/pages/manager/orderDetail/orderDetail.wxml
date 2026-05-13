@@ -84,9 +84,18 @@
     </view>
   </view>
 
-  <!-- 核销信息（待核销时显示） -->
+  <!-- 备货信息（备货中时显示） -->
   <view class="info-section" wx:if="{{order.orderStatus === 501}}">
-    <view class="section-title">核销信息</view>
+    <view class="section-title">备货信息</view>
+    <view class="info-item">
+      <text class="label">备货状态</text>
+      <text class="value">店铺正在备货中，请耐心等待</text>
+    </view>
+  </view>
+
+  <!-- 取件信息（已备货时显示） -->
+  <view class="info-section" wx:if="{{order.orderStatus === 505}}">
+    <view class="section-title">取件信息</view>
     <view class="info-item">
       <text class="label">取货码</text>
       <text class="value pickup-code">{{order.pickupCode}}</text>
@@ -130,8 +139,13 @@
       <view class="action-btn btn-primary" wx:if="{{order.deliveryType !== 'pickup'}}" bindtap="handleShip">发货</view>
     </block>
 
-    <!-- 501 待核销：核销 -->
+    <!-- 501 备货中：确认备货 -->
     <block wx:if="{{order.orderStatus === 501}}">
+      <view class="action-btn btn-primary" bindtap="handlePrepare">确认备货</view>
+    </block>
+
+    <!-- 505 已备货：核销 -->
+    <block wx:if="{{order.orderStatus === 505}}">
       <view class="action-btn btn-primary" bindtap="handleVerify">确认核销</view>
     </block>
 

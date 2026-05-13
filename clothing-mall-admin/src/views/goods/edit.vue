@@ -5,12 +5,6 @@
     <el-card v-if="goods.id" class="box-card">
       <h3>商品详情</h3>
       <el-form ref="goods" :rules="rules" :model="goods" label-width="150px">
-        <el-form-item label="商品ID" prop="id">
-          <el-input v-model="goods.id" disabled style="width: 150px" />
-        </el-form-item>
-        <el-form-item label="商品款号" prop="goodsSn">
-          <el-input v-model="goods.goodsSn" style="width: 300px" disabled />
-        </el-form-item>
         <el-form-item :label="$t('goods_edit.form.name')" prop="name">
           <el-input v-model="goods.name" style="width: 300px" />
         </el-form-item>
@@ -32,6 +26,7 @@
 
         <el-form-item :label="$t('goods_edit.form.pic_url')">
           <el-upload
+            action="#"
             :http-request="cloudUpload"
             :show-file-list="false"
             :auto-upload="false"
@@ -43,12 +38,17 @@
             <img v-if="goods.picUrl" :src="imageUrl(goods.picUrl)" class="avatar">
             <i v-else class="el-icon-plus avatar-uploader-icon" />
           </el-upload>
+          <div v-if="imageRecognizing" class="ai-recognizing-tip">
+            <i class="el-icon-loading" /> AI 识别中...
+          </div>
         </el-form-item>
 
         <el-form-item :label="$t('goods_edit.form.gallery')">
           <el-upload
+            action="#"
             :http-request="cloudUpload"
-            :limit="5"
+            class="goods-gallery-upload"
+            :limit="9"
             :file-list="galleryFileList"
             :on-exceed="uploadOverrun"
             :on-success="handleGalleryUrl"
@@ -70,23 +70,22 @@
         </el-form-item>
 
         <el-form-item :label="$t('goods_edit.form.category_id')">
-          <el-select v-model="goods.categoryId" clearable>
-            <el-option v-for="item in categoryList" :key="item.value" :label="item.label" :value="item.value" />
+          <el-select v-model="goods.categoryId" clearable placeholder="请选择分类">
+            <el-option v-for="item in categoryList" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
 
-        <!-- 场景标签（多选） -->
+        <!-- 场景标签（chip 多选，与小程序一致） -->
         <el-form-item label="场景标签">
-          <el-select
-            v-model="selectedSceneIds"
-            multiple
-            collapse-tags
-            clearable
-            placeholder="请选择场景（可多选）"
-            style="width: 300px;"
-          >
-            <el-option v-for="item in sceneList" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+          <div class="scene-chips">
+            <span
+              v-for="item in sceneList"
+              :key="item.value"
+              class="scene-chip"
+              :class="{ active: selectedSceneIds.includes(item.value) }"
+              @click="toggleScene(item.value)"
+            >{{ item.label }}</span>
+          </div>
         </el-form-item>
 
         <el-form-item :label="$t('goods_edit.form.brief')">
@@ -99,37 +98,6 @@
       </el-form>
     </el-card>
 
-    <!-- 商品参数卡片 -->
-    <el-card v-if="goods.id" class="box-card">
-      <h3>{{ $t('goods_edit.section.attributes') }}</h3>
-      <el-button type="primary" @click="handleAttributeShow(null)">{{ $t('app.button.create') }}</el-button>
-      <el-table :data="attributesData">
-        <el-table-column property="attribute" :label="$t('goods_edit.table.attribute_name')" />
-        <el-table-column property="value" :label="$t('goods_edit.table.attribute_value')" />
-        <el-table-column align="center" :label="$t('goods_edit.table.attribute_actions')" width="200" class-name="small-padding fixed-width">
-          <template slot-scope="scope">
-            <el-button type="primary" size="mini" @click="handleAttributeShow(scope.row)">{{ $t('app.button.settings') }}</el-button>
-            <el-button type="danger" size="mini" @click="handleAttributeDelete(scope.row)">{{ $t('app.button.delete') }}</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <el-dialog :visible.sync="attributeVisiable" :title="$t(attributeAdd ? 'goods_edit.dialog.edit_attribute_add' : 'goods_edit.dialog.edit_attribute_edit')">
-        <el-form ref="attributeForm" :model="attributeForm" status-icon label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-          <el-form-item :label="$t('goods_edit.form.attribute_name')" prop="attribute">
-            <el-input v-model="attributeForm.attribute" />
-          </el-form-item>
-          <el-form-item :label="$t('goods_edit.form.attribute_value')" prop="value">
-            <el-input v-model="attributeForm.value" />
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="attributeVisiable = false">{{ $t('app.button.cancel') }}</el-button>
-          <el-button v-if="attributeAdd" type="primary" @click="handleAttributeAdd">{{ $t('app.button.confirm') }}</el-button>
-          <el-button v-else type="primary" @click="handleAttributeEdit">{{ $t('app.button.confirm') }}</el-button>
-        </div>
-      </el-dialog>
-    </el-card>
 
     <!-- 操作按钮 -->
     <div v-if="goods.id" class="op-container">
@@ -181,7 +149,21 @@
   width: 145px;
   height: 145px;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+  background: #f5f7fa;
+}
+/* 画廊图片自适应比例 */
+.goods-gallery-upload .el-upload-list--picture-card .el-upload-list__item {
+  width: 148px;
+  height: 148px;
+}
+.goods-gallery-upload .el-upload-list--picture-card .el-upload-list__item-thumbnail {
+  object-fit: contain;
+  background: #f5f7fa;
+}
+.goods-gallery-upload .el-upload--picture-card {
+  width: 148px;
+  height: 148px;
 }
 .op-container {
   display: flex;
@@ -192,10 +174,42 @@
   color: #909399;
   font-size: 12px;
 }
+.ai-recognizing-tip {
+  margin-top: 8px;
+  color: #409eff;
+  font-size: 12px;
+}
+/* 场景标签 chip 样式 */
+.scene-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.scene-chip {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid #dcdfe6;
+  color: #606266;
+  background: #fff;
+  transition: all 0.2s;
+  user-select: none;
+}
+.scene-chip:hover {
+  border-color: #409eff;
+  color: #409eff;
+}
+.scene-chip.active {
+  background: #409eff;
+  border-color: #409eff;
+  color: #fff;
+}
 </style>
 
 <script>
-import { detailGoods, editGoods, listCatAndBrand } from '@/api/goods'
+import { detailGoods, editGoods, listCatAndBrand, recognizeImage } from '@/api/goods'
 import { listScene } from '@/api/scene'
 import { cloudUpload, cloudUploadFile } from '@/utils/upload'
 import Editor from '@tinymce/tinymce-vue'
@@ -211,6 +225,7 @@ export default {
       goods: { gallery: [] },
       picFile: null,
       saving: false,
+      imageRecognizing: false,
       galleryFileList: [],
       keywords: [],
       newKeywordVisible: false,
@@ -322,12 +337,19 @@ export default {
         }
         this.attributes = response.data.data.attributes || []
 
-        // 处理图片
+        // 处理图片（gallery 在 MySQL 中存为 JSON 字符串，需解析）
+        var gallery = this.goods.gallery
+        if (typeof gallery === 'string') {
+          try { gallery = JSON.parse(gallery) } catch (e) { gallery = [] }
+        }
+        if (!Array.isArray(gallery)) gallery = []
+        this.goods.gallery = gallery
+
         this.galleryFileList = []
-        for (var i = 0; i < this.goods.gallery.length; i++) {
+        for (var i = 0; i < gallery.length; i++) {
           this.galleryFileList.push({
-            url: this.goods.gallery[i],
-            name: this.goods.gallery[i]
+            url: this.imageUrl(gallery[i]),
+            name: gallery[i]
           })
         }
 
@@ -398,7 +420,7 @@ export default {
         await editGoods(data)
         this.$notify.success({ title: '成功', message: successMsg })
         this.$store.dispatch('tagsView/delView', this.$route)
-        this.$router.push('/goods/list')
+        this.$router.go(-1)
       } catch (error) {
         const errMsg = error?.response?.data?.errmsg || error?.message || '未知错误'
         MessageBox.alert('操作失败：' + errMsg, '警告', {
@@ -412,7 +434,7 @@ export default {
 
     handleCancel: function() {
       this.$store.dispatch('tagsView/delView', this.$route)
-      this.$router.push({ path: '/goods/list' })
+      this.$router.go(-1)
     },
     handleClose(tag) {
       this.keywords.splice(this.keywords.indexOf(tag), 1)
@@ -437,6 +459,75 @@ export default {
       if (file.raw) {
         this.picFile = file.raw
         this.goods.picUrl = URL.createObjectURL(file.raw)
+        // 自动触发 AI 识别
+        this.recognizeMainImage(file.raw)
+      }
+    },
+    async recognizeMainImage(file) {
+      if (this.imageRecognizing) return
+      this.imageRecognizing = true
+      try {
+        const cloudPath = await cloudUploadFile(file)
+        this.goods.picUrl = cloudPath
+        this.picFile = null
+
+        const res = await recognizeImage({ fileID: cloudPath })
+        if (res.data.errno === 0 && res.data.data) {
+          this.applyRecognition(res.data.data)
+        }
+      } catch (e) {
+        console.warn('AI 识别失败:', e)
+      } finally {
+        this.imageRecognizing = false
+      }
+    },
+    applyRecognition(result) {
+      let updated = false
+      // 名称（仅空时填充）
+      if (result.name && !this.goods.name) {
+        this.goods.name = result.name
+        updated = true
+      }
+      // 价格（仅空时填充）
+      if (result.price && !this.goods.retailPrice) {
+        this.goods.retailPrice = result.price
+        updated = true
+      }
+      // 简介（仅空时填充）
+      if (result.brief && !this.goods.brief) {
+        this.goods.brief = result.brief
+        updated = true
+      }
+      // 分类（仅空时填充，精确或模糊匹配）
+      if (result.category && !this.goods.categoryId) {
+        const cat = this.categoryList.find(c => c.name === result.category)
+          || this.categoryList.find(c => c.name.includes(result.category) || result.category.includes(c.name))
+        if (cat) {
+          this.goods.categoryId = cat.id
+          updated = true
+        }
+      }
+      // 场景（追加不重复的）
+      if (result.scenes && result.scenes.length > 0) {
+        for (const sceneName of result.scenes) {
+          const scene = this.sceneList.find(s => s.label === sceneName)
+            || this.sceneList.find(s => s.label.includes(sceneName) || sceneName.includes(s.label))
+          if (scene && !this.selectedSceneIds.includes(scene.value)) {
+            this.selectedSceneIds.push(scene.value)
+            updated = true
+          }
+        }
+      }
+      if (updated) {
+        this.$message.success('AI 识别成功，已自动填充')
+      }
+    },
+    toggleScene(id) {
+      const idx = this.selectedSceneIds.indexOf(id)
+      if (idx >= 0) {
+        this.selectedSceneIds.splice(idx, 1)
+      } else {
+        this.selectedSceneIds.push(id)
       }
     },
     uploadPicUrl: function(response) {
@@ -447,7 +538,7 @@ export default {
     uploadOverrun: function() {
       this.$message({
         type: 'error',
-        message: '上传文件个数超出限制!最多上传5张图片!'
+        message: '上传文件个数超出限制!最多上传9张图片!'
       })
     },
     handleGalleryUrl(response, file, fileList) {

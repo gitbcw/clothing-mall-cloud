@@ -75,15 +75,6 @@
     </view>
     <!-- 功能列表 -->
     <view class="card menu-card">
-      <view class="menu-item" bindtap="goFeedback">
-        <view class="item-left">
-          <view class="icon icon-headset"></view>
-          <text>联系客服</text>
-        </view>
-        <view class="item-right">
-          <view class="arrow"></view>
-        </view>
-      </view>
       <view class="menu-item" bindtap="goAddress">
         <view class="item-left">
           <view class="icon icon-location"></view>
@@ -93,17 +84,26 @@
           <view class="arrow"></view>
         </view>
       </view>
-      <view class="menu-item" bindtap="goUserInfo">
+      <view class="menu-item" bindtap="goFeedback">
         <view class="item-left">
-          <view class="icon icon-person"></view>
-          <text>个人信息</text>
+          <view class="icon icon-headset"></view>
+          <text>联系客服</text>
+        </view>
+        <view class="item-right">
+          <view class="arrow"></view>
+        </view>
+      </view>
+      <view class="menu-item" bindtap="goAccountSecurity">
+        <view class="item-left">
+          <view class="icon icon-shield"></view>
+          <text>账号与隐私</text>
         </view>
         <view class="item-right">
           <view class="arrow"></view>
         </view>
       </view>
       <!-- 管理入口（仅管理员可见） -->
-      <view class="menu-item manager-entry" wx:if="{{isManager}}" bindtap="goManager">
+      <view class="menu-item manager-entry" wx:if="{{!roleLoading && isManager}}" bindtap="goManager">
         <view class="item-left">
           <view class="icon icon-manager"></view>
           <text>管理后台</text>

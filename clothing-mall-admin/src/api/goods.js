@@ -94,6 +94,14 @@ export function cancelSpecialPriceBatch(data) {
   })
 }
 
+export function setSpecialPriceBatch(data) {
+  return request({
+    url: '/goods/setSpecialPrice',
+    method: 'post',
+    data
+  })
+}
+
 export function recognizeImage(data) {
   return request({
     url: '/goods/recognizeImage',

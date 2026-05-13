@@ -10,3 +10,4 @@
   </view>
 </view>
 <view style="height: {{navTotalHeight}}px;"></view>
+<privacy-dialog />

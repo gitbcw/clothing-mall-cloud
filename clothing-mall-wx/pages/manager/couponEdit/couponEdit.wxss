@@ -1,0 +1,281 @@
+@import "../../../styles/manager-common.wxss";
+
+.container {
+  min-height: 100vh;
+  background-color: #F5F3F0;
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
+}
+
+/* ---- 导航栏 ---- */
+.custom-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(24px);
+}
+
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 30rpx; position: relative;
+}
+
+.nav-back {
+  width: 64rpx; height: 64rpx;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.nav-back-icon {
+  width: 18rpx; height: 18rpx;
+  border-left: 3rpx solid #333; border-bottom: 3rpx solid #333;
+  transform: rotate(45deg);
+}
+
+.nav-title {
+  font-size: 34rpx; font-weight: 700; color: #1A1A1A;
+  position: absolute; left: 50%; transform: translateX(-50%);
+  letter-spacing: 1rpx;
+}
+
+.nav-save-text {
+  font-size: 28rpx; color: #FF8096; font-weight: 600;
+}
+
+.nav-placeholder { background: transparent; }
+
+/* ---- 优惠券预览卡片 ---- */
+.coupon-preview {
+  margin: 16rpx 24rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+}
+
+.preview-left {
+  width: 180rpx;
+  background: linear-gradient(135deg, #FF8096, #FFB3C1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28rpx 16rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 斜纹装饰 */
+.preview-left::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent, transparent 8rpx,
+    rgba(255,255,255,0.06) 8rpx, rgba(255,255,255,0.06) 16rpx
+  );
+}
+
+/* 预览统一粉色 */
+
+.preview-amount {
+  display: flex;
+  align-items: baseline;
+  position: relative;
+  z-index: 1;
+}
+
+.preview-symbol {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.preview-value {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.preview-unit {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.preview-condition {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 8rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.preview-right {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.preview-name {
+  font-size: 28rpx;
+  color: #1A1A1A;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preview-tag {
+  font-size: 20rpx;
+  color: #999;
+  margin-top: 6rpx;
+}
+
+/* ---- 表单区 ---- */
+.form-section {
+  padding: 12rpx 24rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 8rpx 12rpx;
+}
+
+.section-accent {
+  width: 6rpx;
+  height: 28rpx;
+  border-radius: 3rpx;
+  background: linear-gradient(180deg, #FF8096, #FFB3C1);
+  margin-right: 14rpx;
+}
+
+.section-title {
+  font-size: 26rpx;
+  color: #1A1A1A;
+  font-weight: 600;
+}
+
+.form-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.03);
+}
+
+.form-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx 32rpx;
+  border-bottom: 1rpx solid #F5F3F0;
+}
+
+.form-item:last-child {
+  border-bottom: none;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  flex-shrink: 0;
+  width: 180rpx;
+}
+
+.form-input {
+  flex: 1;
+  text-align: right;
+  font-size: 28rpx;
+  color: #1A1A1A;
+}
+
+.form-value {
+  flex: 1;
+  text-align: right;
+  font-size: 28rpx;
+  color: #1A1A1A;
+  font-weight: 500;
+}
+
+.form-placeholder {
+  flex: 1;
+  text-align: right;
+  font-size: 28rpx;
+  color: #CCC;
+}
+
+.form-arrow {
+  font-size: 24rpx;
+  color: #CCC;
+  margin-left: 8rpx;
+}
+
+/* ---- 开关 ---- */
+.toggle-switch {
+  width: 92rpx; height: 50rpx;
+  border-radius: 25rpx; position: relative;
+  transition: background 0.3s;
+  margin-left: 12rpx;
+  flex-shrink: 0;
+}
+
+.switch-on {
+  background: #FF8096;
+  box-shadow: 0 2rpx 8rpx rgba(255, 128, 150, 0.3);
+}
+
+.switch-off { background: #E0E0E0; }
+
+.switch-dot {
+  width: 42rpx; height: 42rpx; border-radius: 50%; background: #FFFFFF;
+  position: absolute; top: 4rpx; transition: left 0.3s;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.12);
+}
+
+.switch-on .switch-dot { left: 46rpx; }
+.switch-off .switch-dot { left: 4rpx; }
+
+/* ---- 保存按钮 ---- */
+.save-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding: 20rpx 40rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-top: none;
+  z-index: 10;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #FF8096, #FF9EAA); color: #FFFFFF;
+  border-radius: 44rpx; padding: 26rpx 0;
+  text-align: center; font-size: 28rpx; font-weight: 600;
+  box-shadow: 0 8rpx 28rpx rgba(255, 128, 150, 0.35);
+}
+
+.save-btn:active { transform: scale(0.97); }
+.btn-disabled { opacity: 0.5; }
+
+/* ---- 选择器弹窗 ---- */
+.picker-mask {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4); z-index: 200;
+}
+
+.picker-popup {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: #FFFFFF; border-radius: 24rpx 24rpx 0 0;
+  z-index: 201; padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.08);
+}
+
+.picker-view {
+  height: 400rpx;
+}
+
+.picker-item {
+  display: flex; align-items: center; justify-content: center;
+  height: 80rpx; font-size: 30rpx; color: #333;
+}

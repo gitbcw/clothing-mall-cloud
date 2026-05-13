@@ -10,6 +10,10 @@
     <view class="popup-header">
       <view class="popup-title">完善生日信息</view>
       <view class="popup-subtitle">填写生日可获得专属生日优惠券</view>
+      <view class="privacy-note">
+        生日信息仅用于会员服务和生日权益，提交前请阅读
+        <text class="privacy-link" catchtap="openPrivacy">《小程序用户隐私保护指引》</text>
+      </view>
     </view>
 
     <!-- 日期显示 -->

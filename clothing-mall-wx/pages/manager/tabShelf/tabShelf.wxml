@@ -129,4 +129,5 @@
 
   <!-- 管理端 TabBar -->
   <manager-tab-bar id="managerTabBar" />
+  <privacy-dialog />
 </view>

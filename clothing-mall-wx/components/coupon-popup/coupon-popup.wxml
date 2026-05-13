@@ -1,0 +1,70 @@
+<view class="coupon-popup-mask" wx:if="{{show}}" bindtap="onClose">
+  <view class="coupon-popup-card" catchtap="">
+    <!-- 关闭按钮 -->
+    <view class="popup-close" bindtap="onClose">
+      <view class="close-icon"></view>
+    </view>
+
+    <!-- 装饰背景 -->
+    <view class="popup-deco">
+      <view class="deco-circle deco-circle-1"></view>
+      <view class="deco-circle deco-circle-2"></view>
+    </view>
+
+    <!-- 标题区 -->
+    <view class="popup-header">
+      <view class="popup-badge">LIMITED</view>
+      <view class="popup-title">专属优惠</view>
+      <view class="popup-subtitle">精选优惠券等你来领</view>
+    </view>
+
+    <!-- 优惠券轮播 -->
+    <swiper class="coupon-swiper" wx:if="{{coupons.length > 0}}"
+      current="{{current}}"
+      bindchange="onSwiperChange"
+      circular="{{coupons.length > 1}}"
+      disable-touch="{{coupons.length <= 1}}">
+
+      <swiper-item wx:for="{{coupons}}" wx:key="id">
+        <view class="coupon-card">
+          <view class="coupon-left">
+            <view class="coupon-amount">
+              <text class="amount-unit" wx:if="{{item.discountType === 1}}">{{((100 - item.discount) / 10)}}</text>
+              <text class="amount-unit" wx:else>{{item.discount}}</text>
+              <text class="amount-suffix" wx:if="{{item.discountType === 1}}">折</text>
+              <text class="amount-suffix" wx:else>元</text>
+            </view>
+            <view class="coupon-condition">
+              <text wx:if="{{item.min > 0}}">满{{item.min}}可用</text>
+              <text wx:else>无门槛</text>
+            </view>
+          </view>
+          <view class="coupon-divider"></view>
+          <view class="coupon-right">
+            <view class="coupon-name">{{item.name}}</view>
+            <view class="coupon-desc" wx:if="{{item.desc}}">{{item.desc}}</view>
+            <view class="coupon-validity">
+              <text wx:if="{{item.timeType === 0}}">领取后{{item.days}}天内有效</text>
+              <text wx:else>{{item.startTime}} ~ {{item.endTime}}</text>
+            </view>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+
+    <!-- 指示器 -->
+    <view class="popup-dots" wx:if="{{coupons.length > 1}}">
+      <view class="dot {{current === index ? 'dot-active' : ''}}" wx:for="{{coupons}}" wx:key="id"></view>
+    </view>
+
+    <!-- 领取按钮 -->
+    <view class="popup-btn-area">
+      <view class="popup-btn {{receivedMap[coupons[current].id] ? 'popup-btn-done' : ''}}"
+            bindtap="{{receivedMap[coupons[current].id] ? '' : 'onReceive'}}">
+        <text wx:if="{{receiving}}">领取中...</text>
+        <text wx:elif="{{receivedMap[coupons[current].id]}}">已领取</text>
+        <text wx:else>立即领取</text>
+      </view>
+    </view>
+  </view>
+</view>

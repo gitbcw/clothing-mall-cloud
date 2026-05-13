@@ -1,0 +1,79 @@
+.container {
+  min-height: 100vh;
+  background: #fff;
+}
+
+/* 自定义导航栏 */
+.custom-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  position: relative;
+}
+
+.nav-left {
+  position: absolute;
+  left: 16px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-left-hover {
+  opacity: 0.6;
+}
+
+.nav-left .arrow {
+  width: 10px;
+  height: 10px;
+  border-left: 3px solid #333;
+  border-bottom: 3px solid #333;
+  transform: rotate(45deg);
+}
+
+.nav-title {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 内容区 */
+.content-scroll {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.loading-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #999;
+}
+
+.article-wrap {
+  padding: 32rpx 40rpx 24rpx;
+}
+
+.bottom-safe {
+  height: 40px;
+}

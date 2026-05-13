@@ -40,8 +40,8 @@
       <div class="overview-card card-teal">
         <div class="card-icon"><i class="el-icon-circle-check" /></div>
         <div class="card-body">
-          <span class="card-count">{{ statusCounts['501'] || 0 }}</span>
-          <span class="card-label">待核销</span>
+          <span class="card-count">{{ (statusCounts['501'] || 0) + (statusCounts['505'] || 0) }}</span>
+          <span class="card-label">自提待处理</span>
         </div>
       </div>
       <div class="overview-card card-orange">
@@ -190,6 +190,7 @@
           <template slot-scope="scope">
             <div class="action-buttons">
               <el-button v-if="canShip(scope.row)" type="primary" size="mini" round @click="handleShip(scope.row)">{{ $t('mall_order.button.ship') }}</el-button>
+              <el-button v-if="canPrepare(scope.row)" type="warning" size="mini" round @click="handlePrepare(scope.row)">确认备货</el-button>
               <el-button v-if="canVerify(scope.row)" type="success" size="mini" round @click="handleVerify(scope.row)">核销</el-button>
               <el-button v-if="canRefund(scope.row)" type="danger" size="mini" round @click="handleRefund(scope.row)">{{ $t('mall_order.button.refund') }}</el-button>
               <el-button v-if="canDelete(scope.row)" size="mini" round @click="handleDelete(scope.row)">{{ $t('app.button.delete') }}</el-button>
@@ -271,10 +272,10 @@
           <div class="section-title">{{ $t('mall_order.form.detail_goods') }}</div>
           <el-table :data="orderDetail.orderGoods" size="small" class="goods-table">
             <el-table-column align="center" :label="$t('mall_order.table.detail_goods_name')" prop="goodsName" />
-            <el-table-column align="center" :label="$t('mall_order.table.detail_goods_sn')" prop="goodsSn" width="120" />
+            <!-- <el-table-column align="center" :label="$t('mall_order.table.detail_goods_sn')" prop="goodsSn" width="120" /> -->
             <el-table-column align="center" :label="$t('mall_order.table.detail_goods_specifications')" prop="specifications" width="140">
               <template slot-scope="scope">
-                <span v-if="scope.row.color || scope.row.size">{{ scope.row.color || '' }}{{ scope.row.size ? ' / ' + scope.row.size : '' }}</span>
+                <span v-if="scope.row.color || scope.row.size">{{ [scope.row.color, scope.row.size].filter(Boolean).join(' / ') }}</span>
                 <span v-else>{{ scope.row.specifications ? scope.row.specifications.join('-') : '' }}</span>
               </template>
             </el-table-column>
@@ -365,7 +366,8 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="orderDialogVisible = false">关闭</el-button>
         <el-button v-if="orderDetail.order.orderStatus === 201 && orderDetail.order.deliveryType !== 'pickup'" type="primary" icon="el-icon-truck" @click="dialogAction('ship')">发货</el-button>
-        <el-button v-if="orderDetail.order.orderStatus === 501" type="success" icon="el-icon-circle-check" @click="dialogAction('verify')">核销</el-button>
+        <el-button v-if="orderDetail.order.orderStatus === 501" type="warning" icon="el-icon-box" @click="dialogAction('prepare')">确认备货</el-button>
+        <el-button v-if="orderDetail.order.orderStatus === 505" type="success" icon="el-icon-circle-check" @click="dialogAction('verify')">核销</el-button>
         <el-button v-if="orderDetail.order.orderStatus === 202" type="danger" icon="el-icon-money" @click="dialogAction('refund')">退款</el-button>
       </div>
     </el-dialog>
@@ -442,7 +444,7 @@
 </template>
 
 <script>
-import { detailOrder, listOrder, listChannel, refundOrder, payOrder, deleteOrder, shipOrder, listOrderCount, verifyOrder } from '@/api/order'
+import { detailOrder, listOrder, listChannel, refundOrder, payOrder, deleteOrder, shipOrder, listOrderCount, verifyOrder, prepareOrder } from '@/api/order'
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import checkPermission from '@/utils/permission' // 权限判断函数
@@ -458,10 +460,11 @@ const statusMap = {
   301: '已发货',
   401: '用户收货',
   402: '系统收货',
-  501: '待核销',
+  501: '备货中',
   502: '已核销',
   503: '核销过期',
-  504: '核销退款'
+  504: '核销退款',
+  505: '已备货'
 }
 
 export default {
@@ -556,7 +559,8 @@ export default {
           { name: 'pending_all', label: '全部待处理' },
           { name: '101', label: '待付款' },
           { name: '201', label: '待发货' },
-          { name: '501', label: '待核销' }
+          { name: '501', label: '备货中' },
+          { name: '505', label: '待取件' }
         ]
       } else if (this.businessView === 'completed') {
         return [
@@ -591,7 +595,7 @@ export default {
     checkPermission,
     getBadgeType(status) {
       // 红色: 201(已付款), 202(申请退款), 501(待核销) - 需要紧急处理
-      if (['201', '202', '501', 'pending_all'].includes(String(status))) {
+      if (['201', '202', '501', '505', 'pending_all'].includes(String(status))) {
         return 'danger'
       }
       // 蓝色: 301(已发货), all(全部) - 进行中或总览
@@ -638,6 +642,9 @@ export default {
       return row.orderStatus === 202
     },
     canVerify(row) {
+      return row.orderStatus === 505
+    },
+    canPrepare(row) {
       return row.orderStatus === 501
     },
     getOrderCounts() {
@@ -726,9 +733,26 @@ export default {
         this.handleShip({ id: row.id, shipChannel: this.orderDetail.order.shipChannel, shipSn: this.orderDetail.order.shipSn })
       } else if (action === 'verify') {
         this.handleVerify({ id: row.id })
+      } else if (action === 'prepare') {
+        this.handlePrepare({ id: row.id })
       } else if (action === 'refund') {
         this.handleRefund({ id: row.id, actualPrice: row.actualPrice })
       }
+    },
+    handlePrepare(row) {
+      this.$confirm('确认商品已备好？确认后将生成取件码通知用户。', '确认备货', {
+        confirmButtonText: '确认备货',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        prepareOrder({ orderId: row.id }).then(response => {
+          this.$notify.success({ title: '成功', message: '备货确认成功，取件码：' + (response.data.data.pickupCode || '') })
+          this.getList()
+          this.getOrderCounts()
+        }).catch(response => {
+          this.$notify.error({ title: '失败', message: response.data.errmsg })
+        })
+      }).catch(() => {})
     },
     handleVerify(row) {
       this.$confirm('确认核销该订单？', '核销确认', {

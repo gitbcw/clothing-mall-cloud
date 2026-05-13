@@ -55,7 +55,8 @@
       <view class="order-actions" catchtap="">
         <view class="action-btn btn-cancel" wx:if="{{item.orderStatus === 201}}" catchtap="onCancel" data-id="{{item.id}}">取消</view>
         <view class="action-btn btn-primary" wx:if="{{item.orderStatus === 201}}" catchtap="onShip" data-id="{{item.id}}">发货</view>
-        <view class="action-btn btn-primary" wx:if="{{item.orderStatus === 501}}" catchtap="onVerify" data-id="{{item.id}}">核销</view>
+        <view class="action-btn btn-primary" wx:if="{{item.orderStatus === 501}}" catchtap="onPrepare" data-id="{{item.id}}">确认备货</view>
+        <view class="action-btn btn-primary" wx:if="{{item.orderStatus === 505}}" catchtap="onVerify" data-id="{{item.id}}">核销</view>
       </view>
     </view>
   </view>

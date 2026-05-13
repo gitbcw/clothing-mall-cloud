@@ -55,14 +55,18 @@ Page({
   afterRead(event) {
     const { file } = event.detail;
     let that = this;
-    util.uploadFile(file.path).then(function(url) {
+    util.ensurePrivacyAuthorized({
+      message: '上传售后凭证前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      return util.uploadFile(file.path)
+    }).then(function(url) {
       that.data.aftersale.pictures.push(url);
       const { fileList = [] } = that.data;
       fileList.push({ ...file, url: url });
       that.setData({
         fileList: fileList
       });
-    });
+    }).catch(function() {});
   },
   previewImage: function (e) {
     wx.previewImage({
@@ -111,15 +115,19 @@ Page({
       return false;
     }
 
-    wx.showLoading({
-      title: '提交中...',
-      mask: true,
-      success: function () {
+    util.ensurePrivacyAuthorized({
+      message: '提交售后原因和凭证前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      wx.showLoading({
+        title: '提交中...',
+        mask: true,
+        success: function () {
 
-      }
-    });
+        }
+      });
 
-    util.request(api.AftersaleSubmit, that.data.aftersale, 'POST').then(function (res) {
+      return util.request(api.AftersaleSubmit, that.data.aftersale, 'POST')
+    }).then(function (res) {
       wx.hideLoading();
 
       if (res.errno === 0) {
@@ -137,6 +145,8 @@ Page({
         util.showErrorToast(res.errmsg);
       }
 
+    }).catch(function() {
+      wx.hideLoading();
     });
   },
   onReady: function () {

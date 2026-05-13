@@ -3,6 +3,9 @@
  */
 
 const automator = require('miniprogram-automator');
+const path = require('path');
+
+const projectPath = path.resolve(__dirname, '..');
 
 async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -15,7 +18,7 @@ async function diagnose() {
     console.log('1. 连接微信开发者工具 (端口 34479)...');
     miniProgram = await automator.launch({
       cliPath: '/Applications/wechatwebdevtools.app/Contents/MacOS/cli',
-      projectPath: '/Users/combo/MyFile/projects/clothing-mall/clothing-mall-wx',
+      projectPath,
       serverPort: 34479,
     });
     console.log('   ✅ 连接成功\n');

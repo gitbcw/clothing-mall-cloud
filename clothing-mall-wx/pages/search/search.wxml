@@ -12,10 +12,11 @@
   <view class="search-header" style="padding-top: {{statusBarHeight+navBarHeight}}px;">
     <view class="input-box">
       <van-icon name="search"/>
-      <input name="input" class="keywrod" focus="true" value="{{keyword}}" confirm-type="search" bindinput="inputChange" bindfocus="inputFocus" bindconfirm="onKeywordConfirm" placeholder="{{defaultKeyword}}" />
+      <input name="input" class="keywrod" focus="true" value="{{keyword}}" confirm-type="search" bindinput="inputChange" bindfocus="inputFocus" bindconfirm="onKeywordConfirm" placeholder="{{placeholderKeyword}}" />
       <van-icon class="del" wx:if="{{keyword}}" bindtap="clearKeyword" name="cross" />
     </view>
-    <view class="right" bindtap="closeSearch">取消</view>
+    <view class="right" wx:if="{{keyword}}" bindtap="onSearchTap">搜索</view>
+    <view class="right" wx:else bindtap="closeSearch">取消</view>
   </view>
   <view class="no-search" style="margin-top: {{statusBarHeight * 2 + 91}}rpx;" wx:if="{{ !searchStatus}}">
     <view class="search-keywords search-history" wx:if="{{!keyword  && historyKeyword.length}}">
@@ -78,14 +79,67 @@
           <text class="txt">上新</text>
         </view>
       </view>
+      <view class="search-keyword-bar">
+        <text class="search-keyword-label">搜索：</text>
+        <text class="search-keyword-value">{{keyword || '全部商品'}}</text>
+      </view>
     </view>
     <view class="cate-item">
-      <view class="b">
-        <navigator class="item {{(iindex + 1) % 2 == 0 ? 'item-b' : ''}}" url="/pages/goods_detail/goods_detail?id={{iitem.id}}" wx:for="{{goodsList}}" wx:key="id" wx:for-item="iitem" wx:for-index="iindex">
-          <image class="img" src="{{img.url(iitem.picUrl)}}" background-size="cover"></image>
-          <text class="name">{{iitem.name}}</text>
-          <text class="price">￥{{iitem.retailPrice}}</text>
-        </navigator>
+      <view class="b waterfall-layout">
+        <!-- 左列 -->
+        <view class="waterfall-col">
+          <view class="goods-card" wx:for="{{leftGoods}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+            <view class="goods-img-wrap">
+              <image class="goods-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill"></image>
+            </view>
+            <view class="goods-info">
+              <view class="goods-title">{{item.name}}</view>
+              <view class="goods-bottom">
+                <view wx:if="{{item.specialPrice}}" class="price-wrap">
+                  <text class="price-symbol">￥</text>
+                  <text class="price-num">{{item.specialPrice}}</text>
+                  <text class="price-original" wx:if="{{item.tagPrice}}">￥{{item.tagPrice}}</text>
+                </view>
+                <view wx:elif="{{item.tagPrice}}" class="price-wrap">
+                  <text class="price-symbol">￥</text>
+                  <text class="price-num">{{item.retailPrice}}</text>
+                  <text class="price-original">￥{{item.tagPrice}}</text>
+                </view>
+                <view wx:else class="price-wrap">
+                  <text class="price-symbol">￥</text>
+                  <text class="price-num">{{item.retailPrice}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+        <!-- 右列 -->
+        <view class="waterfall-col">
+          <view class="goods-card" wx:for="{{rightGoods}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+            <view class="goods-img-wrap">
+              <image class="goods-img" src="{{img.url(item.picUrl) || defaultImage}}" mode="aspectFill"></image>
+            </view>
+            <view class="goods-info">
+              <view class="goods-title">{{item.name}}</view>
+              <view class="goods-bottom">
+                <view wx:if="{{item.specialPrice}}" class="price-wrap">
+                  <text class="price-symbol">￥</text>
+                  <text class="price-num">{{item.specialPrice}}</text>
+                  <text class="price-original" wx:if="{{item.tagPrice}}">￥{{item.tagPrice}}</text>
+                </view>
+                <view wx:elif="{{item.tagPrice}}" class="price-wrap">
+                  <text class="price-symbol">￥</text>
+                  <text class="price-num">{{item.retailPrice}}</text>
+                  <text class="price-original">￥{{item.tagPrice}}</text>
+                </view>
+                <view wx:else class="price-wrap">
+                  <text class="price-symbol">￥</text>
+                  <text class="price-num">{{item.retailPrice}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
       </view>
     </view>
   </view>

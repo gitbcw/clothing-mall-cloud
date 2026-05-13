@@ -84,7 +84,7 @@ export default {
 
   },
   created() {
-    this.getCode()
+    // 验证码 UI 与后端校验均已禁用，避免页面初始化时抢在 CloudBase 匿名登录完成前调用云函数。
     // window.addEventListener('hashchange', this.afterQRScan)
   },
   destroyed() {
@@ -250,4 +250,3 @@ $light_gray:#eee;
   }
 }
 </style>
-

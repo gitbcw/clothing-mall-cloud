@@ -73,7 +73,7 @@ Object.keys(filters).forEach(key => {
 })
 
 // 全局图片 URL 拼接方法
-const COS_BASE = 'https://636c-clo-test-4g8ukdond34672de-1258700476.tcb.qcloud.la/'
+const COS_BASE = 'https://636c-cloudbase-d3g1zmq7r388144eb-1427677265.tcb.qcloud.la/'
 
 Vue.mixin({
   methods: {

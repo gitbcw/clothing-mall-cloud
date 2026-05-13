@@ -71,7 +71,17 @@
                 <view class="goods-info">
                   <view class="goods-title">{{item.name}}</view>
                   <view class="goods-bottom">
-                    <view class="price-wrap">
+                    <view wx:if="{{item.specialPrice}}" class="price-wrap">
+                      <text class="price-symbol theme-color">￥</text>
+                      <text class="price-num theme-color">{{item.specialPrice}}</text>
+                      <text class="original-price" wx:if="{{item.tagPrice}}">￥{{item.tagPrice}}</text>
+                    </view>
+                    <view wx:elif="{{item.tagPrice}}" class="price-wrap">
+                      <text class="price-symbol theme-color">￥</text>
+                      <text class="price-num theme-color">{{item.retailPrice}}</text>
+                      <text class="original-price">￥{{item.tagPrice}}</text>
+                    </view>
+                    <view wx:else class="price-wrap">
                       <text class="price-symbol theme-color">￥</text>
                       <text class="price-num theme-color">{{item.retailPrice}}</text>
                     </view>
@@ -90,7 +100,17 @@
                 <view class="goods-info">
                   <view class="goods-title">{{item.name}}</view>
                   <view class="goods-bottom">
-                    <view class="price-wrap">
+                    <view wx:if="{{item.specialPrice}}" class="price-wrap">
+                      <text class="price-symbol theme-color">￥</text>
+                      <text class="price-num theme-color">{{item.specialPrice}}</text>
+                      <text class="original-price" wx:if="{{item.tagPrice}}">￥{{item.tagPrice}}</text>
+                    </view>
+                    <view wx:elif="{{item.tagPrice}}" class="price-wrap">
+                      <text class="price-symbol theme-color">￥</text>
+                      <text class="price-num theme-color">{{item.retailPrice}}</text>
+                      <text class="original-price">￥{{item.tagPrice}}</text>
+                    </view>
+                    <view wx:else class="price-wrap">
                       <text class="price-symbol theme-color">￥</text>
                       <text class="price-num theme-color">{{item.retailPrice}}</text>
                     </view>

@@ -39,7 +39,7 @@ export function bcatNotice(data) {
   })
 }
 
-export function rmotice(data) {
+export function rmNotice(data) {
   return request({
     url: '/profile/rmnotice',
     method: 'post',
@@ -54,4 +54,3 @@ export function brmNotice(data) {
     data
   })
 }
-

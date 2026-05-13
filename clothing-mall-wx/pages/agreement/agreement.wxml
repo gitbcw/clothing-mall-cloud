@@ -1,0 +1,20 @@
+<view class="container">
+  <view class="custom-nav" style="padding-top: {{statusBarHeight}}px; height: {{navTotalHeight}}px;">
+    <view class="nav-inner">
+      <view class="nav-left" bindtap="handleBack" hover-class="nav-left-hover" hover-stay-time="100">
+        <view class="arrow"></view>
+      </view>
+      <view class="nav-title">{{title}}</view>
+    </view>
+  </view>
+
+  <scroll-view class="content-scroll" style="top: {{navTotalHeight}}px; height: calc(100vh - {{navTotalHeight}}px);" scroll-y enhanced show-scrollbar="{{false}}">
+    <view wx:if="{{loading}}" class="loading-wrap">
+      <text class="loading-text">加载中...</text>
+    </view>
+    <view class="article-wrap" wx:else>
+      <rich-text nodes="{{content}}"></rich-text>
+    </view>
+    <view class="bottom-safe"></view>
+  </scroll-view>
+</view>

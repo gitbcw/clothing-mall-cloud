@@ -1,5 +1,6 @@
 var util = require('../../../utils/util.js');
 var api = require('../../../config/api.js');
+var homeRefresh = require('../../../utils/home-refresh.js');
 
 Page({
   data: {
@@ -54,6 +55,7 @@ Page({
       id: id,
       enabled: !enabled
     }, 'POST').then(function(res) {
+      homeRefresh.markHomeRefreshNeeded();
       that.loadScenes();
     });
   },
@@ -69,6 +71,7 @@ Page({
         if (res.confirm) {
           util.request(api.ManagerSceneDelete, { id: id }, 'POST').then(function() {
             wx.showToast({ title: '已删除', icon: 'success' });
+            homeRefresh.markHomeRefreshNeeded();
             that.loadScenes();
           });
         }

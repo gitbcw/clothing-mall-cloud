@@ -1,6 +1,7 @@
 var api = require('../../../config/api.js');
 var util = require('../../../utils/util.js');
 var user = require('../../../utils/user.js');
+var check = require('../../../utils/check.js');
 
 var app = getApp();
 Page({
@@ -10,7 +11,9 @@ Page({
     mobile: '',
     hasLogin: false,
     isDev: api.isDev,
-    loading: false
+    loading: false,
+    agreement: false,
+    privacyReady: false
   },
   onLoad: function(options) {
     if (wx.getUserProfile) {
@@ -18,6 +21,7 @@ Page({
         canIUseGetUserProfile: true
       })
     }
+    this.refreshPrivacyReady()
   },
   onReady: function() {
 
@@ -57,12 +61,51 @@ Page({
       mobile: ''
     });
   },
+  bindAgreementChange: function(e) {
+    this.setData({
+      agreement: e.detail.value.length > 0
+    });
+  },
+  goAgreement: function() {
+    wx.navigateTo({ url: '/pages/agreement/agreement?type=agreement' });
+  },
+  goPrivacy: function() {
+    util.openPrivacyContract('/pages/agreement/agreement?type=privacy');
+  },
+  refreshPrivacyReady: function() {
+    var that = this
+    util.getPrivacySetting().then(function(res) {
+      that.setData({ privacyReady: !res.needAuthorization })
+    })
+  },
+  requestPrivacyAuthorization: function() {
+    var that = this
+    util.ensurePrivacyAuthorized({
+      message: '绑定手机号、完善生日信息前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      that.setData({ privacyReady: true })
+      wx.showToast({ title: '已同意，请继续操作', icon: 'none' })
+    }).catch(function() {})
+  },
   bindPhoneNumberManual: function() {
-    if (this.data.mobile.length !== 11) {
-      wx.showToast({ title: '请输入11位手机号', icon: 'none' });
+    if (!this.data.agreement) {
+      wx.showToast({ title: '请阅读并同意协议', icon: 'none' });
+      return;
+    }
+    if (!check.isValidPhone(this.data.mobile)) {
+      wx.showToast({ title: '请输入正确的手机号', icon: 'none' });
       return;
     }
 
+    var that = this
+    util.ensurePrivacyAuthorized({
+      message: '绑定手机号前，请先阅读并同意小程序用户隐私保护指引。'
+    }).then(function() {
+      that.setData({ privacyReady: true })
+      that.doBindPhoneNumberManual()
+    }).catch(function() {})
+  },
+  doBindPhoneNumberManual: function() {
     const that = this;
     wx.showLoading({ title: '绑定中...' });
     util.request(api.AuthBindPhoneManual, { mobile: this.data.mobile }, 'POST').then(res => {
@@ -118,6 +161,12 @@ Page({
       return;
     }
 
+    if (!this.data.agreement) {
+      wx.showToast({ title: '请阅读并同意协议', icon: 'none' });
+      return;
+    }
+
+    this.setData({ privacyReady: true })
     const that = this;
     const data = {
       encryptedData: e.detail.encryptedData,
@@ -213,7 +262,7 @@ Page({
         showCancel: true,
         success: function(modalRes) {
           if (modalRes.confirm) {
-            wx.switchTab({ url: '/pages/index/index' });
+            wx.switchTab({ url: '/pages/category/category' });
           } else {
             wx.navigateBack({ delta: 1 });
           }

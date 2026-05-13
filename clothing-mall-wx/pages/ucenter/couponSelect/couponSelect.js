@@ -115,10 +115,11 @@ Page({
       cartId: that.data.cartId
     }).then(function (res) {
       if (res.errno === 0) {
+        var rawList = Array.isArray(res.data) ? res.data : (res.data.list || []);
         let list = [];
-        for (var i = 0; i < res.data.list.length; i++) {
-          if (res.data.list[i].available) {
-            var item = res.data.list[i];
+        for (var i = 0; i < rawList.length; i++) {
+          if (rawList[i].available) {
+            var item = rawList[i];
             // 计算折扣显示文本
             if (item.discountType === 1) {
               item.discountText = ((100 - Number(item.discount)) / 10) + '折';

@@ -12,6 +12,7 @@ Component({
     switchTab(e) {
       const data = e.currentTarget.dataset;
       const url = data.path;
+      if (this.data.active === data.index) return;
       this.setData({ active: data.index });
       wx.redirectTo({ url });
     }

@@ -194,6 +194,17 @@ export const asyncRoutes = [
           noCache: true
         }
       },
+      // 特价商品管理
+      {
+        path: 'special',
+        component: () => import('@/views/goods/special'),
+        name: 'goodsSpecial',
+        meta: {
+          perms: ['admin:goods:list', 'admin:goods:update'],
+          title: 'app.menu.goods_special',
+          noCache: true
+        }
+      },
       // 隐藏的品牌管理（保留路由但不在菜单显示）
       {
         path: 'brand',
@@ -219,7 +230,7 @@ export const asyncRoutes = [
     ]
   },
 
-  // ==================== 3. 平台设置（消息推送、推送组管理、会员管理、店铺设置） ====================
+  // ==================== 3. 平台设置（会员管理、店铺设置） ====================
   {
     path: '/platform',
     component: Layout,
@@ -231,28 +242,6 @@ export const asyncRoutes = [
       icon: 'chart'
     },
     children: [
-      // 消息推送（企业微信）
-      {
-        path: 'wework-push',
-        component: () => import('@/views/wework/push'),
-        name: 'platformWeworkPush',
-        meta: {
-          perms: ['POST /admin/wework/uploadMedia', 'POST /admin/wework/sendCard', 'POST /admin/wework/sendCardByTag'],
-          title: 'app.menu.platform_wework',
-          noCache: true
-        }
-      },
-      // 推送组管理
-      {
-        path: 'push-group',
-        component: () => import('@/views/platform/pushGroup'),
-        name: 'platformPushGroup',
-        meta: {
-          perms: ['admin:push:group:list', 'admin:push:group:create', 'admin:push:group:update', 'admin:push:group:delete'],
-          title: 'app.menu.platform_push_group',
-          noCache: true
-        }
-      },
       // 会员管理（Tab 容器）
       {
         path: 'user',

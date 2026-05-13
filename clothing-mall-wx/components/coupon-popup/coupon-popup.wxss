@@ -1,0 +1,295 @@
+/* 遮罩 */
+.coupon-popup-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 卡片 */
+.coupon-popup-card {
+  position: relative;
+  width: 580rpx;
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  overflow: hidden;
+  animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(60rpx); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* 关闭按钮 */
+.popup-close {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  width: 52rpx;
+  height: 52rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.close-icon {
+  width: 20rpx;
+  height: 20rpx;
+  position: relative;
+}
+
+.close-icon::before,
+.close-icon::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 3rpx;
+  background: rgba(255, 255, 255, 0.7);
+  top: 50%;
+  left: 0;
+  border-radius: 2rpx;
+}
+
+.close-icon::before {
+  transform: rotate(45deg);
+}
+
+.close-icon::after {
+  transform: rotate(-45deg);
+}
+
+/* 装饰圆 */
+.popup-deco {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 260rpx;
+  background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 50%, #FFDDE1 100%);
+  overflow: hidden;
+}
+
+.deco-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.deco-circle-1 {
+  width: 200rpx;
+  height: 200rpx;
+  top: -60rpx;
+  right: -40rpx;
+}
+
+.deco-circle-2 {
+  width: 120rpx;
+  height: 120rpx;
+  top: 40rpx;
+  left: -30rpx;
+}
+
+/* 标题区 */
+.popup-header {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 48rpx 40rpx 24rpx;
+}
+
+.popup-badge {
+  display: inline-block;
+  font-size: 20rpx;
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 4rpx 20rpx;
+  border-radius: 16rpx;
+  letter-spacing: 4rpx;
+  margin-bottom: 16rpx;
+}
+
+.popup-title {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
+  text-shadow: 0 2rpx 8rpx rgba(255, 120, 140, 0.3);
+}
+
+.popup-subtitle {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 8rpx;
+}
+
+/* 券轮播 */
+.coupon-swiper {
+  position: relative;
+  z-index: 2;
+  height: 220rpx;
+  margin: 16rpx 32rpx 0;
+}
+
+/* 优惠券卡片 */
+.coupon-card {
+  display: flex;
+  align-items: stretch;
+  height: 200rpx;
+  background: linear-gradient(135deg, #FFF5F5, #FFFFFF);
+  border-radius: 16rpx;
+  border: 1rpx solid #FFE0E6;
+  overflow: hidden;
+}
+
+.coupon-left {
+  width: 220rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20rpx 16rpx;
+  background: linear-gradient(135deg, #FF9A9E, #FF8096);
+}
+
+.coupon-amount {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.amount-unit {
+  font-size: 64rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.amount-suffix {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.85);
+  margin-left: 4rpx;
+}
+
+.coupon-condition {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 8rpx;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2rpx 12rpx;
+  border-radius: 8rpx;
+}
+
+.coupon-divider {
+  width: 1rpx;
+  background: repeating-linear-gradient(
+    to bottom,
+    #FFD0D8 0,
+    #FFD0D8 8rpx,
+    transparent 8rpx,
+    transparent 16rpx
+  );
+  margin: 20rpx 0;
+}
+
+.coupon-right {
+  flex: 1;
+  padding: 24rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.coupon-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coupon-desc {
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 6rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coupon-validity {
+  font-size: 20rpx;
+  color: #BBBBBB;
+  margin-top: 8rpx;
+}
+
+/* 指示器 */
+.popup-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 16rpx 0 0;
+  position: relative;
+  z-index: 2;
+}
+
+.dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #E0E0E0;
+  transition: all 0.3s ease;
+}
+
+.dot-active {
+  background: #FF8096;
+  width: 24rpx;
+  border-radius: 6rpx;
+}
+
+/* 领取按钮 */
+.popup-btn-area {
+  position: relative;
+  z-index: 2;
+  padding: 28rpx 40rpx 40rpx;
+}
+
+.popup-btn {
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #FF9A9E, #FF6B81);
+  border-radius: 44rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 128, 150, 0.4);
+  letter-spacing: 4rpx;
+}
+
+.popup-btn:active {
+  opacity: 0.85;
+  transform: scale(0.98);
+}
+
+.popup-btn-done {
+  background: #E0E0E0;
+  box-shadow: none;
+  letter-spacing: 2rpx;
+}

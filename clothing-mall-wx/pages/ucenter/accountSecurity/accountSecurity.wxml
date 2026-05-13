@@ -1,0 +1,57 @@
+<view class="container">
+  <custom-nav title="账号与隐私" />
+
+  <view class="section">
+    <view class="section-title">账号资料</view>
+    <view class="list-card">
+      <view class="list-item" bindtap="goUserInfo">
+        <view class="item-left">
+          <view class="item-icon icon-person"></view>
+          <view class="item-text">
+            <view class="item-title">个人信息</view>
+            <view class="item-desc">头像、昵称、手机号、生日</view>
+          </view>
+        </view>
+        <view class="arrow"></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">隐私与协议</view>
+    <view class="list-card">
+      <view class="list-item" bindtap="goAgreement">
+        <view class="item-left">
+          <view class="item-icon icon-doc"></view>
+          <view class="item-text">
+            <view class="item-title">用户协议</view>
+            <view class="item-desc">商城服务使用规则</view>
+          </view>
+        </view>
+        <view class="arrow"></view>
+      </view>
+      <view class="divider"></view>
+      <view class="list-item" bindtap="goMerchantPrivacy">
+        <view class="item-left">
+          <view class="item-icon icon-lock"></view>
+          <view class="item-text">
+            <view class="item-title">隐私政策</view>
+            <view class="item-desc">商家对个人信息处理的说明</view>
+          </view>
+        </view>
+        <view class="arrow"></view>
+      </view>
+      <view class="divider"></view>
+      <view class="list-item" bindtap="goOfficialPrivacy">
+        <view class="item-left">
+          <view class="item-icon icon-shield"></view>
+          <view class="item-text">
+            <view class="item-title">小程序隐私保护指引</view>
+            <view class="item-desc">微信官方隐私授权与保护指引</view>
+          </view>
+        </view>
+        <view class="arrow"></view>
+      </view>
+    </view>
+  </view>
+</view>

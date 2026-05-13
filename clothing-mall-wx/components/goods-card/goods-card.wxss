@@ -46,7 +46,7 @@
 .goods-name {
   font-size: 26rpx;
   color: #333;
-  line-height: 1.4;
+  line-height: 36rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;

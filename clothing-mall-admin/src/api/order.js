@@ -89,3 +89,11 @@ export function verifyOrder(data) {
     data
   })
 }
+
+export function prepareOrder(data) {
+  return request({
+    url: '/order/prepare',
+    method: 'post',
+    data
+  })
+}

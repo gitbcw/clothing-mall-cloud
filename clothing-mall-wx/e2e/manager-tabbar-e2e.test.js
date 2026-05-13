@@ -12,11 +12,12 @@
  */
 
 const automator = require('miniprogram-automator');
+const path = require('path');
 
 // 测试配置
 const config = {
   cliPath: '/Applications/wechatwebdevtools.app/Contents/MacOS/cli',
-  projectPath: '/Users/combo/MyFile/projects/clothing-mall/clothing-mall-wx',
+  projectPath: path.resolve(__dirname, '..'),
   serverPort: 34479,
 };
 

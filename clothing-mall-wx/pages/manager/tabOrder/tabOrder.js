@@ -198,6 +198,28 @@ Page({
     });
   },
 
+  // 确认备货
+  onPrepare(e) {
+    const orderId = e.currentTarget.dataset.id;
+    let that = this;
+    wx.showModal({
+      title: '确认备货',
+      content: '确认商品已备好？确认后将生成取件码通知用户。',
+      success(res) {
+        if (res.confirm) {
+          util.request(api.ManagerOrderPrepare, { orderId: orderId }, 'POST').then(function(res) {
+            if (res.errno === 0) {
+              wx.showToast({ title: '备货完成', icon: 'success' });
+              that.refreshList();
+            } else {
+              wx.showToast({ title: res.errmsg || '操作失败', icon: 'none' });
+            }
+          });
+        }
+      }
+    });
+  },
+
   // 核销
   onVerify(e) {
     const orderId = e.currentTarget.dataset.id;
