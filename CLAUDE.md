@@ -12,6 +12,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |------|------|
 | [docs/current/INDEX.md](docs/current/INDEX.md) | 当前开发进度、需求总览、关键决策记录 |
 | [docs/README.md](docs/README.md) | 文档导航入口 |
+| [docs/current/document-status.md](docs/current/document-status.md) | 文档时效状态表，区分当前有效、待确认、历史参考 |
+| [docs/test/release-test-strategy.md](docs/test/release-test-strategy.md) | 当前发布前测试策略与发布门禁 |
 
 ## 架构概览
 
@@ -30,8 +32,7 @@ clothing-mall-cloud/
 │   │   ├── admin-system      # 系统配置/日志
 │   │   ├── admin-stat        # 数据统计
 │   │   ├── admin-config      # 平台配置
-│   │   ├── admin-user        # 用户管理
-│   │   └── admin-wework      # 企业微信推送
+│   │   └── admin-user        # 用户管理
 │   ├── wx-*                  # 小程序端 API（15 个函数）
 │   │   ├── wx-auth           # 登录注册
 │   │   ├── wx-home           # 首页数据
@@ -49,12 +50,10 @@ clothing-mall-cloud/
 │   │   ├── wx-ai             # AI 识别（Mock）
 │   │   ├── wx-manager-order  # 小程序管理端-订单
 │   │   ├── wx-manager-shelf  # 小程序管理端-上架
-│   │   ├── wx-manager-content # 小程序管理端-内容
-│   │   └── wx-manager-wework # 小程序管理端-企微推送
+│   │   └── wx-manager-content # 小程序管理端-内容
 │   └── task-*                # 定时任务
 │       ├── task-order        # 订单超时处理
-│       ├── task-coupon       # 优惠券过期
-│       └── task-push         # 定时推送
+│       └── task-coupon       # 优惠券过期
 ├── clothing-mall-wx/         # 微信小程序前端
 ├── clothing-mall-admin/      # 管理后台前端（Vue 2 + Element UI）
 └── (legacy)/                 # 已废弃的 Java 后端模块，仅作参考
@@ -104,13 +103,27 @@ NODE_OPTIONS=--openssl-legacy-provider npm run build  # 生产构建
 ```
 
 ### 管理后台部署（构建产物 → 静态托管）
-使用 CloudBase CLI 部署，**禁止逐文件上传**：
+
+**前置条件**：`.env.production` 必须配置以下环境变量：
+```
+VUE_APP_CLOUDBASE_ENV = cloudbase-d3g1zmq7r388144eb
+VUE_APP_CLOUDBASE_REGION = ap-shanghai
+VUE_APP_CLOUDBASE_ACCESS_KEY = <publishable key>
+```
+`VUE_APP_CLOUDBASE_ACCESS_KEY` 通过 MCP 获取：`manageAppAuth(action="ensurePublishableKey")`
+
+**构建 + 部署命令**：
 ```bash
 cd clothing-mall-admin
 NODE_OPTIONS=--openssl-legacy-provider npm run build
-cloudbase hosting deploy dist/ -e clo-test-4g8ukdond34672de
+cloudbase hosting deploy dist/ -e cloudbase-d3g1zmq7r388144eb
 ```
-注意：MCP `uploadFiles` 的根路径上传有 bug，不要依赖它部署前端。
+
+**注意事项**：
+- MCP `uploadFiles` 的根路径上传有 bug，**不要用它部署前端**，必须用 CLI
+- CDN 有缓存，部署后用无痕模式或 `curl -H "Cache-Control: no-cache"` 验证
+- CLI 偶现 TLS 超时，重试即可
+- 访问地址：https://cloudbase-d3g1zmq7r388144eb-1427677265.tcloudbaseapp.com
 
 ### 小程序
 使用微信开发者工具打开 `clothing-mall-wx/` 目录，云函数在 `cloudfunctions/` 目录下。
@@ -123,8 +136,10 @@ manageFunctions(action=updateFunctionCode, functionName=xxx, functionRootPath=cl
 
 ## 云环境
 
-- 环境 ID：`clo-test-4g8ukdond34672de`
+- 环境 ID：`cloudbase-d3g1zmq7r388144eb`
 - 管理后台静态托管在云环境
+- **云函数安全规则**：`{"*":{"invoke":"auth != null"}}`（允许匿名登录调用，管理后台依赖匿名登录）
+- 修改安全规则：`managePermissions(action="updateResourcePermission", resourceType="function", resourceId="*", permission="CUSTOM", securityRule=...)`
 
 ## 关键约束
 

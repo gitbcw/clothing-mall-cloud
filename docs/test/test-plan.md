@@ -3,7 +3,8 @@
 > **版本**: v2.0
 > **日期**: 2026-04-09
 > **架构**: CloudBase 云函数 + Vue 管理后台 + 微信小程序
-> **测试环境**: https://clo-test-4g8ukdond34672de-1258700476.tcloudbaseapp.com
+> **测试环境**: https://cloudbase-d3g1zmq7r388144eb-1427677265.tcloudbaseapp.com
+> **当前状态**: 历史测试计划，环境信息已校准；发布判断以 `release-test-strategy.md` 和 `qa/release/` 脚本为准。
 
 ---
 
@@ -13,8 +14,8 @@
 
 | 服务 | 地址 | 账号 |
 |------|------|------|
-| 管理后台 | https://clo-test-4g8ukdond34672de-1258700476.tcloudbaseapp.com | admin123 / admin123 |
-| 云函数 | CloudBase 环境 clo-test-4g8ukdond34672de | — |
+| 管理后台 | https://cloudbase-d3g1zmq7r388144eb-1427677265.tcloudbaseapp.com | admin123 / admin123 |
+| 云函数 | CloudBase 环境 cloudbase-d3g1zmq7r388144eb | — |
 | MySQL | CloudBase 托管 MySQL | — |
 | 图片存储 | 阿里云 OSS (clothing-mall-2026) | — |
 | 小程序 | 微信开发者工具 | — |
@@ -34,7 +35,6 @@
 | admin-user | Event | 用户、地址、收藏、足迹 |
 | admin-system | Event | 操作日志、地区 |
 | admin-clothing | Event | 场景、节日、门店、导购 |
-| admin-wework | Event | 企业微信推送 |
 | wx-auth | Event | 小程序用户登录 |
 | wx-goods | Event | 小程序商品浏览 |
 | wx-home | Event | 小程序首页、专题 |
@@ -44,7 +44,6 @@
 | wx-scene | Event | 小程序场景推荐 |
 | task-order | Event | 订单超时取消、自动确认 |
 | task-coupon | Event | 优惠券过期、生日券发放 |
-| task-push | Event | 企微定时推送 |
 
 ### 1.3 已知限制
 
@@ -335,7 +334,6 @@ ADMIN_TOKEN="<token>" node e2e/smoke.spec.js
 | 自动确认收货 | task-order autoConfirm | 每天 3:00 | 修改配置缩短时间 |
 | 优惠券过期 | task-coupon expireCoupon | 每小时 | 创建即将过期优惠券 |
 | 生日券发放 | task-coupon birthdayCoupon | 每天 0:30 | 创建当天生日测试用户 |
-| 企微推送 | task-push scheduledPush | 每分钟 | 插入 pending 推送记录 |
 
 ---
 
@@ -344,7 +342,7 @@ ADMIN_TOKEN="<token>" node e2e/smoke.spec.js
 ### 7.1 管理后台 E2E 冒烟测试（2026-04-09）
 
 ```
-目标: https://clo-test-4g8ukdond34672de-1258700476.tcloudbaseapp.com
+目标: https://cloudbase-d3g1zmq7r388144eb-1427677265.tcloudbaseapp.com
 时间: 2026/4/9 20:56
 结果: 24/24 通过 (100%)
 

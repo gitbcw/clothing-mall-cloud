@@ -1,8 +1,8 @@
-# Clothing Mall 测试策略
+# Clothing Mall 测试策略（历史参考）
 
 > **版本**: v1.0
 > **日期**: 2026-03-15
-> **状态**: 已确认
+> **状态**: 历史参考。本文包含早期 Python/API/E2E 测试体系和旧服务器信息，当前发布门禁以 `docs/test/release-test-strategy.md` 与 `qa/release/` 脚本为准。
 
 ---
 
